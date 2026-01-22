@@ -1,11 +1,12 @@
 import { createEscalationState } from "./escalationState";
 import { launchStrike, shouldRetaliate, joinAllies } from "./escalationLogic";
+import { computeSalvoCount } from "./salvoLogic";
 
 export function simulateEscalation({
   initiator,
   firstTarget,
   world,
-  maxEvents = 2000
+  maxEvents = 10000
 }) {
   const { nations } = world;
   const state = createEscalationState();
@@ -37,15 +38,22 @@ export function simulateEscalation({
 
     if (!canLaunch(from, state)) continue;
 
+    const count = computeSalvoCount({
+      time: state.time,
+      powerTier: nations[from].powerTier,
+      remaining: state.remaining[from]
+    });
+
     const used = launchStrike({
       from,
       to,
       nations,
       state,
-      maxPerStrike: 5
+      maxPerStrike: count
     });
 
     if (!used) continue;
+    state.time++;
 
     // Retaliation
     if (shouldRetaliate(nations[to])) {
