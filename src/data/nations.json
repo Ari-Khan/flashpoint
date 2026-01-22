@@ -49,7 +49,7 @@
             "airLaunch": 50
         },
         "doctrine": "retaliatory",
-        "defaultColor": "#000091"
+        "defaultColor": "#0072BB"
     },
     "GBR": {
         "name": "United Kingdom",
@@ -62,7 +62,7 @@
             "airLaunch": 0
         },
         "doctrine": "retaliatory",
-        "defaultColor": "#012169"
+        "defaultColor": "#C8102E"
     },
     "IND": {
         "name": "India",
@@ -127,7 +127,7 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#239F40"
+        "defaultColor": "#FFFFFF"
     },
     "JPN": {
         "name": "Japan",
@@ -244,7 +244,7 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#FE0000"
+        "defaultColor": "#000097"
     },
     "SWE": {
         "name": "Sweden",
@@ -283,6 +283,6 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#AE1C28"
+        "defaultColor": "#F36C21"
     }
 }

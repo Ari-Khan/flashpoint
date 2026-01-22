@@ -97,4 +97,70 @@ function shouldRetaliate(nation) {
   }
 }
 
-export { launchStrike, shouldRetaliate, joinAllies };
+function canLaunch(country, state) {
+  const r = state.remaining[country];
+  if (!r) return false;
+  return r.icbm + r.slbm + r.air > 0;
+}
+
+function pickWeightedTarget({ attacker, lastStriker, world, state }) {
+  const { nations, bilateral } = world;
+
+  const candidates = Object.keys(nations).filter(code => {
+    if (code === attacker) return false;
+    if (!state.remaining[code]) return false;
+    return true;
+  });
+
+  if (!candidates.length) return lastStriker;
+
+  let totalWeight = 0;
+
+  const weighted = candidates.map(code => {
+    const N = nations[code];
+    let weight = 1;
+
+    // 🔥 STRONG retaliation bias
+    if (code === lastStriker) {
+      weight += 15; // <-- THIS is the main fix
+    }
+
+    // 🧨 aggressor bias (if they initiated earlier)
+    if ([...state.struck].some(s => s.startsWith(`${code}->`))) {
+      weight += 5;
+    }
+
+    // 💪 power still matters, but less than revenge
+    weight += (N.powerTier ?? 1) * 1.2;
+
+    // 😡 relations
+    const rel =
+      bilateral?.[attacker]?.[code] ??
+      bilateral?.[code]?.[attacker] ??
+      0;
+
+    if (rel < 0) {
+      weight += Math.abs(rel) * 2;
+    } else {
+      // friendly / neutral = VERY discouraged
+      weight *= 0.08;
+    }
+
+    // 🧨 already involved nations are more fair game
+    if (state.involved.has(code)) weight += 2;
+
+    totalWeight += weight;
+    return { code, weight };
+  });
+
+  // 🎲 weighted random
+  let r = Math.random() * totalWeight;
+  for (const w of weighted) {
+    r -= w.weight;
+    if (r <= 0) return w.code;
+  }
+
+  return lastStriker;
+}
+
+export { launchStrike, shouldRetaliate, joinAllies, canLaunch, pickWeightedTarget };

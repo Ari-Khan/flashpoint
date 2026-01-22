@@ -7,14 +7,10 @@ export default function CountryFillManager({ activeIso2, nations }) {
   const geo = useCountriesGeo();
   const opacityRef = useRef({});
 
-  // Smooth fade-in
+  // Immediate appearance when activated
   useFrame((_, delta) => {
     activeIso2.forEach(iso => {
-      opacityRef.current[iso] ??= 0;
-      opacityRef.current[iso] = Math.min(
-        0.35,
-        opacityRef.current[iso] + delta * 0.6
-      );
+      opacityRef.current[iso] = 0.35; // Set to full opacity immediately
     });
   });
 

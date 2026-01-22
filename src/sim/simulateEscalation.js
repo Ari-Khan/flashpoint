@@ -1,5 +1,5 @@
 import { createEscalationState } from "./escalationState";
-import { launchStrike, shouldRetaliate, joinAllies } from "./escalationLogic";
+import { launchStrike, shouldRetaliate, joinAllies, canLaunch, pickWeightedTarget } from "./escalationLogic";
 import { computeSalvoCount } from "./salvoLogic";
 
 export function simulateEscalation({
@@ -55,6 +55,24 @@ export function simulateEscalation({
     if (!used) continue;
     state.time++;
 
+    if (Math.random() < 0.35) {
+      const nextTarget = pickWeightedTarget({
+        attacker: from,
+        lastStriker: to,
+        world,
+        state
+      });
+
+      if (nextTarget && nextTarget !== from) {
+        queue.push({
+          type: "strike",
+          from,
+          to: nextTarget,
+          reason: "continued-escalation"
+        });
+      }
+    }
+
     // Retaliation
     if (shouldRetaliate(nations[to])) {
       const target = pickWeightedTarget({
@@ -97,64 +115,4 @@ export function simulateEscalation({
   }
 
   return state.events;
-}
-
-function canLaunch(country, state) {
-  const r = state.remaining[country];
-  if (!r) return false;
-  return r.icbm + r.slbm + r.air > 0;
-}
-
-function pickWeightedTarget({ attacker, lastStriker, world, state }) {
-  const { nations, bilateral } = world;
-
-  const candidates = Object.keys(nations).filter(code => {
-    if (code === attacker) return false;
-    if (!state.remaining[code]) return false;
-    return true;
-  });
-
-  if (!candidates.length) return lastStriker;
-
-  let totalWeight = 0;
-  const weighted = candidates.map(code => {
-    const N = nations[code];
-
-    let weight = 1; // baseline → minors still get hit
-
-    // 🎯 bias toward last striker
-    if (code === lastStriker) weight += 6;
-
-    // 💥 power matters
-    weight += (N.powerTier ?? 1) * 1.5;
-
-    // 😡 bad relations matter
-    const rel =
-      bilateral?.[attacker]?.[code] ??
-      bilateral?.[code]?.[attacker] ??
-      0;
-
-    if (rel < 0) {
-      // enemies → more likely
-      weight += Math.abs(rel) * 2;
-    } else {
-      // neutral / friendly → strongly discouraged but NOT impossible
-      weight *= 0.15; // ~15% baseline chance
-    }
-
-    // 🧨 already involved = more likely
-    if (state.involved.has(code)) weight += 2;
-
-    totalWeight += weight;
-    return { code, weight };
-  });
-
-  // 🎲 weighted random
-  let r = Math.random() * totalWeight;
-  for (const w of weighted) {
-    r -= w.weight;
-    if (r <= 0) return w.code;
-  }
-
-  return lastStriker;
 }
