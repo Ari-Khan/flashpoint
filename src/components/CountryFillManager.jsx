@@ -8,7 +8,7 @@ export default function CountryFillManager({ activeIso2, nations }) {
   const opacityRef = useRef({});
 
   // Immediate appearance when activated
-  useFrame((_, delta) => {
+  useFrame(() => {
     activeIso2.forEach(iso => {
       opacityRef.current[iso] = 0.35; // Set to full opacity immediately
     });
@@ -18,9 +18,10 @@ export default function CountryFillManager({ activeIso2, nations }) {
     if (!geo) return [];
 
     return activeIso2
-      .map(iso =>
-        geo.features.find(f => f.properties.iso_a2 === iso)
-      )
+      .map(iso => {
+        const feature = geo.features.find(f => isoMatchesFeature(iso, f));
+        return feature ? { iso, feature } : null;
+      })
       .filter(Boolean);
   }, [geo, activeIso2]);
 
@@ -28,18 +29,34 @@ export default function CountryFillManager({ activeIso2, nations }) {
 
   return (
     <>
-      {activeFeatures.map(f => {
-        const iso = f.properties.iso_a2;
-        return (
-          <CountryFill
-            key={iso}
-            feature={f}
-            color={nationsByIso(iso, nations)}
-            opacity={opacityRef.current[iso] || 0}
-          />
-        );
-      })}
+      {activeFeatures.map(({ iso, feature }) => (
+        <CountryFill
+          key={iso}
+          feature={feature}
+          color={nationsByIso(iso, nations)}
+          opacity={opacityRef.current[iso] || 0}
+        />
+      ))}
     </>
+  );
+}
+
+function isoMatchesFeature(iso, feature) {
+  const props = feature.properties || {};
+  
+  // Map common country codes to names for fallback matching
+  const isoToName = {
+    'DE': 'Germany',
+    'ZA': 'South Africa'
+  };
+  
+  return (
+    props.iso_a2 === iso ||
+    props.iso_a2_eh === iso ||
+    props.iso_a3 === iso ||
+    props.iso_a3_eh === iso ||
+    props.postal === iso ||
+    (isoToName[iso] && props.name === isoToName[iso])
   );
 }
 
