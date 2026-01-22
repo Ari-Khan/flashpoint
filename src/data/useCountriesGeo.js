@@ -11,7 +11,7 @@ export function useCountriesGeo() {
       return;
     }
 
-    fetch("/src/data/country-shapes.geojson")
+    fetch("/src/data/country-shapes.geo.json")
       .then(r => r.json())
       .then(json => {
         cache = json;

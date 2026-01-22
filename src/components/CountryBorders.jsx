@@ -6,7 +6,7 @@ export default function CountryBorders() {
   const [lines, setLines] = useState([]);
 
   useEffect(() => {
-    fetch("/src/data/country-shapes.geojson")
+    fetch("/src/data/country-shapes.geo.json")
       .then(res => res.json())
       .then(data => {
         const newLines = [];
