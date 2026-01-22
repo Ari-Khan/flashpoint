@@ -1,82 +1,133 @@
+import React, { useMemo, useState, useEffect } from "react";
 import * as THREE from "three";
 import earcut from "earcut";
-import { latLonToVec3 } from "../utils/latLonToVec3";
-// You'll need to install this or import from three/examples
 import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModifier.js";
+import { latLonToVec3 } from "../utils/latLonToVec3";
 
-export default function CountryFill({ feature, color, opacity }) {
+// Global cache to persist across component remounts
+const GEOMETRY_CACHE = new Map();
+
+export default function CountryFill({ feature, color, opacity: finalOpacity = 1 }) {
   if (!feature) return null;
 
-  const meshes = [];
-  const geom = feature.geometry;
+  const countryKey = feature.properties?.iso_a3 || feature.properties?.name || JSON.stringify(feature.geometry.coordinates[0][0]);
+  const [displayOpacity, setDisplayOpacity] = useState(0);
 
-  function buildMesh(ring, holes = []) {
-    if (!ring || ring.length < 3) return;
+  useEffect(() => {
+    let frame;
+    const fadeIn = () => {
+      setDisplayOpacity((prev) => {
+        if (prev < finalOpacity) {
+          frame = requestAnimationFrame(fadeIn);
+          return Math.min(prev + 0.05, finalOpacity);
+        }
+        return prev;
+      });
+    };
+    fadeIn();
+    return () => cancelAnimationFrame(frame);
+  }, [finalOpacity]);
 
-    const vertices2D = [];
-    const holeIndices = [];
-
-    // 1. Prepare 2D vertices for Earcut
-    ring.forEach(([lon, lat]) => vertices2D.push(lon, lat));
-    holes.forEach(hole => {
-      holeIndices.push(vertices2D.length / 2);
-      hole.forEach(([lon, lat]) => vertices2D.push(lon, lat));
-    });
-
-    // 2. Triangulate
-    const indices = earcut(vertices2D, holeIndices);
-
-    // 3. Create a temporary "Flat" geometry (X=lon, Y=lat)
-    const geometry = new THREE.BufferGeometry();
-    const flatPositions = new Float32Array((vertices2D.length / 2) * 3);
-    for (let i = 0, j = 0; i < vertices2D.length; i += 2, j += 3) {
-      flatPositions[j] = vertices2D[i];
-      flatPositions[j + 1] = vertices2D[i + 1];
-      flatPositions[j + 2] = 0; // Keep it flat for the modifier
-    }
-    geometry.setAttribute("position", new THREE.BufferAttribute(flatPositions, 3));
-    geometry.setIndex(indices);
-
-    // 4. Subdivide (Tessellate)
-    // maxEdgeLength: smaller number = more detail (try 1.0 to 2.0)
-    // maxIterations: prevents the browser from crashing on complex shapes
-    const tessellate = new TessellateModifier(1.5, 6);
-    let subdividedGeom = tessellate.modify(geometry);
-
-    // 5. Project the NEW subdivided points onto the sphere
-    const posAttr = subdividedGeom.getAttribute("position");
-    for (let i = 0; i < posAttr.count; i++) {
-      const lon = posAttr.getX(i);
-      const lat = posAttr.getY(i);
-      
-      // Project to 3D spherical space
-      const v = latLonToVec3(lat, lon, 1.001);
-      posAttr.setXYZ(i, v.x, v.y, v.z);
+  const meshes = useMemo(() => {
+    // IF ALREADY CALCULATED, RETURN CACHED GEOMETRIES
+    if (GEOMETRY_CACHE.has(countryKey)) {
+      return GEOMETRY_CACHE.get(countryKey);
     }
 
-    subdividedGeom.computeVertexNormals();
+    const internalMeshes = [];
+    const geom = feature.geometry;
 
-    meshes.push(
-      <mesh key={meshes.length} geometry={subdividedGeom}>
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={opacity}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-    );
-  }
+    function buildMesh(rings) {
+      if (!rings || rings.length === 0 || rings[0].length < 3) return;
 
-  // Handle Polygon/MultiPolygon
-  if (geom.type === "Polygon") {
-    buildMesh(geom.coordinates[0], geom.coordinates.slice(1));
-  } else if (geom.type === "MultiPolygon") {
-    geom.coordinates.forEach(poly => {
-      buildMesh(poly[0], poly.slice(1));
-    });
-  }
+      const vertices2D = [];
+      const holeIndices = [];
+      let centerLon = 0;
+      rings[0].forEach(([lon]) => { centerLon += lon; });
+      centerLon /= rings[0].length;
 
-  return <group>{meshes}</group>;
+      rings.forEach((ring, index) => {
+        if (index > 0) holeIndices.push(vertices2D.length / 2);
+        ring.forEach(([lon, lat]) => {
+          let shiftedLon = lon - centerLon;
+          if (shiftedLon > 180) shiftedLon -= 360;
+          if (shiftedLon < -180) shiftedLon += 360;
+          vertices2D.push(shiftedLon, lat);
+        });
+      });
+
+      const rawIndices = earcut(vertices2D, holeIndices);
+      if (!rawIndices.length) return;
+
+      const isHuge = feature.properties?.name === "Russia" || feature.properties?.iso_a3 === "RUS";
+      const maxDist = isHuge ? 170 : 120;
+      const cleanIndices = [];
+
+      for (let i = 0; i < rawIndices.length; i += 3) {
+        const a = rawIndices[i], b = rawIndices[i + 1], c = rawIndices[i + 2];
+        if (Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
+            Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > maxDist ||
+            Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist) continue;
+        cleanIndices.push(a, b, c);
+      }
+
+      let geometry = new THREE.BufferGeometry();
+      const flatPositions = new Float32Array((vertices2D.length / 2) * 3);
+      for (let i = 0, j = 0; i < vertices2D.length; i += 2, j += 3) {
+        flatPositions[j] = vertices2D[i];
+        flatPositions[j + 1] = vertices2D[i + 1];
+        flatPositions[j + 2] = 0;
+      }
+      geometry.setAttribute("position", new THREE.BufferAttribute(flatPositions, 3));
+      geometry.setIndex(cleanIndices);
+
+      try {
+        geometry = new TessellateModifier(1.0, 5).modify(geometry);
+        geometry = new TessellateModifier(0.15, 8).modify(geometry);
+      } catch (e) {
+        geometry = new TessellateModifier(0.5, 4).modify(geometry);
+      }
+
+      const posAttr = geometry.getAttribute("position");
+      for (let i = 0; i < posAttr.count; i++) {
+        let lon = posAttr.getX(i) + centerLon;
+        const lat = posAttr.getY(i);
+        if (lon > 180) lon -= 360;
+        if (lon < -180) lon += 360;
+        const v = latLonToVec3(lat, lon, 1.001);
+        posAttr.setXYZ(i, v.x, v.y, v.z);
+      }
+
+      geometry.computeVertexNormals();
+      geometry.computeBoundingSphere();
+      internalMeshes.push(geometry);
+    }
+
+    if (geom.type === "Polygon") {
+      buildMesh(geom.coordinates);
+    } else if (geom.type === "MultiPolygon") {
+      geom.coordinates.forEach(poly => buildMesh(poly));
+    }
+
+    // SAVE TO CACHE
+    GEOMETRY_CACHE.set(countryKey, internalMeshes);
+    return internalMeshes;
+  }, [feature, countryKey]);
+
+  return (
+    <group>
+      {meshes.map((geometry, i) => (
+        <mesh key={`${countryKey}-${i}`} geometry={geometry}>
+          <meshBasicMaterial 
+            color={color} 
+            transparent={true}
+            opacity={displayOpacity} 
+            side={THREE.DoubleSide} 
+            depthWrite={false} 
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
 }
