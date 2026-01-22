@@ -1,0 +1,6 @@
+{
+  "NATO": {
+    "baseline": 8,
+    "members": ["USA", "GBR", "FRA", "DEU", "CAN", "TUR", "SWE", "NLD"]
+  }
+}

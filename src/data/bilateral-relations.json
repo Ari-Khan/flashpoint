@@ -1,0 +1,116 @@
+{
+  "USA": {
+    "GBR": 8,
+    "FRA": 9,
+    "DEU": 9,
+    "CAN": 9,
+    "JPN": 8,
+    "KOR": 8,
+    "ISR": 7,
+    "SAU": 6,
+    "TWN": 7,
+    "IND": 5,
+    "PAK": -4,
+    "CHN": -8,
+    "RUS": -8,
+    "IRN": -7,
+    "PRK": -10
+  },
+
+  "RUS": {
+    "CHN": 7,
+    "IND": 4,
+    "IRN": 6,
+    "PRK": 6,
+    "USA": -8,
+    "GBR": -7,
+    "FRA": -6,
+    "DEU": -7,
+    "CAN": -7,
+    "JPN": -6,
+    "KOR": -6
+  },
+
+  "CHN": {
+    "RUS": 7,
+    "PAK": 8,
+    "PRK": 6,
+    "IRN": 4,
+    "IND": -5,
+    "USA": -8,
+    "JPN": -7,
+    "TWN": -10,
+    "KOR": -6,
+    "DEU": -5,
+    "FRA": -5,
+    "GBR": -5
+  },
+
+  "FRA": {
+    "USA": 9,
+    "GBR": 9,
+    "DEU": 8,
+    "CAN": 8,
+    "IND": 6,
+    "ISR": 5,
+    "CHN": -5,
+    "RUS": -6,
+    "PAK": -4,
+    "PRK": -8
+  },
+
+  "GBR": {
+    "USA": 9,
+    "FRA": 9,
+    "DEU": 8,
+    "CAN": 8,
+    "IND": 6,
+    "ISR": 5,
+    "CHN": -5,
+    "RUS": -7,
+    "PAK": -4,
+    "PRK": -8
+  },
+
+  "IND": {
+    "USA": 5,
+    "FRA": 6,
+    "GBR": 6,
+    "RUS": 4,
+    "JPN": 5,
+    "CHN": -5,
+    "PAK": -8,
+    "ISR": 6
+  },
+
+  "PAK": {
+    "CHN": 8,
+    "SAU": 6,
+    "USA": -4,
+    "IND": -8,
+    "IRN": -4,
+    "RUS": -3
+  },
+
+  "ISR": {
+    "USA": 8,
+    "FRA": 5,
+    "GBR": 5,
+    "IND": 6,
+    "IRN": -10,
+    "PAK": -6,
+    "CHN": -4,
+    "RUS": -4
+  },
+
+  "PRK": {
+    "CHN": 6,
+    "RUS": 6,
+    "IRN": 4,
+    "KOR": -10,
+    "USA": -10,
+    "JPN": -9,
+    "FRA": -8,
+    "GBR": -8
+  }
+}

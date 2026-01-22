@@ -1,0 +1,288 @@
+{
+    "USA": {
+        "name": "United States",
+        "iso2": "US",
+        "faction": ["NATO"],
+        "powerTier": 5,
+        "weapons": {
+            "icbm": 400,
+            "slbm": 1000,
+            "airLaunch": 300
+        },
+        "doctrine": "retaliatory",
+        "defaultColor": "#3C3B6E"
+    },
+    "RUS": {
+        "name": "Russia",
+        "iso2": "RU",
+        "faction": [],
+        "powerTier": 5,
+        "weapons": {
+            "icbm": 800,
+            "slbm": 700,
+            "airLaunch": 200
+        },
+        "doctrine": "first-use",
+        "defaultColor": "#D62718"
+    },
+    "CHN": {
+        "name": "China",
+        "iso2": "CN",
+        "faction": [],
+        "powerTier": 5,
+        "weapons": {
+            "icbm": 350,
+            "slbm": 150,
+            "airLaunch": 100
+        },
+        "doctrine": "no-first-use",
+        "defaultColor": "#EE1C25"
+    },
+    "FRA": {
+        "name": "France",
+        "iso2": "FR",
+        "faction": ["NATO"],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 240,
+            "airLaunch": 50
+        },
+        "doctrine": "retaliatory",
+        "defaultColor": "#000091"
+    },
+    "GBR": {
+        "name": "United Kingdom",
+        "iso2": "GB",
+        "faction": ["NATO"],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 120,
+            "airLaunch": 0
+        },
+        "doctrine": "retaliatory",
+        "defaultColor": "#012169"
+    },
+    "IND": {
+        "name": "India",
+        "iso2": "IN",
+        "faction": [],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 80,
+            "slbm": 20,
+            "airLaunch": 80
+        },
+        "doctrine": "no-first-use",
+        "defaultColor": "#FF9933"
+    },
+    "PAK": {
+        "name": "Pakistan",
+        "iso2": "PK",
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 100,
+            "slbm": 0,
+            "airLaunch": 70
+        },
+        "doctrine": "first-use",
+        "defaultColor": "#01411C"
+    },
+    "ISR": {
+        "name": "Israel",
+        "iso2": "IL",
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 30,
+            "slbm": 20,
+            "airLaunch": 40
+        },
+        "doctrine": "ambiguous",
+        "defaultColor": "#0038B8"
+    },
+    "PRK": {
+        "name": "North Korea",
+        "iso2": "KP",
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 25,
+            "slbm": 0,
+            "airLaunch": 25
+        },
+        "doctrine": "first-use",
+        "defaultColor": "#ED1C27"
+    },
+    "IRN": {
+        "name": "Iran",
+        "iso2": "IR",
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#239F40"
+    },
+    "JPN": {
+        "name": "Japan",
+        "iso2": "JP",
+        "faction": [],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#BC002D"
+    },
+    "DEU": {
+        "name": "Germany",
+        "iso2": "DE",
+        "faction": ["NATO"],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#000000"
+    },
+    "CAN": {
+        "name": "Canada",
+        "iso2": "CA",
+        "faction": ["NATO"],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#D80621"
+    },
+    "ARG": {
+        "name": "Argentina",
+        "iso2": "AR",
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#74ACDF"
+    },
+    "KOR": {
+        "name": "South Korea",
+        "iso2": "KR",
+        "faction": [],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#003478"
+    },
+    "SAU": {
+        "name": "Saudi Arabia",
+        "iso2": "SA",
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#006C35"
+    },
+    "TUR": {
+        "name": "Türkiye",
+        "iso2": "TR",
+        "faction": ["NATO"],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#E30A17"
+    },
+    "BRA": {
+        "name": "Brazil",
+        "iso2": "BR",
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#009739"
+    },
+    "TWN": {
+        "name": "Taiwan",
+        "iso2": "TW",
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#FE0000"
+    },
+    "SWE": {
+        "name": "Sweden",
+        "iso2": "SE",
+        "faction": ["NATO"],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#006AA7"
+    },
+    "ZAF": {
+        "name": "South Africa",
+        "iso2": "ZA",
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#007749"
+    },
+    "NLD": {
+        "name": "Netherlands",
+        "iso2": "NL",
+        "faction": ["NATO"],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#AE1C28"
+    }
+}

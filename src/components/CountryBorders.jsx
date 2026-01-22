@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import * as THREE from "three";
-import { latLonToVec3 } from "../../utils/latLonToVec3";
+import { latLonToVec3 } from "../utils/latLonToVec3";
 
 export default function CountryBorders() {
   const [lines, setLines] = useState([]);
 
   useEffect(() => {
-    fetch("/countries.geojson")
+    fetch("/src/data/country-shapes.geojson")
       .then(res => res.json())
       .then(data => {
         const newLines = [];
