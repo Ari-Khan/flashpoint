@@ -11,21 +11,10 @@ export default function CountryFill({ feature, color, opacity: finalOpacity = 1 
   if (!feature) return null;
 
   const countryKey = feature.properties?.iso_a3 || feature.properties?.name || JSON.stringify(feature.geometry.coordinates[0][0]);
-  const [displayOpacity, setDisplayOpacity] = useState(0);
+  const [displayOpacity, setDisplayOpacity] = useState(finalOpacity);
 
   useEffect(() => {
-    let frame;
-    const fadeIn = () => {
-      setDisplayOpacity((prev) => {
-        if (prev < finalOpacity) {
-          frame = requestAnimationFrame(fadeIn);
-          return Math.min(prev + 0.05, finalOpacity);
-        }
-        return prev;
-      });
-    };
-    fadeIn();
-    return () => cancelAnimationFrame(frame);
+    setDisplayOpacity(finalOpacity);
   }, [finalOpacity]);
 
   const meshes = useMemo(() => {

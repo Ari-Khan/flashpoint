@@ -43,20 +43,12 @@ export default function CountryFillManager({ activeIso2, nations }) {
 
 function isoMatchesFeature(iso, feature) {
   const props = feature.properties || {};
-  
-  // Map common country codes to names for fallback matching
-  const isoToName = {
-    'DE': 'Germany',
-    'ZA': 'South Africa'
-  };
-  
   return (
     props.iso_a2 === iso ||
     props.iso_a2_eh === iso ||
     props.iso_a3 === iso ||
     props.iso_a3_eh === iso ||
-    props.postal === iso ||
-    (isoToName[iso] && props.name === isoToName[iso])
+    props.postal === iso
   );
 }
 

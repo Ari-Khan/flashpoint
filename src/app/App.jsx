@@ -63,48 +63,19 @@ export default function App() {
 
       {/* Time Display */}
       {events && (
-        <div
-          style={{
-            position: "fixed",
-            top: "16px",
-            right: "16px",
-            background: "rgba(0, 0, 0, 0.8)",
-            color: "#fff",
-            padding: "16px 24px",
-            borderRadius: "8px",
-            fontSize: "24px",
-            fontWeight: "bold",
-            zIndex: 1000
-          }}
-        >
+        <div className="time-display">
           T+{currentTime}
         </div>
       )}
 
       {visible.length > 0 && (
-        <pre
-          style={{
-            position: "fixed",
-            right: "16px",
-            bottom: "16px",
-            maxWidth: "420px",
-            maxHeight: "60vh",
-            overflow: "auto",
-            background: "rgba(0,0,0,0.85)",
-            color: "#0f0",
-            padding: "12px",
-            borderRadius: "8px",
-            fontSize: "12px",
-            zIndex: 1000,
-            pointerEvents: "auto"
-          }}
-        >
-      {JSON.stringify(visible, null, 2)}
+        <pre className="event-log">
+          {JSON.stringify(visible, null, 2)}
         </pre>
       )}
 
       <Canvas
-        style={{ width: "100%", height: "100%" }}
+        className="canvas-3d"
         camera={{ position: [0, 0, 2], fov: 65 }}
       >
         <ambientLight intensity={0.6} />

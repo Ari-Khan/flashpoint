@@ -6,9 +6,9 @@ export default function ControlPanel({ nations, onRun }) {
   const [target, setTarget] = useState(codes[1]);
 
   return (
-    <div style={panelStyle}>
+    <div className="control-panel">
       <div>
-        <label>Actor </label>
+        <label>Aggressor </label>
         <select value={actor} onChange={e => setActor(e.target.value)}>
           {codes.map(c => (
             <option key={c} value={c}>{c}</option>
@@ -31,15 +31,3 @@ export default function ControlPanel({ nations, onRun }) {
     </div>
   );
 }
-
-const panelStyle = {
-  position: "fixed",
-  bottom: "16px",
-  left: "16px",
-  background: "#111",
-  color: "#fff",
-  padding: "12px",
-  borderRadius: "8px",
-  fontSize: "14px",
-  zIndex: 1000
-};
