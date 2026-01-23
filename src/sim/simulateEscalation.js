@@ -23,13 +23,24 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
     const queue = [];
     queue.push({ type: "strike", from: initiator, to: firstTarget, reason: "initial" });
 
-    while (queue.length > 0) {
-        if (state.events.length >= maxEvents) break;
+    let ticks = 0;
+    const maxTicks = 500; // or any other upper bound you want
+    while (ticks < maxTicks && state.events.length < maxEvents) {
+        if (queue.length === 0) {
+            // No events, but keep ticking
+            state.time++;
+            state.events.push({ t: state.time, type: "empty" });
+            ticks++;
+            continue;
+        }
 
         const event = queue.shift();
         const { from, to, isBetrayal } = event;
 
-        if (!canLaunch(from, state)) continue;
+        if (!canLaunch(from, state)) {
+            ticks++;
+            continue;
+        }
 
         const count = computeSalvoCount({
             time: state.time,
@@ -46,7 +57,10 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
             isBetrayal: isBetrayal || false
         });
 
-        if (!used) continue;
+        if (!used) {
+            ticks++;
+            continue;
+        }
         state.time++;
 
         if (Math.random() < 0.35) {
@@ -84,6 +98,7 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
                 reason: decision.isBetrayal ? "betrayal-ally" : "ally-weighted-response",
             });
         }
+        ticks++;
     }
 
     return state.events;
