@@ -334,8 +334,8 @@ body {
     position: fixed;
     right: 16px;
     bottom: 16px;
-    max-width: 420px;
-    max-height: 60vh;
+    width: 210px;
+    height: 400px;
     overflow: auto;
     background: rgba(0, 0, 0, 0.95);
     border: 2px solid #00ff00;

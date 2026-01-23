@@ -114,23 +114,19 @@ export default function App() {
                 onPerformanceChange={setPerformanceSettings}
             />
 
-            {events && (
-                <div className="time-controls">
-                    <button
-                        className="pause-button"
-                        onClick={() => setIsPaused(!isPaused)}
-                    >
-                        {isPaused ? "Resume" : "Pause"}
-                    </button>
-                    <div className="time-display">T+{Math.floor(displayTick)}</div>
-                </div>
-            )}
+            <div className="time-controls">
+                <button
+                    className="pause-button"
+                    onClick={() => setIsPaused(!isPaused)}
+                >
+                    {isPaused ? "Resume" : "Pause"}
+                </button>
+                <div className="time-display">T+{Math.floor(displayTick)}</div>
+            </div>
 
-            {visible.length > 0 && (
-                <pre className="event-log">
-                    {JSON.stringify([...visible].reverse(), null, 2)}
-                </pre>
-            )}
+            <pre className="event-log">
+                {visible.length ? JSON.stringify([...visible].reverse(), null, 2) : "No events yet"}
+            </pre>
 
             <Canvas
                 key={JSON.stringify(performanceSettings)}
