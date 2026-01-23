@@ -1,122 +1,130 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import * as THREE from "three";
 import earcut from "earcut";
 import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModifier.js";
 import { latLonToVec3 } from "../utils/latLonToVec3";
+import { getCountryKey } from "../utils/countryUtils";
 
 // Global cache to persist across component remounts
 const GEOMETRY_CACHE = new Map();
 
-export default function CountryFill({ feature, color, opacity: finalOpacity = 1 }) {
-  if (!feature) return null;
+export default function CountryFill({ feature, color, opacity = 1 }) {
+    if (!feature) return null;
 
-  const countryKey = feature.properties?.iso_a3 || feature.properties?.name || JSON.stringify(feature.geometry.coordinates[0][0]);
-  const [displayOpacity, setDisplayOpacity] = useState(finalOpacity);
+    const countryKey = getCountryKey(feature);
 
-  useEffect(() => {
-    setDisplayOpacity(finalOpacity);
-  }, [finalOpacity]);
+    const meshes = useMemo(() => {
+        // Return cached geometries if available
+        if (GEOMETRY_CACHE.has(countryKey)) {
+            return GEOMETRY_CACHE.get(countryKey);
+        }
 
-  const meshes = useMemo(() => {
-    // IF ALREADY CALCULATED, RETURN CACHED GEOMETRIES
-    if (GEOMETRY_CACHE.has(countryKey)) {
-      return GEOMETRY_CACHE.get(countryKey);
-    }
+        const internalMeshes = [];
+        const geom = feature.geometry;
 
-    const internalMeshes = [];
-    const geom = feature.geometry;
+        function buildMesh(rings) {
+            if (!rings || rings.length === 0 || rings[0].length < 3) return;
 
-    function buildMesh(rings) {
-      if (!rings || rings.length === 0 || rings[0].length < 3) return;
+            const vertices2D = [];
+            const holeIndices = [];
+            let centerLon = 0;
+            rings[0].forEach(([lon]) => {
+                centerLon += lon;
+            });
+            centerLon /= rings[0].length;
 
-      const vertices2D = [];
-      const holeIndices = [];
-      let centerLon = 0;
-      rings[0].forEach(([lon]) => { centerLon += lon; });
-      centerLon /= rings[0].length;
+            rings.forEach((ring, index) => {
+                if (index > 0) holeIndices.push(vertices2D.length / 2);
+                ring.forEach(([lon, lat]) => {
+                    let shiftedLon = lon - centerLon;
+                    if (shiftedLon > 180) shiftedLon -= 360;
+                    if (shiftedLon < -180) shiftedLon += 360;
+                    vertices2D.push(shiftedLon, lat);
+                });
+            });
 
-      rings.forEach((ring, index) => {
-        if (index > 0) holeIndices.push(vertices2D.length / 2);
-        ring.forEach(([lon, lat]) => {
-          let shiftedLon = lon - centerLon;
-          if (shiftedLon > 180) shiftedLon -= 360;
-          if (shiftedLon < -180) shiftedLon += 360;
-          vertices2D.push(shiftedLon, lat);
-        });
-      });
+            const rawIndices = earcut(vertices2D, holeIndices);
+            if (!rawIndices.length) return;
 
-      const rawIndices = earcut(vertices2D, holeIndices);
-      if (!rawIndices.length) return;
+            const isHuge =
+                feature.properties?.name === "Russia" ||
+                feature.properties?.iso_a3 === "RUS";
+            const maxDist = isHuge ? 170 : 120;
+            const cleanIndices = [];
 
-      const isHuge = feature.properties?.name === "Russia" || feature.properties?.iso_a3 === "RUS";
-      const maxDist = isHuge ? 170 : 120;
-      const cleanIndices = [];
+            for (let i = 0; i < rawIndices.length; i += 3) {
+                const a = rawIndices[i],
+                    b = rawIndices[i + 1],
+                    c = rawIndices[i + 2];
+                if (
+                    Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
+                    Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > maxDist ||
+                    Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist
+                )
+                    continue;
+                cleanIndices.push(a, b, c);
+            }
 
-      for (let i = 0; i < rawIndices.length; i += 3) {
-        const a = rawIndices[i], b = rawIndices[i + 1], c = rawIndices[i + 2];
-        if (Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
-            Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > maxDist ||
-            Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist) continue;
-        cleanIndices.push(a, b, c);
-      }
+            let geometry = new THREE.BufferGeometry();
+            const flatPositions = new Float32Array((vertices2D.length / 2) * 3);
+            for (let i = 0, j = 0; i < vertices2D.length; i += 2, j += 3) {
+                flatPositions[j] = vertices2D[i];
+                flatPositions[j + 1] = vertices2D[i + 1];
+                flatPositions[j + 2] = 0;
+            }
+            geometry.setAttribute(
+                "position",
+                new THREE.BufferAttribute(flatPositions, 3),
+            );
+            geometry.setIndex(cleanIndices);
 
-      let geometry = new THREE.BufferGeometry();
-      const flatPositions = new Float32Array((vertices2D.length / 2) * 3);
-      for (let i = 0, j = 0; i < vertices2D.length; i += 2, j += 3) {
-        flatPositions[j] = vertices2D[i];
-        flatPositions[j + 1] = vertices2D[i + 1];
-        flatPositions[j + 2] = 0;
-      }
-      geometry.setAttribute("position", new THREE.BufferAttribute(flatPositions, 3));
-      geometry.setIndex(cleanIndices);
+            try {
+                geometry = new TessellateModifier(1.0, 5).modify(geometry);
+                geometry = new TessellateModifier(0.15, 8).modify(geometry);
+            } catch (e) {
+                geometry = new TessellateModifier(0.5, 4).modify(geometry);
+            }
 
-      try {
-        geometry = new TessellateModifier(1.0, 5).modify(geometry);
-        geometry = new TessellateModifier(0.15, 8).modify(geometry);
-      } catch (e) {
-        geometry = new TessellateModifier(0.5, 4).modify(geometry);
-      }
+            const posAttr = geometry.getAttribute("position");
+            for (let i = 0; i < posAttr.count; i++) {
+                let lon = posAttr.getX(i) + centerLon;
+                const lat = posAttr.getY(i);
+                if (lon > 180) lon -= 360;
+                if (lon < -180) lon += 360;
+                const v = latLonToVec3(lat, lon, 1.001);
+                posAttr.setXYZ(i, v.x, v.y, v.z);
+            }
 
-      const posAttr = geometry.getAttribute("position");
-      for (let i = 0; i < posAttr.count; i++) {
-        let lon = posAttr.getX(i) + centerLon;
-        const lat = posAttr.getY(i);
-        if (lon > 180) lon -= 360;
-        if (lon < -180) lon += 360;
-        const v = latLonToVec3(lat, lon, 1.001);
-        posAttr.setXYZ(i, v.x, v.y, v.z);
-      }
+            geometry.computeVertexNormals();
+            geometry.computeBoundingSphere();
+            internalMeshes.push(geometry);
+        }
 
-      geometry.computeVertexNormals();
-      geometry.computeBoundingSphere();
-      internalMeshes.push(geometry);
-    }
+        if (geom.type === "Polygon") {
+            buildMesh(geom.coordinates);
+        } else if (geom.type === "MultiPolygon") {
+            geom.coordinates.forEach((poly) => buildMesh(poly));
+        }
 
-    if (geom.type === "Polygon") {
-      buildMesh(geom.coordinates);
-    } else if (geom.type === "MultiPolygon") {
-      geom.coordinates.forEach(poly => buildMesh(poly));
-    }
+        // Save to cache
+        GEOMETRY_CACHE.set(countryKey, internalMeshes);
+        return internalMeshes;
+    }, [feature, countryKey]);
 
-    // SAVE TO CACHE
-    GEOMETRY_CACHE.set(countryKey, internalMeshes);
-    return internalMeshes;
-  }, [feature, countryKey]);
-
-  return (
-    <group>
-      {meshes.map((geometry, i) => (
-        <mesh key={`${countryKey}-${i}`} geometry={geometry}>
-          <meshBasicMaterial 
-            color={color} 
-            transparent={true}
-            opacity={displayOpacity} 
-            side={THREE.DoubleSide} 
-            depthWrite={false} 
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
+    return (
+        <group>
+            {meshes.map((geometry, i) => (
+                <mesh key={`${countryKey}-${i}`} geometry={geometry}>
+                    <meshBasicMaterial
+                        color={color}
+                        transparent
+                        opacity={opacity}
+                        side={THREE.DoubleSide}
+                        depthWrite={false}
+                        toneMapped={false}
+                    />
+                </mesh>
+            ))}
+        </group>
+    );
 }

@@ -4,10 +4,10 @@ import bilateral from "./bilateral-relations.json";
 import factionRelations from "./faction-relations.json";
 
 export function loadWorld() {
-  return {
-    nations,
-    factions,
-    bilateral,
-    factionRelations
-  };
+    return {
+        nations,
+        factions,
+        bilateral,
+        factionRelations,
+    };
 }

@@ -3,40 +3,40 @@ import * as THREE from "three";
 import { useEffect } from "react";
 
 export default function Skybox() {
-  const { scene, camera } = useThree();
+    const { scene, camera } = useThree();
 
-  useEffect(() => {
-    const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load("/textures/starmap.png");
+    useEffect(() => {
+        const textureLoader = new THREE.TextureLoader();
+        const texture = textureLoader.load("/textures/starmap.png");
 
-    // Create a large sphere for the skybox
-    const geometry = new THREE.SphereGeometry(100, 64, 64);
-    const material = new THREE.MeshBasicMaterial({
-      map: texture,
-      side: THREE.BackSide
-    });
-    const skybox = new THREE.Mesh(geometry, material);
+        // Create a large sphere for the skybox
+        const geometry = new THREE.SphereGeometry(100, 64, 64);
+        const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.BackSide,
+        });
+        const skybox = new THREE.Mesh(geometry, material);
 
-    scene.add(skybox);
+        scene.add(skybox);
 
-    // Make skybox follow camera
-    const updateSkybox = () => {
-      skybox.position.copy(camera.position);
-    };
+        // Make skybox follow camera
+        const updateSkybox = () => {
+            skybox.position.copy(camera.position);
+        };
 
-    const originalUpdateWorldMatrix = camera.updateWorldMatrix.bind(camera);
-    camera.updateWorldMatrix = function(...args) {
-      originalUpdateWorldMatrix(...args);
-      updateSkybox();
-    };
+        const originalUpdateWorldMatrix = camera.updateWorldMatrix.bind(camera);
+        camera.updateWorldMatrix = function (...args) {
+            originalUpdateWorldMatrix(...args);
+            updateSkybox();
+        };
 
-    return () => {
-      scene.remove(skybox);
-      geometry.dispose();
-      material.dispose();
-      texture.dispose();
-    };
-  }, [scene, camera]);
+        return () => {
+            scene.remove(skybox);
+            geometry.dispose();
+            material.dispose();
+            texture.dispose();
+        };
+    }, [scene, camera]);
 
-  return null;
+    return null;
 }
