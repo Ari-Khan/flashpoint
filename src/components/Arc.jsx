@@ -58,7 +58,7 @@ export default function Arc({
     if (!lineRef.current) return;
 
     const geom = lineRef.current.geometry;
-    const drawCount = Math.max(5, Math.ceil(points.length * progress));
+    const drawCount = Math.max(1, Math.ceil(points.length * progress));
     geom.setDrawRange(0, drawCount);
 
     if (progress >= 1) {
@@ -80,9 +80,9 @@ export default function Arc({
       />
       {/* Tiny cone warhead riding the tip */}
       {(() => {
-        const drawCount = Math.max(2, Math.ceil(points.length * progress));
-        const tParam = Math.min(1, (drawCount - 1) / (points.length - 1));
-
+        // Use progress directly for cone position, not drawCount minimum
+        const tParam = Math.min(1, progress);
+        
         const tipPoint = curve.getPoint(tParam);
         const tangent = curve.getTangent(tParam);
         const coneQuat = new THREE.Quaternion();
@@ -94,7 +94,7 @@ export default function Arc({
           coneQuat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
         } else {
           // fallback to previous point to avoid zero-length tangent
-          const prevPoint = curve.getPoint(Math.max(0, progress - 0.01));
+          const prevPoint = curve.getPoint(Math.max(0, tParam - 0.01));
           direction = tipPoint.clone().sub(prevPoint).normalize();
           coneQuat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
         }
