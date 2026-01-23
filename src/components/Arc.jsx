@@ -4,7 +4,8 @@ import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3";
 
 function getArcHeight(distance) {
-  return Math.min(0.7, distance * 0.9);
+  const baseHeight = Math.pow(distance, 0.7) * 0.5;
+  return Math.min(1.5, baseHeight); 
 }
 
 export default function Arc({

@@ -12,7 +12,8 @@ function launchStrike({ from, to, nations, state, maxPerStrike = 1 }) {
 
     if (!weapon) return false;
 
-    stock[weapon] -= maxPerStrike;
+    const actualCount = Math.floor(maxPerStrike);
+    stock[weapon] -= actualCount;
     if (stock[weapon] < 0) stock[weapon] = 0;
 
     state.events.push({
@@ -21,7 +22,7 @@ function launchStrike({ from, to, nations, state, maxPerStrike = 1 }) {
         from,
         to,
         weapon,
-        count: maxPerStrike,
+        count: actualCount,
     });
 
     state.involved.add(from);
@@ -112,30 +113,31 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
 
     if (!candidates.length) return { code: lastStriker, isBetrayal: false };
 
-    const currentStock = (state.remaining[attacker]?.icbm || 0) + (state.remaining[attacker]?.slbm || 0) + (state.remaining[attacker]?.air || 0);
-    const initialStock = (attackerData.weapons.icbm || 0) + (attackerData.weapons.slbm || 0) + (attackerData.weapons.airLaunch || 0);
-    const isDesperate = initialStock > 0 && (currentStock / initialStock) < 0.2;
+    const escalationScale = 1 + ((state.time || 0) * 0.1); 
+    const nukeCount = state.events.filter(e => e.type === 'nuke').length;
+    const globalChaos = nukeCount * 0.75;
 
     let focusOnLastStriker = 2.0, strayBias = 1.0;
     const docMap = { "retaliatory": [15, 0.2], "no-first-use": [15, 0.2], "first-use": [5, 3.5], "ambiguous": [1.2, 6], "threshold": [1.2, 6] };
     [focusOnLastStriker, strayBias] = docMap[doctrine] || [2, 1];
 
-    if (isDesperate) { focusOnLastStriker *= 0.15; strayBias *= 8.0; }
+    strayBias *= (1 + (globalChaos * 0.1));
 
-    const globalChaos = state.events.filter(e => e.type === 'nuke').length * 0.5;
     let totalWeight = 0;
-
     const weighted = candidates.map((code) => {
         const N = nations[code];
         const rel = bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
         const hasNukes = canLaunch(code, state);
         
-        let weight = (rel < 0 ? Math.pow(Math.abs(rel), 2) * 5 : 0) * strayBias;
-        weight += (N.powerTier * 2) + globalChaos;
+        let weight = (rel < 0 ? Math.pow(Math.abs(rel), 2) * 5 * escalationScale : 0) * strayBias;
+        
+        const fogOfWar = Math.random() * globalChaos * 10;
+        weight += (N.powerTier * 2) + globalChaos + fogOfWar;
+
+        if (code === lastStriker) weight *= 0.2; 
 
         const nukesFromTarget = state.events.filter(e => e.from === code && e.to === attacker).length;
         if (nukesFromTarget > 0) weight += (100 + nukesFromTarget * 15) * focusOnLastStriker;
-        if (code === lastStriker) weight *= focusOnLastStriker;
 
         const isEnemyAlly = state.events.some(e => e.to === attacker && nations[e.from]?.faction?.some(f => N.faction?.includes(f)));
         if (isEnemyAlly) {
@@ -145,17 +147,17 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
 
         const isAlly = attackerFactions.some(f => N.faction?.includes(f));
         let canBetray = false;
-        if (isAlly && attackerData.powerTier < 5) {
-            const allyStock = (state.remaining[code]?.icbm || 0) + (state.remaining[code]?.slbm || 0) + (state.remaining[code]?.air || 0);
-            const allyInitial = (N.weapons.icbm || 0) + (N.weapons.slbm || 0) + (N.weapons.airLaunch || 0);
-            if (allyInitial > 0 && (allyStock / allyInitial) < 0.25 && Math.random() < 0.3) {
+        if (isAlly) {
+            const betrayalChance = 0.1 + (globalChaos * 0.02);
+            if (Math.random() < betrayalChance) {
                 canBetray = true;
-                weight += 40;
+                weight += (50 + globalChaos); 
             }
         }
 
         if (isAlly && !canBetray) weight = 0;
-        if (rel > 5 && nukesFromTarget === 0) weight *= 0.01;
+        const safetyThreshold = Math.max(0, 5 - (globalChaos * 0.1));
+        if (rel > safetyThreshold && nukesFromTarget === 0) weight *= 0.01;
 
         totalWeight += weight;
         return { code, weight, isBetrayal: canBetray && isAlly };
@@ -165,7 +167,44 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     for (const w of weighted) {
         if ((r -= w.weight) <= 0) return { code: w.code, isBetrayal: w.isBetrayal };
     }
-    return { code: lastStriker, isBetrayal: false };
+    return { code: candidates[Math.floor(Math.random() * candidates.length)], isBetrayal: false };
+}
+function processGlobalDevelopment(state, world) {
+    const { nations } = world;
+
+    const breakouts = [];
+    for (const [code, N] of Object.entries(nations)) {
+        if (!state.remaining[code]) continue;
+        const stock = state.remaining[code];
+        const isNuclear = (stock.icbm + stock.slbm + stock.air) > 0;
+        if (isNuclear) {
+            const rate = (N.powerTier || 1) * 0.005;
+            stock.icbm += rate;
+            if (stock.air > 0) stock.air += rate * 0.5;
+            if (stock.slbm > 0) stock.slbm += rate * 0.3;
+            continue; 
+        }
+        if (N.doctrine === "threshold" || N.doctrine === "latent") {
+            if (state.devProgress[code] === undefined) state.devProgress[code] = 0;
+            if (state.devProgress[code] === -1) continue; 
+            const base = N.doctrine === "threshold" ? 2.0 : 1.0;
+            const swing = 0.2 + (Math.random() * 1.6);
+            const floor = (N.powerTier || 1) * 0.1;
+            state.devProgress[code] += (base * swing) + floor;
+            if (state.devProgress[code] >= 100) {
+                const tier = N.powerTier || 1;
+                stock.icbm = tier * 3;
+                stock.air = tier * 2;
+                stock.slbm = tier >= 3 ? 2 : 0;
+                N.weapons.icbm = stock.icbm;
+                N.weapons.airLaunch = stock.air;
+                N.weapons.slbm = stock.slbm;
+                breakouts.push(code);
+                state.devProgress[code] = -1;
+            }
+        }
+    }
+    return breakouts;
 }
 
 export {
@@ -174,4 +213,5 @@ export {
     joinAllies,
     canLaunch,
     pickWeightedTarget,
+    processGlobalDevelopment
 };
