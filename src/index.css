@@ -88,11 +88,7 @@ body,
 }
 
 body {
-  background-image: url(/textures/starmap.png);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-color: #000;
 }
 
 .app-container {

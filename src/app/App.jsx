@@ -6,6 +6,7 @@ import Globe from "../components/Globe";
 import CountryBorders from "../components/CountryBorders";
 import ControlPanel from "../components/ControlPanel";
 import CountryFillManager from "../components/CountryFillManager";
+import Skybox from "../components/Skybox";
 
 import { useEventTimeline } from "../hooks/useEventTimeline";
 import { loadWorld } from "../data/loadData";
@@ -78,6 +79,7 @@ export default function App() {
         className="canvas-3d"
         camera={{ position: [0, 0, 2], fov: 65 }}
       >
+        <Skybox />
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 5, 5]} />
 
