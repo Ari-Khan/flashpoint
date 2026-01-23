@@ -6,5 +6,6 @@ export function createEscalationState() {
         events: [],
         remaining: {},
         struck: new Set(),
+        devProgress: {},
     };
 }

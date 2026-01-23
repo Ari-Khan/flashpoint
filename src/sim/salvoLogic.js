@@ -1,23 +1,28 @@
-function computeSalvoCount({ time, powerTier, remaining, ramp = 6 }) {
-    const maxByTier = {
+import { exp } from "three/tsl";
+
+function computeSalvoCount({ time, powerTier, remaining, initialStock = 100, ramp = 8 }) {
+    const maxByTier = { 
         5: 25,
         4: 15,
         3: 8,
         2: 4,
-        1: 2,
+        1: 2
     };
-
-    const max = maxByTier[powerTier] ?? 3;
-
-    const base = 1 + (max - 1) * (1 - Math.exp(-time / ramp));
-
-    const chaos = Math.floor(Math.random() * Math.min(2, time / 3 + 1));
-
-    let count = Math.round(base + chaos);
-
-    count = Math.min(count, remaining.icbm + remaining.slbm + remaining.air);
-
-    return Math.max(1, count);
+    const salvoCeiling = maxByTier[powerTier] ?? 2;
+    const totalRemaining = Math.floor(remaining.icbm) + 
+                           Math.floor(remaining.slbm) + 
+                           Math.floor(remaining.air);
+    if (totalRemaining <= 0) return 0;
+    const timeProgress = 1 - Math.exp(-time / ramp);
+    const basePotential = 1 + (salvoCeiling - 1) * timeProgress;
+    const stockRatio = totalRemaining / Math.max(1, initialStock);
+    const conservation = Math.pow(stockRatio, 0.4);
+    const chaosMultiplier = 0.5 + Math.random();
+    let count = basePotential * conservation * chaosMultiplier;
+    const hardCap = salvoCeiling + (Math.random() > 0.8 ? 1 : 0);
+    count = Math.min(count, hardCap);
+    count = Math.round(count);
+    return Math.max(1, Math.min(count, totalRemaining));
 }
 
 export { computeSalvoCount };
