@@ -48,7 +48,7 @@ export default function Arc({
   const duration = Math.max(5, distance * speedMultiplier);
 
   const rawProgress = (currentTime - startTime) / duration;
-  const minProgress = Math.min(0.05, 0.1 / distance);
+  const minProgress = Math.min(0.01, 0.02 / distance);
   const progress = THREE.MathUtils.clamp(
     rawProgress <= 0 ? minProgress : rawProgress,
     0,
