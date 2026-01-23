@@ -8,6 +8,7 @@ import ControlPanel from "../components/ControlPanel";
 import CountryFillManager from "../components/CountryFillManager";
 import Skybox from "../components/Skybox";
 import Atmosphere from "../components/Atmosphere";
+import ArcManager from "../components/ArcManager"; 
 
 import { useEventTimeline } from "../hooks/useEventTimeline";
 import { loadWorld } from "../data/loadData";
@@ -79,7 +80,11 @@ export default function App() {
                 <Skybox />
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[5, 5, 5]} />
-
+                <ArcManager
+                  events={visible}
+                  nations={world.nations}
+                  currentTime={currentTime}
+                />
                 <CountryBorders />
                 <Globe />
                 <Atmosphere />
@@ -91,15 +96,15 @@ export default function App() {
 
                 <OrbitControls
                     enableZoom
-                    enablePan={false}
+                    enablePan
                     enableRotate
                     enableDamping
                     touches={{
                         ONE: 2,
-                        TWO: 0,
+                        TWO: 1,
                     }}
-                    minDistance={1.2}
-                    maxDistance={4}
+                    minDistance={1.0}
+                    maxDistance={8}
                 />
             </Canvas>
         </div>

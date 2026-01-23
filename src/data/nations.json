@@ -2,6 +2,8 @@
     "USA": {
         "name": "United States",
         "iso2": "US",
+        "lat": 38.9,
+        "lon": -77.0,
         "faction": ["NATO"],
         "powerTier": 5,
         "weapons": {
@@ -10,11 +12,14 @@
             "airLaunch": 300
         },
         "doctrine": "retaliatory",
-        "defaultColor": "#3C3B6E"
+        "defaultColor": "#3C3B6E",
+        "majorCities": []
     },
     "RUS": {
         "name": "Russia",
         "iso2": "RU",
+        "lat": 55.75,
+        "lon": 37.6,
         "faction": [],
         "powerTier": 5,
         "weapons": {
@@ -23,11 +28,14 @@
             "airLaunch": 200
         },
         "doctrine": "first-use",
-        "defaultColor": "#D62718"
+        "defaultColor": "#D62718",
+        "majorCities": []
     },
     "CHN": {
         "name": "China",
         "iso2": "CN",
+        "lat": 39.9,
+        "lon": 116.4,
         "faction": [],
         "powerTier": 5,
         "weapons": {
@@ -36,11 +44,14 @@
             "airLaunch": 100
         },
         "doctrine": "no-first-use",
-        "defaultColor": "#EE1C25"
+        "defaultColor": "#EE1C25",
+        "majorCities": []
     },
     "FRA": {
         "name": "France",
         "iso2": "FR",
+        "lat": 48.85,
+        "lon": 2.35,
         "faction": ["NATO"],
         "powerTier": 4,
         "weapons": {
@@ -49,11 +60,14 @@
             "airLaunch": 50
         },
         "doctrine": "retaliatory",
-        "defaultColor": "#0072BB"
+        "defaultColor": "#0072BB",
+        "majorCities": []
     },
     "GBR": {
         "name": "United Kingdom",
         "iso2": "GB",
+        "lat": 51.5,
+        "lon": -0.12,
         "faction": ["NATO"],
         "powerTier": 4,
         "weapons": {
@@ -62,11 +76,14 @@
             "airLaunch": 0
         },
         "doctrine": "retaliatory",
-        "defaultColor": "#C8102E"
+        "defaultColor": "#C8102E",
+        "majorCities": []
     },
     "IND": {
         "name": "India",
         "iso2": "IN",
+        "lat": 28.6,
+        "lon": 77.2,
         "faction": [],
         "powerTier": 4,
         "weapons": {
@@ -75,11 +92,14 @@
             "airLaunch": 80
         },
         "doctrine": "no-first-use",
-        "defaultColor": "#FF9933"
+        "defaultColor": "#FF9933",
+        "majorCities": []
     },
     "PAK": {
         "name": "Pakistan",
         "iso2": "PK",
+        "lat": 33.7,
+        "lon": 73.1,
         "faction": [],
         "powerTier": 3,
         "weapons": {
@@ -88,11 +108,14 @@
             "airLaunch": 70
         },
         "doctrine": "first-use",
-        "defaultColor": "#01411C"
+        "defaultColor": "#01411C",
+        "majorCities": []
     },
     "ISR": {
         "name": "Israel",
         "iso2": "IL",
+        "lat": 31.77,
+        "lon": 35.22,
         "faction": [],
         "powerTier": 3,
         "weapons": {
@@ -101,11 +124,14 @@
             "airLaunch": 40
         },
         "doctrine": "ambiguous",
-        "defaultColor": "#0038B8"
+        "defaultColor": "#0038B8",
+        "majorCities": []
     },
     "PRK": {
         "name": "North Korea",
         "iso2": "KP",
+        "lat": 39.0,
+        "lon": 125.75,
         "faction": [],
         "powerTier": 2,
         "weapons": {
@@ -114,11 +140,14 @@
             "airLaunch": 25
         },
         "doctrine": "first-use",
-        "defaultColor": "#ED1C27"
+        "defaultColor": "#ED1C27",
+        "majorCities": []
     },
     "IRN": {
         "name": "Iran",
         "iso2": "IR",
+        "lat": 35.7,
+        "lon": 51.4,
         "faction": [],
         "powerTier": 2,
         "weapons": {
@@ -127,11 +156,14 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#FFFFFF"
+        "defaultColor": "#FFFFFF",
+        "majorCities": []
     },
     "JPN": {
         "name": "Japan",
         "iso2": "JP",
+        "lat": 35.68,
+        "lon": 139.65,
         "faction": [],
         "powerTier": 4,
         "weapons": {
@@ -140,11 +172,14 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#BC002D"
+        "defaultColor": "#BC002D",
+        "majorCities": []
     },
     "DEU": {
         "name": "Germany",
         "iso2": "DE",
+        "lat": 52.52,
+        "lon": 13.4,
         "faction": ["NATO"],
         "powerTier": 4,
         "weapons": {
@@ -153,11 +188,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#2E3234"
+        "defaultColor": "#2E3234",
+        "majorCities": []
     },
     "CAN": {
         "name": "Canada",
         "iso2": "CA",
+        "lat": 45.42,
+        "lon": -75.7,
         "faction": ["NATO"],
         "powerTier": 3,
         "weapons": {
@@ -166,11 +204,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#D80621"
+        "defaultColor": "#D80621",
+        "majorCities": []
     },
     "ARG": {
         "name": "Argentina",
         "iso2": "AR",
+        "lat": -34.6,
+        "lon": -58.38,
         "faction": [],
         "powerTier": 2,
         "weapons": {
@@ -179,11 +220,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#74ACDF"
+        "defaultColor": "#74ACDF",
+        "majorCities": []
     },
     "KOR": {
         "name": "South Korea",
         "iso2": "KR",
+        "lat": 37.57,
+        "lon": 126.98,
         "faction": [],
         "powerTier": 4,
         "weapons": {
@@ -192,11 +236,14 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#003478"
+        "defaultColor": "#003478",
+        "majorCities": []
     },
     "SAU": {
         "name": "Saudi Arabia",
         "iso2": "SA",
+        "lat": 24.71,
+        "lon": 46.67,
         "faction": [],
         "powerTier": 3,
         "weapons": {
@@ -205,11 +252,14 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#006C35"
+        "defaultColor": "#006C35",
+        "majorCities": []
     },
     "TUR": {
         "name": "Türkiye",
         "iso2": "TR",
+        "lat": 39.93,
+        "lon": 32.85,
         "faction": ["NATO"],
         "powerTier": 3,
         "weapons": {
@@ -218,11 +268,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#E30A17"
+        "defaultColor": "#E30A17",
+        "majorCities": []
     },
     "BRA": {
         "name": "Brazil",
         "iso2": "BR",
+        "lat": -15.79,
+        "lon": -47.88,
         "faction": [],
         "powerTier": 3,
         "weapons": {
@@ -231,11 +284,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#009739"
+        "defaultColor": "#009739",
+        "majorCities": []
     },
     "TWN": {
         "name": "Taiwan",
         "iso2": "TW",
+        "lat": 25.03,
+        "lon": 121.56,
         "faction": [],
         "powerTier": 3,
         "weapons": {
@@ -244,11 +300,14 @@
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#000097"
+        "defaultColor": "#000097",
+        "majorCities": []
     },
     "SWE": {
         "name": "Sweden",
         "iso2": "SE",
+        "lat": 59.33,
+        "lon": 18.07,
         "faction": ["NATO"],
         "powerTier": 2,
         "weapons": {
@@ -257,11 +316,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#006AA7"
+        "defaultColor": "#006AA7",
+        "majorCities": []
     },
     "ZAF": {
         "name": "South Africa",
         "iso2": "ZA",
+        "lat": -25.75,
+        "lon": 28.19,
         "faction": [],
         "powerTier": 2,
         "weapons": {
@@ -270,11 +332,14 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#007749"
+        "defaultColor": "#007749",
+        "majorCities": []
     },
     "NLD": {
         "name": "Netherlands",
         "iso2": "NL",
+        "lat": 52.37,
+        "lon": 4.89,
         "faction": ["NATO"],
         "powerTier": 2,
         "weapons": {
@@ -283,6 +348,7 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#F36C21"
+        "defaultColor": "#F36C21",
+        "majorCities": []
     }
 }

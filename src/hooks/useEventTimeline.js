@@ -9,6 +9,12 @@ export function useEventTimeline(events, timePerStep = 1000) {
         setVisible([]);
         let i = 0;
 
+        // Show first event immediately
+        setVisible([events[0]]);
+        i = 1;
+
+        if (events.length === 1) return;
+
         const interval = setInterval(() => {
             setVisible((v) => [...v, events[i]]);
             i++;
