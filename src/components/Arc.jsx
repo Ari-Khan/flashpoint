@@ -58,7 +58,7 @@ export default function Arc({
     if (!lineRef.current) return;
 
     const geom = lineRef.current.geometry;
-    const drawCount = Math.max(2, Math.ceil(points.length * progress));
+    const drawCount = Math.max(5, Math.ceil(points.length * progress));
     geom.setDrawRange(0, drawCount);
 
     if (progress >= 1) {

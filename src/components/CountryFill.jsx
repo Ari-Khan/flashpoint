@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import earcut from "earcut";
 import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModifier.js";
@@ -111,6 +111,25 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
         return internalMeshes;
     }, [feature, countryKey]);
 
+    const [fadeOpacity, setFadeOpacity] = useState(0);
+
+    useEffect(() => {
+        let rafId;
+        const start = performance.now();
+        const duration = 1000; // ms
+
+        const animate = (now) => {
+            const t = Math.min(1, (now - start) / duration);
+            // smoothstep ease in/out
+            const eased = t * t * (3 - 2 * t);
+            setFadeOpacity(opacity * eased);
+            if (t < 1) rafId = requestAnimationFrame(animate);
+        };
+
+        rafId = requestAnimationFrame(animate);
+        return () => cancelAnimationFrame(rafId);
+    }, [opacity, countryKey]);
+
     return (
         <group>
             {meshes.map((geometry, i) => (
@@ -118,7 +137,7 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
                     <meshBasicMaterial
                         color={color}
                         transparent
-                        opacity={opacity}
+                        opacity={fadeOpacity}
                         side={THREE.DoubleSide}
                         depthWrite={false}
                         toneMapped={false}
