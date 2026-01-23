@@ -109,7 +109,7 @@ export default function App() {
 
             {visible.length > 0 && (
                 <pre className="event-log">
-                    {JSON.stringify(visible, null, 2)}
+                    {JSON.stringify([...visible].reverse(), null, 2)}
                 </pre>
             )}
 
