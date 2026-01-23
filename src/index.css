@@ -3,7 +3,7 @@
    =========================== */
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: monospace;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
@@ -115,15 +115,17 @@ body {
   left: 16px;
   z-index: 1000;
   width: 180px;
-  background: rgba(10, 10, 10, 0.9);
+  background: linear-gradient(135deg, rgba(20, 20, 30, 0.95), rgba(10, 10, 20, 0.95));
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 255, 0, 0.1);
   backdrop-filter: blur(8px);
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 4px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  color: #fff;
+  color: #0f0;
+  font-family: monospace;
 }
 
 .control-panel > div {
@@ -133,49 +135,66 @@ body {
 }
 
 .control-panel label {
-  font-size: 12px;
+  font-size: 13px;
   text-align: left;
+  color: #0f0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
 }
 
 .control-panel select {
   width: 100%;
   padding: 8px 10px;
-  background: #111;
-  color: #fff;
-  border: 1px solid #333;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: rgba(0, 0, 0, 0.8);
+  color: #0f0;
+  border: 1px solid #00ff00;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 14px;
   outline: none;
+  box-shadow: inset 0 0 5px rgba(0, 255, 0, 0.2);
+  text-transform: uppercase;
 }
 
 .control-panel select:focus {
-  border-color: #4ade80;
+  border-color: #00ff00;
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.3), 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.control-panel select option {
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
 }
 
 .control-panel button {
-  padding: 10px 12px;
-  background: linear-gradient(135deg, #dc2626, #991b1b);
-  color: white;
-  border: none;
-  border-radius: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  color: #fff;
+  border: 2px solid #ff3333;
+  border-radius: 3px;
   font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition: all 0.1s ease;
   width: 100%;
   text-align: center;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.4), inset 0 0 5px rgba(255, 0, 0, 0.2);
 }
 
 .control-panel button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+  transform: scale(1.02);
+  box-shadow: 0 0 25px rgba(255, 0, 0, 0.8), inset 0 0 10px rgba(255, 0, 0, 0.4);
+  background: linear-gradient(135deg, #ff2222, #dd0000);
 }
 
 .control-panel button:active {
-  transform: translateY(0);
-  box-shadow: none;
+  transform: scale(0.98);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.6), inset 0 0 15px rgba(255, 0, 0, 0.3);
 }
 
 /* ===========================
@@ -186,13 +205,16 @@ body {
   position: fixed;
   top: 16px;
   right: 16px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #00ff00;
+  color: #0f0;
   padding: 16px 24px;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 24px;
   font-weight: bold;
   z-index: 1000;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
 }
 
 .event-log {
@@ -202,11 +224,34 @@ body {
   max-width: 420px;
   max-height: 60vh;
   overflow: auto;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #00ff00;
   color: #0f0;
   padding: 12px;
-  border-radius: 8px;
-  font-size: 12px;
+  border-radius: 4px;
+  font-size: 11px;
   z-index: 1000;
+  font-family: monospace;
   pointer-events: auto;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+/* Scrollbar styling for nuclear theme */
+.event-log::-webkit-scrollbar {
+  width: 12px;
+}
+
+.event-log::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.event-log::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #00ff00, #ffff00);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.event-log::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #00ff00, #00ffff);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
 }

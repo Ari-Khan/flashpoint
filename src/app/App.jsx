@@ -7,6 +7,7 @@ import CountryBorders from "../components/CountryBorders";
 import ControlPanel from "../components/ControlPanel";
 import CountryFillManager from "../components/CountryFillManager";
 import Skybox from "../components/Skybox";
+import Atmosphere from "../components/Atmosphere";
 
 import { useEventTimeline } from "../hooks/useEventTimeline";
 import { loadWorld } from "../data/loadData";
@@ -85,6 +86,7 @@ export default function App() {
 
         <CountryBorders />
         <Globe />
+        <Atmosphere />
 
         <CountryFillManager
           activeIso2={affectedIso2}

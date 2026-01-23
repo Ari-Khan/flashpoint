@@ -26,7 +26,7 @@ export default function ControlPanel({ nations, onRun }) {
       </div>
 
       <button onClick={() => onRun(actor, target)}>
-        Run Escalation
+        Run Simulation
       </button>
     </div>
   );
