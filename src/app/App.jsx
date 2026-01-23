@@ -32,6 +32,23 @@ export default function App() {
 
     const timePerStep = BASE_TICK_MS * tickStep;
 
+    // Performance settings (can be changed from SettingsPanel)
+    const [performanceSettings, setPerformanceSettings] = useState(() => {
+        try {
+            // lazy load defaults from config
+            // eslint-disable-next-line import/no-unresolved
+            const cfg = require("../config/performanceConfig").default;
+            return cfg;
+        } catch (e) {
+            return {
+                antialias: true,
+                pixelRatioLimit: 2,
+                powerPreference: "high-performance",
+                preserveDrawingBuffer: false,
+            };
+        }
+    });
+
     const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
 
     function run(actor, target) {
@@ -93,6 +110,8 @@ export default function App() {
                 onTickStepChange={setTickStep}
                 smoothMode={smoothMode}
                 onSmoothModeChange={setSmoothMode}
+                performanceSettings={performanceSettings}
+                onPerformanceChange={setPerformanceSettings}
             />
 
             {events && (
@@ -114,8 +133,18 @@ export default function App() {
             )}
 
             <Canvas
+                key={JSON.stringify(performanceSettings)}
                 className="canvas-3d"
                 camera={{ position: [0, 0, 2], fov: 65 }}
+                pixelRatio={Math.min(window.devicePixelRatio || 1, performanceSettings.pixelRatioLimit)}
+                gl={{
+                    antialias: performanceSettings.antialias,
+                    powerPreference: performanceSettings.powerPreference,
+                    preserveDrawingBuffer: performanceSettings.preserveDrawingBuffer,
+                }}
+                onCreated={({ gl }) => {
+                    gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, performanceSettings.pixelRatioLimit));
+                }}
             >
                 <Skybox />
                 <ambientLight intensity={0.6} />

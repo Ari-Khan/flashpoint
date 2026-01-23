@@ -13,6 +13,8 @@ export default function SettingsPanel({
   onTickStepChange,
   smoothMode,
   onSmoothModeChange,
+  performanceSettings = {},
+  onPerformanceChange = () => {},
 }) {
   const [open, setOpen] = useState(false);
 
@@ -29,25 +31,107 @@ export default function SettingsPanel({
       {open && (
         <div className="settings-body dropup">
           <label className="settings-row">
-            <span>Tick</span>
-            <select
-              value={`${tickStep}-${smoothMode}`}
-              onChange={(e) => {
-                const [val, mode] = e.target.value.split("-");
-                onTickStepChange(Number(val));
-                onSmoothModeChange(mode);
-              }}
-            >
-              {OPTIONS.map((opt) => (
-                <option
-                  key={`${opt.value}-${opt.smooth}`}
-                  value={`${opt.value}-${opt.smooth}`}
-                >
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <span data-tip="How frequently the simulation advances (or Smooth for interpolation).">Tick</span>
+            <div className="control">
+              <select
+                title="Choose tick rate or Smooth for animated interpolation"
+                value={`${tickStep}-${smoothMode}`}
+                onChange={(e) => {
+                  const [val, mode] = e.target.value.split("-");
+                  onTickStepChange(Number(val));
+                  onSmoothModeChange(mode);
+                }}
+              >
+                {OPTIONS.map((opt) => (
+                  <option
+                    key={`${opt.value}-${opt.smooth}`}
+                    value={`${opt.value}-${opt.smooth}`}
+                  >
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </label>
+
+              <label className="settings-row">
+                <span data-tip="Smooths edges with multi-sample AA; uses more GPU.">AA</span>
+                <div className="control">
+                  <select
+                    title="Enable GPU antialiasing (smoother edges; higher GPU cost)"
+                    value={performanceSettings.antialias ? "on" : "off"}
+                    onChange={(e) =>
+                      onPerformanceChange({
+                        ...performanceSettings,
+                        antialias: e.target.value === "on",
+                      })
+                    }
+                  >
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                  </select>
+                </div>
+              </label>
+
+              <label className="settings-row">
+                <span data-tip="Caps rendering DPR to reduce GPU workload.">DPR Cap</span>
+                <div className="control">
+                  <select
+                    title="Maximum device pixel ratio to render at (limits HiDPI cost)"
+                    value={performanceSettings.pixelRatioLimit ?? 2}
+                    onChange={(e) =>
+                      onPerformanceChange({
+                        ...performanceSettings,
+                        pixelRatioLimit: Number(e.target.value),
+                      })
+                    }
+                  >
+                    <option value={1}>1</option>
+                    <option value={1.5}>1.5</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                  </select>
+                </div>
+              </label>
+
+              <label className="settings-row">
+                <span data-tip="Browser hint to prefer discrete GPU when available.">Power</span>
+                <div className="control">
+                  <select
+                    title="Renderer hint: prefer discrete GPU (high-performance) or integrated (low-power)"
+                    value={performanceSettings.powerPreference ?? "default"}
+                    onChange={(e) =>
+                      onPerformanceChange({
+                        ...performanceSettings,
+                        powerPreference: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="default">default</option>
+                    <option value="high-performance">high-performance</option>
+                    <option value="low-power">low-power</option>
+                  </select>
+                </div>
+              </label>
+
+              <label className="settings-row">
+                <span data-tip="Retains framebuffer after draw; useful for screenshots.">Buffer</span>
+                <div className="control">
+                  <select
+                    title="Keep the drawing buffer after render (needed for screenshots; may reduce performance)"
+                    value={performanceSettings.preserveDrawingBuffer ? "on" : "off"}
+                    onChange={(e) =>
+                      onPerformanceChange({
+                        ...performanceSettings,
+                        preserveDrawingBuffer: e.target.value === "on",
+                      })
+                    }
+                  >
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                  </select>
+                </div>
+              </label>
         </div>
       )}
     </div>
