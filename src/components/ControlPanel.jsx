@@ -1,9 +1,27 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function ControlPanel({ nations, onRun }) {
     const codes = Object.keys(nations);
     const [actor, setActor] = useState(codes[0]);
     const [target, setTarget] = useState(codes[1]);
+    const [error, setError] = useState(null);
+
+    const hasNukes = useMemo(() => {
+        const entry = nations[actor];
+        if (!entry?.weapons) return false;
+        const w = entry.weapons;
+        return (w.icbm || 0) + (w.slbm || 0) + (w.airLaunch || 0) > 0;
+    }, [actor, nations]);
+
+    useEffect(() => {
+        if (actor === target) {
+            setError("A country can't nuke itself.");
+        } else if (!hasNukes) {
+            setError(`${actor} has no nuclear weapons.`);
+        } else {
+            setError(null);
+        }
+    }, [actor, target, hasNukes]);
 
     return (
         <div className="control-panel">
@@ -35,7 +53,16 @@ export default function ControlPanel({ nations, onRun }) {
                 </select>
             </div>
 
-            <button onClick={() => onRun(actor, target)}>Run Simulation</button>
+            <button
+                onClick={() => {
+                    if (error) return;
+                    onRun(actor, target);
+                }}
+                disabled={!!error}
+            >
+                Run Simulation
+            </button>
+            {error && <div className="control-error">{error}</div>}
         </div>
     );
 }

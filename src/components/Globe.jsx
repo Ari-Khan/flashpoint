@@ -4,7 +4,7 @@ export default function Globe() {
     const earthTexture = useTexture("/textures/earth.png");
 
     return (
-        <Sphere args={[1, 64, 64]}>
+        <Sphere args={[1, 48, 48]}>
             <meshStandardMaterial
                 map={earthTexture}
                 roughness={0.8}

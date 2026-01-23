@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
@@ -8,7 +8,9 @@ import ControlPanel from "../components/ControlPanel";
 import CountryFillManager from "../components/CountryFillManager";
 import Skybox from "../components/Skybox";
 import Atmosphere from "../components/Atmosphere";
+import ExplosionManager from "../components/ExplosionManager";
 import ArcManager from "../components/ArcManager"; 
+import SettingsPanel from "../components/SettingsPanel";
 
 import { useEventTimeline } from "../hooks/useEventTimeline";
 import { loadWorld } from "../data/loadData";
@@ -17,13 +19,21 @@ import { simulateEscalation } from "../sim/simulateEscalation";
 import "../index.css";
 
 const world = loadWorld();
+const BASE_TICK_MS = 1000;
 
 export default function App() {
     const [events, setEvents] = useState(null);
-    const [currentTime, setCurrentTime] = useState(0);
+    const [tickStep, setTickStep] = useState(1);
+    const [smoothMode, setSmoothMode] = useState("off"); // "off" | "smooth32"
+    const [displayTick, setDisplayTick] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+
+    const lastTickTimeRef = useRef(performance.now());
+
+    const timePerStep = BASE_TICK_MS * tickStep;
 
     // timeline.visible is the ONLY source of truth
-    const { visible } = useEventTimeline(events, 1000);
+    const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
 
     function run(actor, target) {
         const rawTimeline = simulateEscalation({
@@ -33,15 +43,33 @@ export default function App() {
         });
 
         setEvents(rawTimeline);
-        setCurrentTime(0);
     }
 
-    // ✅ Update currentTime safely
+    // Track last tick timestamp for smooth interpolation
     useEffect(() => {
-        if (!visible.length) return;
-        const last = visible[visible.length - 1];
-        setCurrentTime(last.t);
-    }, [visible]);
+        lastTickTimeRef.current = performance.now();
+    }, [currentTick]);
+
+    useEffect(() => {
+        if (smoothMode === "off") {
+            setDisplayTick(currentTick);
+            return undefined;
+        }
+
+        const frameMs = 1000 / 32; // ~32 fps
+        let rafId;
+
+        const tick = () => {
+            const elapsed = performance.now() - lastTickTimeRef.current;
+            const factor = Math.min(1, elapsed / timePerStep);
+            setDisplayTick(currentTick + factor * tickStep);
+            rafId = requestAnimationFrame(tick);
+        };
+
+        rafId = requestAnimationFrame(tick);
+
+        return () => cancelAnimationFrame(rafId);
+    }, [smoothMode, currentTick, tickStep, timePerStep]);
 
     // ✅ Derive affected countries from visible events
     const affectedIso2 = useMemo(() => {
@@ -63,9 +91,25 @@ export default function App() {
     return (
         <div className="app-container">
             <ControlPanel nations={world.nations} onRun={run} />
+            <SettingsPanel
+                tickStep={tickStep}
+                onTickStepChange={setTickStep}
+                smoothMode={smoothMode}
+                onSmoothModeChange={setSmoothMode}
+            />
 
-            {/* Time Display */}
-            {events && <div className="time-display">T+{currentTime}</div>}
+            {/* Time Display + Pause */}
+            {events && (
+                <div className="time-controls">
+                    <button
+                        className="pause-button"
+                        onClick={() => setIsPaused(!isPaused)}
+                    >
+                        {isPaused ? "Resume" : "Pause"}
+                    </button>
+                    <div className="time-display">T+{Math.floor(displayTick)}</div>
+                </div>
+            )}
 
             {visible.length > 0 && (
                 <pre className="event-log">
@@ -83,8 +127,13 @@ export default function App() {
                 <ArcManager
                   events={visible}
                   nations={world.nations}
-                  currentTime={currentTime}
+                                    currentTime={displayTick}
                 />
+                                <ExplosionManager
+                                        events={visible}
+                                        nations={world.nations}
+                                                        currentTime={displayTick}
+                                />
                 <CountryBorders />
                 <Globe />
                 <Atmosphere />
@@ -103,7 +152,7 @@ export default function App() {
                         ONE: 2,
                         TWO: 1,
                     }}
-                    minDistance={1.0}
+                    minDistance={1.3}
                     maxDistance={8}
                 />
             </Canvas>
