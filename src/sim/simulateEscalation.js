@@ -20,7 +20,7 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
             slbm: nations[k].weapons.slbm,
             air: nations[k].weapons.airLaunch,
         };
-        const totalStart = nations[k].weapons.icbm + nations[k].weapons.slbm + nations[k].weapons.airLaunch;
+        const totalStart = state.remaining[k].icbm + state.remaining[k].slbm + state.remaining[k].air;
         state.devProgress[k] = totalStart > 0 ? -1 : 0;
     }
 
@@ -28,36 +28,35 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
     queue.push({ type: "strike", from: initiator, to: firstTarget, reason: "initial" });
 
     let ticks = 0;
-    const maxTicks = 500; // or any other upper bound you want
-    while (ticks < maxTicks && state.events.length < maxEvents) {
+    while (ticks < maxTime && state.events.length < maxEvents) {
+        const breakouts = processGlobalDevelopment(state, worldClone);
+        for (const code of breakouts) {
+            state.events.push({
+                t: state.time,
+                type: "breakout",
+                country: code,
+            });
+        }
         if (queue.length === 0) {
-            // No events, but keep ticking
             state.time++;
-            state.events.push({ t: state.time, type: "empty" });
             ticks++;
             continue;
         }
-
         const event = queue.shift();
-        
         if (!event) {
             state.time++;
             continue;
         }
-
         const { from, to, isBetrayal } = event;
-
         if (!canLaunch(from, state)) {
             ticks++;
             continue;
         }
-
         const count = computeSalvoCount({
             time: state.time,
             powerTier: nations[from].powerTier,
             remaining: state.remaining[from],
         });
-
         const used = launchStrike({
             from,
             to,
@@ -66,13 +65,11 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
             maxPerStrike: count,
             isBetrayal: isBetrayal || false
         });
-
         if (!used) {
             ticks++;
             continue;
         }
         state.time++;
-
         if (Math.random() < 0.35) {
             const decision = pickWeightedTarget({ attacker: from, lastStriker: to, world, state });
             if (decision?.code && decision.code !== from) {
@@ -85,7 +82,6 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
                 });
             }
         }
-
         if (shouldRetaliate(nations[to])) {
             const decision = pickWeightedTarget({ attacker: to, lastStriker: from, world, state });
             if (decision?.code && decision.code !== to) {
@@ -98,7 +94,6 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
                 });
             }
         }
-
         const allies = joinAllies({ victim: to, attacker: from, world, state }); 
         for (const ally of allies) {
             const decision = pickWeightedTarget({ attacker: ally, lastStriker: from, world, state });
@@ -110,6 +105,7 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
                 reason: decision.isBetrayal ? "betrayal-ally" : "ally-weighted-response",
             });
         }
+
         ticks++;
     }
 

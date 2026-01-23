@@ -113,61 +113,58 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
 
     if (!candidates.length) return { code: lastStriker, isBetrayal: false };
 
-    const escalationScale = 1 + ((state.time || 0) * 0.1); 
-    const nukeCount = state.events.filter(e => e.type === 'nuke').length;
+    const nukeCount = state.events.filter(e => e.type === 'launch').length;
     const globalChaos = nukeCount * 0.75;
 
-    let focusOnLastStriker = 2.0, strayBias = 1.0;
-    const docMap = { "retaliatory": [15, 0.2], "no-first-use": [15, 0.2], "first-use": [5, 3.5], "ambiguous": [1.2, 6], "threshold": [1.2, 6] };
-    [focusOnLastStriker, strayBias] = docMap[doctrine] || [2, 1];
-
-    strayBias *= (1 + (globalChaos * 0.1));
+    let focusOnLastStriker = 10.0, strayBias = 1.0;
+    const docMap = { 
+        "retaliatory": [20, 0.5], 
+        "no-first-use": [20, 0.5], 
+        "first-use": [5, 4.0], 
+        "ambiguous": [2, 6], 
+        "threshold": [1, 8] 
+    };
+    [focusOnLastStriker, strayBias] = docMap[doctrine] || [10, 1];
 
     let totalWeight = 0;
     const weighted = candidates.map((code) => {
         const N = nations[code];
         const rel = bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
-        const hasNukes = canLaunch(code, state);
         
-        let weight = (rel < 0 ? Math.pow(Math.abs(rel), 2) * 5 * escalationScale : 0) * strayBias;
-        
-        const fogOfWar = Math.random() * globalChaos * 10;
-        weight += (N.powerTier * 2) + globalChaos + fogOfWar;
+        let weight = (N.powerTier * 5) + globalChaos;
 
-        if (code === lastStriker) weight *= 0.2; 
+        if (code === lastStriker) weight *= focusOnLastStriker; 
 
         const nukesFromTarget = state.events.filter(e => e.from === code && e.to === attacker).length;
-        if (nukesFromTarget > 0) weight += (100 + nukesFromTarget * 15) * focusOnLastStriker;
+        if (nukesFromTarget > 0) weight += (500 + nukesFromTarget * 50);
 
         const isEnemyAlly = state.events.some(e => e.to === attacker && nations[e.from]?.faction?.some(f => N.faction?.includes(f)));
-        if (isEnemyAlly) {
-            const softTargetBonus = !hasNukes ? 200 : 0;
-            weight += (150 + softTargetBonus) * (strayBias * 0.5);
-        }
+        if (isEnemyAlly) weight += 300;
 
         const isAlly = attackerFactions.some(f => N.faction?.includes(f));
         let canBetray = false;
         if (isAlly) {
-            const betrayalChance = 0.1 + (globalChaos * 0.02);
+            const betrayalChance = 0.05 + (globalChaos * 0.01); 
             if (Math.random() < betrayalChance) {
                 canBetray = true;
-                weight += (50 + globalChaos); 
+                weight = 100 + globalChaos; 
+            } else {
+                weight = 0;
             }
         }
 
-        if (isAlly && !canBetray) weight = 0;
-        const safetyThreshold = Math.max(0, 5 - (globalChaos * 0.1));
-        if (rel > safetyThreshold && nukesFromTarget === 0) weight *= 0.01;
+        const safetyThreshold = Math.max(0, 8 - (globalChaos * 0.2));
+        if (rel > safetyThreshold && nukesFromTarget === 0 && !canBetray) weight *= 0.1;
 
         totalWeight += weight;
-        return { code, weight, isBetrayal: canBetray && isAlly };
+        return { code, weight, isBetrayal: canBetray };
     });
 
     let r = Math.random() * totalWeight;
     for (const w of weighted) {
         if ((r -= w.weight) <= 0) return { code: w.code, isBetrayal: w.isBetrayal };
     }
-    return { code: candidates[Math.floor(Math.random() * candidates.length)], isBetrayal: false };
+    return { code: lastStriker || candidates[0], isBetrayal: false };
 }
 function processGlobalDevelopment(state, world) {
     const { nations } = world;
