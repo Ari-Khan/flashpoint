@@ -133,7 +133,7 @@
         "lat": 39.0,
         "lon": 125.75,
         "faction": [],
-        "powerTier": 2,
+        "powerTier": 3,
         "weapons": {
             "icbm": 25,
             "slbm": 0,
@@ -149,7 +149,7 @@
         "lat": 35.7,
         "lon": 51.4,
         "faction": [],
-        "powerTier": 2,
+        "powerTier": 3,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -165,7 +165,7 @@
         "lat": 35.68,
         "lon": 139.65,
         "faction": [],
-        "powerTier": 4,
+        "powerTier": 3,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -181,7 +181,7 @@
         "lat": 52.52,
         "lon": 13.4,
         "faction": ["NATO"],
-        "powerTier": 4,
+        "powerTier": 3,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -197,7 +197,7 @@
         "lat": 45.42,
         "lon": -75.7,
         "faction": ["NATO"],
-        "powerTier": 3,
+        "powerTier": 2,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -229,7 +229,7 @@
         "lat": 37.57,
         "lon": 126.98,
         "faction": [],
-        "powerTier": 4,
+        "powerTier": 2,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -325,7 +325,7 @@
         "lat": -25.75,
         "lon": 28.19,
         "faction": [],
-        "powerTier": 2,
+        "powerTier": 1,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -341,7 +341,7 @@
         "lat": 52.37,
         "lon": 4.89,
         "faction": ["NATO"],
-        "powerTier": 2,
+        "powerTier": 1,
         "weapons": {
             "icbm": 0,
             "slbm": 0,

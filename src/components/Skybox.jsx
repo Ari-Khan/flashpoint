@@ -9,7 +9,6 @@ export default function Skybox() {
         const textureLoader = new THREE.TextureLoader();
         const texture = textureLoader.load("/textures/starmap.png");
 
-        // Create a large sphere for the skybox
         const geometry = new THREE.SphereGeometry(100, 64, 64);
         const material = new THREE.MeshBasicMaterial({
             map: texture,
@@ -19,7 +18,6 @@ export default function Skybox() {
 
         scene.add(skybox);
 
-        // Make skybox follow camera
         const updateSkybox = () => {
             skybox.position.copy(camera.position);
         };

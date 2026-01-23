@@ -24,7 +24,7 @@ const BASE_TICK_MS = 1000;
 export default function App() {
     const [events, setEvents] = useState(null);
     const [tickStep, setTickStep] = useState(1);
-    const [smoothMode, setSmoothMode] = useState("off"); // "off" | "smooth32"
+    const [smoothMode, setSmoothMode] = useState("off");
     const [displayTick, setDisplayTick] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
 
@@ -32,7 +32,6 @@ export default function App() {
 
     const timePerStep = BASE_TICK_MS * tickStep;
 
-    // timeline.visible is the ONLY source of truth
     const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
 
     function run(actor, target) {
@@ -45,7 +44,6 @@ export default function App() {
         setEvents(rawTimeline);
     }
 
-    // Track last tick timestamp for smooth interpolation
     useEffect(() => {
         lastTickTimeRef.current = performance.now();
     }, [currentTick]);
@@ -56,7 +54,7 @@ export default function App() {
             return undefined;
         }
 
-        const frameMs = 1000 / 32; // ~32 fps
+        const frameMs = 1000 / 32;
         let rafId;
 
         const tick = () => {
@@ -71,7 +69,6 @@ export default function App() {
         return () => cancelAnimationFrame(rafId);
     }, [smoothMode, currentTick, tickStep, timePerStep]);
 
-    // ✅ Derive affected countries from visible events
     const affectedIso2 = useMemo(() => {
         if (!visible.length) return [];
 
@@ -98,7 +95,6 @@ export default function App() {
                 onSmoothModeChange={setSmoothMode}
             />
 
-            {/* Time Display + Pause */}
             {events && (
                 <div className="time-controls">
                     <button

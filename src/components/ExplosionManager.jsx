@@ -2,13 +2,7 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3";
 
-const DURATION_BY_WEAPON = {
-    icbm: 30,
-    slbm: 35,
-    air: 60,
-};
-
-const FADE_WINDOW = 12; // ticks after impact to finish fade/expansion
+const FADE_WINDOW = 12;
 
 export default function ExplosionManager({ events = [], nations, currentTime }) {
     const launchEvents = useMemo(
@@ -19,12 +13,26 @@ export default function ExplosionManager({ events = [], nations, currentTime }) 
     return (
         <>
             {launchEvents.map((e, i) => {
+                const from = nations[e.from];
                 const to = nations[e.to];
+                if (!from || !to || typeof from.lat !== "number" || typeof from.lon !== "number") {
+                    return null;
+                }
                 if (!to || typeof to.lat !== "number" || typeof to.lon !== "number") {
                     return null;
                 }
 
-                const duration = DURATION_BY_WEAPON[e.weapon] ?? 40;
+                const start = latLonToVec3(from.lat, from.lon, 1.001);
+                const end = latLonToVec3(to.lat, to.lon, 1.001);
+                const distance = start.distanceTo(end);
+
+                const speedMultiplier = {
+                    icbm: 15,
+                    slbm: 18,
+                    air: 30,
+                }[e.weapon] ?? 20;
+
+                const duration = Math.max(5, distance * speedMultiplier);
                 const impactTick = e.t + duration;
 
                 if (currentTime < impactTick || currentTime > impactTick + FADE_WINDOW) {
@@ -37,9 +45,8 @@ export default function ExplosionManager({ events = [], nations, currentTime }) 
                     1
                 );
 
-                // Tiny blast: ~1% -> ~3% of globe radius
                 const scale = 0.01 + 0.02 * progress;
-                const opacity = 1 - progress; // fade
+                const opacity = 1 - progress;
 
                 const position = latLonToVec3(to.lat, to.lon, 1.001);
 

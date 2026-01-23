@@ -1,6 +1,3 @@
-/**
- * Select the best available weapon type
- */
 function selectWeapon(stock) {
     if (!stock) return null;
     if (stock.icbm > 0) return "icbm";
@@ -15,7 +12,6 @@ function launchStrike({ from, to, nations, state, maxPerStrike = 1 }) {
 
     if (!weapon) return false;
 
-    // Consume nukes
     stock[weapon] -= maxPerStrike;
     if (stock[weapon] < 0) stock[weapon] = 0;
 
@@ -28,15 +24,13 @@ function launchStrike({ from, to, nations, state, maxPerStrike = 1 }) {
         count: maxPerStrike,
     });
 
-    // Mark involvement
     state.involved.add(from);
     state.involved.add(to);
     state.struck.add(`${from}->${to}`);
 
     return true;
 }
-
-function joinAllies({ victim, world, state }) {
+function joinAllies({ victim, attacker, world, state }) {
     const { nations, bilateral } = world;
     const V = nations[victim];
     const joined = [];
@@ -45,38 +39,39 @@ function joinAllies({ victim, world, state }) {
 
     for (const [code, C] of Object.entries(nations)) {
         if (state.involved.has(code)) continue;
-        if (!C) continue;
 
-        // faction = instant join
-        if (
-            Array.isArray(C.faction) &&
-            Array.isArray(V.faction) &&
-            C.faction.some((f) => V.faction.includes(f))
-        ) {
-            state.involved.add(code);
-            joined.push(code);
-            state.events.push({
-                t: state.time,
-                type: "faction-join",
-                country: code,
-                reason: victim,
-            });
-            continue;
+        const isFactionMember = Array.isArray(C.faction) && 
+                                Array.isArray(V.faction) && 
+                                C.faction.some(f => V.faction.includes(f));
+
+        const relWithVictim = bilateral?.[code]?.[victim] ?? bilateral?.[victim]?.[code] ?? 0;
+        const relWithAttacker = bilateral?.[code]?.[attacker] ?? bilateral?.[attacker]?.[code] ?? 0;
+
+        const joinThreshold = 6; 
+        
+        let desireToJoin = relWithVictim + C.powerTier;
+        
+        const timeBonus = (state.time || 0) * 0.5;
+        desireToJoin += timeBonus;
+
+        if (relWithAttacker < 0) {
+            desireToJoin += Math.abs(relWithAttacker) * 0.3;
         }
 
-        // non-faction ally
-        const rel =
-            bilateral?.[code]?.[victim] ?? bilateral?.[victim]?.[code] ?? 0;
-
-        if (rel + C.powerTier > 6) {
-            state.involved.add(code);
-            joined.push(code);
-            state.events.push({
-                t: state.time,
-                type: "ally-join",
-                country: code,
-                reason: victim,
-            });
+        if (isFactionMember || desireToJoin > joinThreshold) {
+            const reactionSpeed = C.powerTier * 0.2;
+            if (Math.random() < 0.4 + reactionSpeed) {
+                state.involved.add(code);
+                joined.push(code);
+                
+                state.events.push({
+                    t: state.time,
+                    type: isFactionMember ? "faction-join" : "ally-join",
+                    country: code,
+                    reason: victim,
+                    intensity: desireToJoin
+                });
+            }
         }
     }
 
@@ -107,60 +102,70 @@ function canLaunch(country, state) {
 
 function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     const { nations, bilateral } = world;
+    const attackerData = nations[attacker];
+    const attackerFactions = attackerData.faction || [];
+    const doctrine = attackerData.doctrine;
 
-    const candidates = Object.keys(nations).filter((code) => {
-        if (code === attacker) return false;
-        if (!state.remaining[code]) return false;
-        return true;
-    });
+    const candidates = Object.keys(nations).filter(code => 
+        code !== attacker && (canLaunch(code, state) || state.involved.has(code))
+    );
 
-    if (!candidates.length) return lastStriker;
+    if (!candidates.length) return { code: lastStriker, isBetrayal: false };
 
+    const currentStock = (state.remaining[attacker]?.icbm || 0) + (state.remaining[attacker]?.slbm || 0) + (state.remaining[attacker]?.air || 0);
+    const initialStock = (attackerData.weapons.icbm || 0) + (attackerData.weapons.slbm || 0) + (attackerData.weapons.airLaunch || 0);
+    const isDesperate = initialStock > 0 && (currentStock / initialStock) < 0.2;
+
+    let focusOnLastStriker = 2.0, strayBias = 1.0;
+    const docMap = { "retaliatory": [15, 0.2], "no-first-use": [15, 0.2], "first-use": [5, 3.5], "ambiguous": [1.2, 6], "threshold": [1.2, 6] };
+    [focusOnLastStriker, strayBias] = docMap[doctrine] || [2, 1];
+
+    if (isDesperate) { focusOnLastStriker *= 0.15; strayBias *= 8.0; }
+
+    const globalChaos = state.events.filter(e => e.type === 'nuke').length * 0.5;
     let totalWeight = 0;
 
     const weighted = candidates.map((code) => {
         const N = nations[code];
-        let weight = 1;
+        const rel = bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
+        const hasNukes = canLaunch(code, state);
+        
+        let weight = (rel < 0 ? Math.pow(Math.abs(rel), 2) * 5 : 0) * strayBias;
+        weight += (N.powerTier * 2) + globalChaos;
 
-        // 🔥 STRONG retaliation bias
-        if (code === lastStriker) {
-            weight += 15; // <-- THIS is the main fix
+        const nukesFromTarget = state.events.filter(e => e.from === code && e.to === attacker).length;
+        if (nukesFromTarget > 0) weight += (100 + nukesFromTarget * 15) * focusOnLastStriker;
+        if (code === lastStriker) weight *= focusOnLastStriker;
+
+        const isEnemyAlly = state.events.some(e => e.to === attacker && nations[e.from]?.faction?.some(f => N.faction?.includes(f)));
+        if (isEnemyAlly) {
+            const softTargetBonus = !hasNukes ? 200 : 0;
+            weight += (150 + softTargetBonus) * (strayBias * 0.5);
         }
 
-        // 🧨 aggressor bias (if they initiated earlier)
-        if ([...state.struck].some((s) => s.startsWith(`${code}->`))) {
-            weight += 5;
+        const isAlly = attackerFactions.some(f => N.faction?.includes(f));
+        let canBetray = false;
+        if (isAlly && attackerData.powerTier < 5) {
+            const allyStock = (state.remaining[code]?.icbm || 0) + (state.remaining[code]?.slbm || 0) + (state.remaining[code]?.air || 0);
+            const allyInitial = (N.weapons.icbm || 0) + (N.weapons.slbm || 0) + (N.weapons.airLaunch || 0);
+            if (allyInitial > 0 && (allyStock / allyInitial) < 0.25 && Math.random() < 0.3) {
+                canBetray = true;
+                weight += 40;
+            }
         }
 
-        // 💪 power still matters, but less than revenge
-        weight += (N.powerTier ?? 1) * 1.2;
-
-        // 😡 relations
-        const rel =
-            bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
-
-        if (rel < 0) {
-            weight += Math.abs(rel) * 2;
-        } else {
-            // friendly / neutral = VERY discouraged
-            weight *= 0.08;
-        }
-
-        // 🧨 already involved nations are more fair game
-        if (state.involved.has(code)) weight += 2;
+        if (isAlly && !canBetray) weight = 0;
+        if (rel > 5 && nukesFromTarget === 0) weight *= 0.01;
 
         totalWeight += weight;
-        return { code, weight };
+        return { code, weight, isBetrayal: canBetray && isAlly };
     });
 
-    // 🎲 weighted random
     let r = Math.random() * totalWeight;
     for (const w of weighted) {
-        r -= w.weight;
-        if (r <= 0) return w.code;
+        if ((r -= w.weight) <= 0) return { code: w.code, isBetrayal: w.isBetrayal };
     }
-
-    return lastStriker;
+    return { code: lastStriker, isBetrayal: false };
 }
 
 export {

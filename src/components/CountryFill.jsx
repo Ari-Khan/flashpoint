@@ -5,7 +5,6 @@ import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModif
 import { latLonToVec3 } from "../utils/latLonToVec3";
 import { getCountryKey } from "../utils/countryUtils";
 
-// Global cache to persist across component remounts
 const GEOMETRY_CACHE = new Map();
 
 export default function CountryFill({ feature, color, opacity = 1 }) {
@@ -14,7 +13,6 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
     const countryKey = getCountryKey(feature);
 
     const meshes = useMemo(() => {
-        // Return cached geometries if available
         if (GEOMETRY_CACHE.has(countryKey)) {
             return GEOMETRY_CACHE.get(countryKey);
         }
@@ -106,7 +104,6 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
             geom.coordinates.forEach((poly) => buildMesh(poly));
         }
 
-        // Save to cache
         GEOMETRY_CACHE.set(countryKey, internalMeshes);
         return internalMeshes;
     }, [feature, countryKey]);
@@ -116,11 +113,10 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
     useEffect(() => {
         let rafId;
         const start = performance.now();
-        const duration = 1000; // ms
+        const duration = 1000;
 
         const animate = (now) => {
             const t = Math.min(1, (now - start) / duration);
-            // smoothstep ease in/out
             const eased = t * t * (3 - 2 * t);
             setFadeOpacity(opacity * eased);
             if (t < 1) rafId = requestAnimationFrame(animate);

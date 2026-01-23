@@ -3,6 +3,7 @@ import { useState } from "react";
 const OPTIONS = [
   { label: "1 tick/sec", value: 1, smooth: "off" },
   { label: "2 ticks/sec", value: 0.5, smooth: "off" },
+  { label: "4 ticks/sec", value: 0.25, smooth: "off" },
   { label: "8 ticks/sec", value: 0.125, smooth: "off" },
   { label: "Smooth", value: 0.015625, smooth: "smooth32" },
 ];

@@ -17,7 +17,7 @@ export default function CountryBorders() {
                     const processPolygon = (polygon) => {
                         polygon.forEach((ring) => {
                             const points = ring.map(
-                                ([lon, lat]) => latLonToVec3(lat, lon, 1.001), // slightly above globe
+                                ([lon, lat]) => latLonToVec3(lat, lon, 1.001),
                             );
 
                             const geometry =

@@ -8,16 +8,10 @@ import {
 } from "./escalationLogic";
 import { computeSalvoCount } from "./salvoLogic";
 
-export function simulateEscalation({
-    initiator,
-    firstTarget,
-    world,
-    maxEvents = 10000,
-}) {
+export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 10000 }) {
     const { nations } = world;
     const state = createEscalationState();
 
-    // Init remaining nukes
     for (const k in nations) {
         state.remaining[k] = {
             icbm: nations[k].weapons.icbm,
@@ -26,21 +20,14 @@ export function simulateEscalation({
         };
     }
 
-    // Event queue
     const queue = [];
-
-    queue.push({
-        type: "strike",
-        from: initiator,
-        to: firstTarget,
-        reason: "initial",
-    });
+    queue.push({ type: "strike", from: initiator, to: firstTarget, reason: "initial" });
 
     while (queue.length > 0) {
         if (state.events.length >= maxEvents) break;
 
         const event = queue.shift();
-        const { from, to } = event;
+        const { from, to, isBetrayal } = event;
 
         if (!canLaunch(from, state)) continue;
 
@@ -56,67 +43,45 @@ export function simulateEscalation({
             nations,
             state,
             maxPerStrike: count,
+            isBetrayal: isBetrayal || false
         });
 
         if (!used) continue;
         state.time++;
 
         if (Math.random() < 0.35) {
-            const nextTarget = pickWeightedTarget({
-                attacker: from,
-                lastStriker: to,
-                world,
-                state,
-            });
-
-            if (nextTarget && nextTarget !== from) {
+            const decision = pickWeightedTarget({ attacker: from, lastStriker: to, world, state });
+            if (decision.code && decision.code !== from) {
                 queue.push({
                     type: "strike",
                     from,
-                    to: nextTarget,
-                    reason: "continued-escalation",
+                    to: decision.code,
+                    isBetrayal: decision.isBetrayal,
+                    reason: decision.isBetrayal ? "betrayal" : "continued-escalation",
                 });
             }
         }
 
-        // Retaliation
         if (shouldRetaliate(nations[to])) {
-            const target = pickWeightedTarget({
-                attacker: to,
-                lastStriker: from,
-                world,
-                state,
-            });
-
+            const decision = pickWeightedTarget({ attacker: to, lastStriker: from, world, state });
             queue.push({
                 type: "strike",
                 from: to,
-                to: target,
-                reason:
-                    target === from ? "retaliation" : "weighted-retaliation",
+                to: decision.code,
+                isBetrayal: decision.isBetrayal,
+                reason: decision.isBetrayal ? "betrayal-retaliation" : "retaliation",
             });
         }
 
-        // Ally involvement (staggered)
-        const allies = joinAllies({
-            victim: to,
-            world,
-            state,
-        });
-
+        const allies = joinAllies({ victim: to, attacker: from, world, state }); 
         for (const ally of allies) {
-            const target = pickWeightedTarget({
-                attacker: ally,
-                lastStriker: from,
-                world,
-                state,
-            });
-
+            const decision = pickWeightedTarget({ attacker: ally, lastStriker: from, world, state });
             queue.push({
                 type: "strike",
                 from: ally,
-                to: target,
-                reason: "ally-weighted-response",
+                to: decision.code,
+                isBetrayal: decision.isBetrayal,
+                reason: decision.isBetrayal ? "betrayal-ally" : "ally-weighted-response",
             });
         }
     }

@@ -4,8 +4,7 @@ import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3";
 
 function getArcHeight(distance) {
-  // distance is chord length on unit sphere
-  return Math.min(0.6, distance * 0.8);
+  return Math.min(0.7, distance * 0.9);
 }
 
 export default function Arc({
@@ -19,20 +18,7 @@ export default function Arc({
 }) {
   const lineRef = useRef();
 
-  // speed by weapon type (ticks)
-  const duration = {
-    icbm: 30,
-    slbm: 35,
-    air: 60,
-  }[weapon] ?? 40;
-
-  const progress = THREE.MathUtils.clamp(
-    (currentTime - startTime) / duration,
-    0,
-    1
-  );
-
-  const { points, geometry, curve } = useMemo(() => {
+  const { points, geometry, curve, distance } = useMemo(() => {
     const start = latLonToVec3(fromLat, fromLon, 1.001);
     const end = latLonToVec3(toLat, toLon, 1.001);
 
@@ -47,13 +33,28 @@ export default function Arc({
       .multiplyScalar(1 + height);
 
     const bezier = new THREE.QuadraticBezierCurve3(start, mid, end);
-    const pts = bezier.getPoints(64);
+    const pts = bezier.getPoints(128);
     const geom = new THREE.BufferGeometry().setFromPoints(pts);
 
-    return { points: pts, geometry: geom, curve: bezier };
+    return { points: pts, geometry: geom, curve: bezier, distance };
   }, [fromLat, fromLon, toLat, toLon]);
 
-  // animate draw + fade
+  const speedMultiplier = {
+    icbm: 15,
+    slbm: 18,
+    air: 30,
+  }[weapon] ?? 20;
+
+  const duration = Math.max(5, distance * speedMultiplier);
+
+  const rawProgress = (currentTime - startTime) / duration;
+  const minProgress = Math.min(0.05, 0.1 / distance);
+  const progress = THREE.MathUtils.clamp(
+    rawProgress <= 0 ? minProgress : rawProgress,
+    0,
+    1
+  );
+
   useFrame(() => {
     if (!lineRef.current) return;
 
@@ -78,10 +79,9 @@ export default function Arc({
         depthTest
         depthWrite={false}
       />
-      {/* Tiny cone warhead riding the tip */}
       {(() => {
-        // Use progress directly for cone position, not drawCount minimum
-        const tParam = Math.min(1, progress);
+        const drawCount = Math.max(1, Math.ceil(points.length * progress));
+        const tParam = Math.min(1, (drawCount - 1) / (points.length - 1));
         
         const tipPoint = curve.getPoint(tParam);
         const tangent = curve.getTangent(tParam);
@@ -93,15 +93,13 @@ export default function Arc({
           direction.normalize();
           coneQuat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
         } else {
-          // fallback to previous point to avoid zero-length tangent
           const prevPoint = curve.getPoint(Math.max(0, tParam - 0.01));
           direction = tipPoint.clone().sub(prevPoint).normalize();
           coneQuat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
         }
         const coneOpacity = lineRef.current?.material?.opacity ?? 1;
 
-        // Place base back so the apex lands exactly on the arc tip
-        const conePos = tipPoint.clone().sub(direction.clone().multiplyScalar(coneHeight * 0.5));
+        const conePos = tipPoint.clone();
 
         return (
           <mesh position={conePos} quaternion={coneQuat}>

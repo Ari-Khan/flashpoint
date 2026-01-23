@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-// Advances in fixed steps (tickStep) per interval, even if no events occur in between.
-// Default tickStep is 1 tick; set to 0.5 (half ticks) or 0.25 later for finer motion.
-// isPaused stops advancement without clearing state.
 export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPaused = false) {
     const [visible, setVisible] = useState([]);
     const [currentTick, setCurrentTick] = useState(0);
@@ -32,7 +29,6 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPau
         return { minT: min, maxT: max, byTick: buckets };
     }, [events]);
 
-    // Initialize when events change
     useEffect(() => {
         if (!events?.length) {
             setVisible([]);
@@ -42,7 +38,6 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPau
             return;
         }
 
-        // Reset if events changed (new simulation)
         if (prevEventsRef.current !== events) {
             prevEventsRef.current = events;
             setVisible(byTick.get(minT) ?? []);
@@ -51,7 +46,6 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPau
         }
     }, [events, minT, byTick]);
 
-    // Progress timeline with current settings
     useEffect(() => {
         if (!events?.length) return;
         if (isPaused) return;
@@ -64,13 +58,17 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPau
                 return;
             }
             currentRef.current = next;
-            const bucket = byTick.get(next) ?? [];
-            setVisible((v) => (bucket.length ? [...v, ...bucket] : v));
             setCurrentTick(next);
+            const bucket = byTick.get(next) ?? [];
+            if (bucket.length) {
+                setVisible((v) => [...v, ...bucket]);
+            }
         }, timePerStep);
 
-        return () => clearInterval(interval);
-    }, [events, maxT, byTick, timePerStep, step, isPaused]);
+        return () => {
+            clearInterval(interval);
+        };
+    }, [events, maxT, byTick, timePerStep, step, isPaused, minT]);
 
     return { visible, currentTick };
 }
