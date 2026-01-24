@@ -9,18 +9,6 @@ const GEOMETRY_CACHE = new Map();
 
 export default function CountryFill({ feature, color, opacity = 1, debug = false }) {
     const countryKey = useMemo(() => (feature ? getCountryKey(feature) : null), [feature]);
-    
-    const [fadeOpacity, setFadeOpacity] = useState(0);
-    const [canDraw, setCanDraw] = useState(false);
-    const materialRefs = useRef([]);
-
-    useEffect(() => {
-        materialRefs.current = new Array(meshes.length).fill(null);
-    }, [meshes]);
-
-    useLayoutEffect(() => {
-        for (const m of materialRefs.current) if (m) m.opacity = 0;
-    }, [meshes]);
 
     const meshes = useMemo(() => {
         if (!feature) return [];
@@ -97,6 +85,18 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
         return internalMeshes;
     }, [feature, countryKey]);
 
+    const [fadeOpacity, setFadeOpacity] = useState(0);
+    const [canDraw, setCanDraw] = useState(false);
+    const materialRefs = useRef([]);
+
+    useEffect(() => {
+        materialRefs.current = new Array(meshes.length).fill(null);
+    }, [meshes]);
+
+    useLayoutEffect(() => {
+        for (const m of materialRefs.current) if (m) m.opacity = 0;
+    }, [meshes]);
+
     useEffect(() => {
         setFadeOpacity(0);
         setCanDraw(false);
@@ -107,12 +107,10 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
 
         const animate = (now) => {
             const elapsed = now - start;
-
             if (elapsed > 16) setCanDraw(true);
 
             const t = Math.min(1, elapsed / duration);
             const eased = t * t * (3 - 2 * t);
-
             setFadeOpacity(opacity * eased);
 
             if (t < 1) rafId = requestAnimationFrame(animate);

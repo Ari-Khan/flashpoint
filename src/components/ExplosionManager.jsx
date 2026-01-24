@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3";
+import { getJitteredVec3 } from "../utils/jitter";
 
 const FADE_WINDOW = 12;
 
@@ -10,13 +10,16 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
     
     const { impactTick, position } = useMemo(() => {
         const start = latLonToVec3(fromNation.lat, fromNation.lon, 1.001);
-        const end = latLonToVec3(targetNation.lat, targetNation.lon, 1.001);
+        
+        const jitteredEnd = getJitteredVec3(targetNation.lat, targetNation.lon, 0.8, event.t);
+
         const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[event.weapon] ?? 20;
-        const duration = Math.max(5, start.distanceTo(end) * speedMultiplier);
+        const distance = start.distanceTo(jitteredEnd);
+        const duration = Math.max(5, distance * speedMultiplier);
         
         return {
             impactTick: event.t + duration,
-            position: end
+            position: jitteredEnd
         };
     }, [event, targetNation, fromNation]);
 
@@ -30,9 +33,10 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
 
         if (isVisible) {
             const progress = (displayTime - impactTick) / fadeWindow;
-            const scale = 0.01 + 0.04 * progress;
+            // Explosion starts tiny and grows
+            const scale = 0.005 + 0.04 * progress;
             meshRef.current.scale.setScalar(scale);
-            meshRef.current.material.opacity = 1 - progress;
+            meshRef.current.material.opacity = Math.pow(1 - progress, 2);
         }
     });
 
