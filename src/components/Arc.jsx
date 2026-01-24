@@ -4,8 +4,12 @@ import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3.js";
 import { getJitteredVec3 } from "../utils/jitter.js";
 
-function getArcHeight(distance) {
-    return 0.05 + (distance * 0.45); 
+function getArcHeight(distance, seed) {
+    const variance = (Math.sin(seed * 12.9898) * 0.03);
+    
+    const loft = -0.5 + (distance * 0.7);
+    
+    return Math.max(0.1, loft) + variance;
 }
 
 export default function Arc({
@@ -24,38 +28,46 @@ export default function Arc({
     const isDoneRef = useRef(false);
     const [coneOpacity, setConeOpacity] = useState(1);
 
-	const { points, geometry, curve, distance, duration, impactTime, origin, dotGeometry } = useMemo(() => {
-		const start = latLonToVec3(fromLat, fromLon, 1.001);
-		const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
-		
-		const d = start.distanceTo(end);
-		const h = getArcHeight(d);
+    const { points, geometry, curve, distance, duration, impactTime, origin, dotGeometry } = useMemo(() => {
+        const start = latLonToVec3(fromLat, fromLon, 1.001);
+        const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
+        
+        const d = start.distanceTo(end);
+        const h = getArcHeight(d, Number(startTime));
 
-		const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
-		
-		const mid = midPoint.clone().normalize().multiplyScalar(1 + h);
+        let midPoint = new THREE.Vector3().addVectors(start, end).normalize();
+        if (start.dot(end) < -0.9) {
+            const tempAxis = Math.abs(start.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+            midPoint = new THREE.Vector3().crossVectors(start, tempAxis).normalize();
+        }
 
-		const bezier = new THREE.QuadraticBezierCurve3(start, mid, end);
-		
-		const resolution = d > 1 ? 128 : 64;
-		const pts = bezier.getPoints(resolution);
-		const geom = new THREE.BufferGeometry().setFromPoints(pts);
-		
-		const dotGeom = new THREE.SphereGeometry(0.002, 8, 8);
-		const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
-		const dur = Math.max(5, d * speedMultiplier);
+        const startDir = start.clone().normalize();
+        const endDir = end.clone().normalize();
 
-		return { 
-			points: pts, 
-			geometry: geom, 
-			curve: bezier, 
-			distance: d, 
-			duration: dur,
-			impactTime: startTime + dur,
-			origin: start,
-			dotGeometry: dotGeom
-		};
-	}, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
+        const ctrl1 = new THREE.Vector3().lerpVectors(startDir, midPoint, 0.5).normalize().multiplyScalar(1.001 + h);
+        const ctrl2 = new THREE.Vector3().lerpVectors(endDir, midPoint, 0.5).normalize().multiplyScalar(1.001 + h);
+
+        const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
+        
+        const resolution = d > 1 ? 160 : 80;
+        const pts = cubicCurve.getPoints(resolution);
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        
+        const dotGeom = new THREE.SphereGeometry(0.002, 8, 8);
+        const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
+        const dur = Math.max(5, d * speedMultiplier);
+
+        return { 
+            points: pts, 
+            geometry: geom, 
+            curve: cubicCurve, 
+            distance: d, 
+            duration: dur,
+            impactTime: startTime + dur,
+            origin: start,
+            dotGeometry: dotGeom
+        };
+    }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
 
     useEffect(() => {
         return () => {
@@ -64,7 +76,11 @@ export default function Arc({
         };
     }, [geometry, dotGeometry]);
 
-    const progress = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
+    const rawProgress = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
+    
+    const progress = rawProgress < 0.5 
+        ? 2 * rawProgress * rawProgress 
+        : 1 - Math.pow(-2 * rawProgress + 2, 2) / 2;
 
     useFrame(() => {
         if (!lineRef.current || isDoneRef.current) return;

@@ -2,6 +2,7 @@
     "USA": {
         "name": "United States",
         "iso2": "US",
+        "capital": "Washington, D.C.",
         "lat": 38.9,
         "lon": -77.0,
         "faction": ["NATO"],
@@ -13,11 +14,12 @@
         },
         "doctrine": "retaliatory",
         "defaultColor": "#3C3B6E",
-        "majorCities": []
+        "majorCities": [{"name":"New York","lat":40.7128,"lon":-74.0060}]
     },
     "RUS": {
         "name": "Russia",
         "iso2": "RU",
+        "capital": "Moscow",
         "lat": 55.75,
         "lon": 37.6,
         "faction": [],
@@ -29,11 +31,12 @@
         },
         "doctrine": "first-use",
         "defaultColor": "#D62718",
-        "majorCities": []
+        "majorCities": [{"name":"Saint Petersburg","lat":59.9311,"lon":30.3609}]
     },
     "CHN": {
         "name": "China",
         "iso2": "CN",
+        "capital": "Beijing",
         "lat": 39.9,
         "lon": 116.4,
         "faction": [],
@@ -45,11 +48,12 @@
         },
         "doctrine": "no-first-use",
         "defaultColor": "#EE1C25",
-        "majorCities": []
+        "majorCities": [{"name":"Shanghai","lat":31.2304,"lon":121.4737}]
     },
     "FRA": {
         "name": "France",
         "iso2": "FR",
+        "capital": "Paris",
         "lat": 48.85,
         "lon": 2.35,
         "faction": ["NATO"],
@@ -61,11 +65,12 @@
         },
         "doctrine": "retaliatory",
         "defaultColor": "#0072BB",
-        "majorCities": []
+        "majorCities": [{"name":"Marseille","lat":43.2965,"lon":5.3698}]
     },
     "GBR": {
         "name": "United Kingdom",
         "iso2": "GB",
+        "capital": "London",
         "lat": 51.5,
         "lon": -0.12,
         "faction": ["NATO"],
@@ -77,11 +82,12 @@
         },
         "doctrine": "retaliatory",
         "defaultColor": "#C8102E",
-        "majorCities": []
+        "majorCities": [{"name":"Birmingham","lat":52.4862,"lon":-1.8904}]
     },
     "IND": {
         "name": "India",
         "iso2": "IN",
+        "capital": "New Delhi",
         "lat": 28.6,
         "lon": 77.2,
         "faction": [],
@@ -93,11 +99,12 @@
         },
         "doctrine": "no-first-use",
         "defaultColor": "#FF9933",
-        "majorCities": []
+        "majorCities": [{"name":"Mumbai","lat":19.0760,"lon":72.8777}]
     },
     "PAK": {
         "name": "Pakistan",
         "iso2": "PK",
+        "capital": "Islamabad",
         "lat": 33.7,
         "lon": 73.1,
         "faction": [],
@@ -109,11 +116,12 @@
         },
         "doctrine": "first-use",
         "defaultColor": "#01411C",
-        "majorCities": []
+        "majorCities": [{"name":"Karachi","lat":24.8607,"lon":67.0011}]
     },
     "ISR": {
         "name": "Israel",
         "iso2": "IL",
+        "capital": "Jerusalem",
         "lat": 31.77,
         "lon": 35.22,
         "faction": [],
@@ -125,11 +133,12 @@
         },
         "doctrine": "ambiguous",
         "defaultColor": "#0038B8",
-        "majorCities": []
+        "majorCities": [{"name":"Tel Aviv","lat":32.0853,"lon":34.7818}]
     },
     "PRK": {
         "name": "North Korea",
         "iso2": "KP",
+        "capital": "Pyongyang",
         "lat": 39.0,
         "lon": 125.75,
         "faction": [],
@@ -141,11 +150,12 @@
         },
         "doctrine": "first-use",
         "defaultColor": "#ED1C27",
-        "majorCities": []
+        "majorCities": [{"name":"Hamhung","lat":39.9236,"lon":127.5456}]
     },
     "IRN": {
         "name": "Iran",
         "iso2": "IR",
+        "capital": "Tehran",
         "lat": 35.7,
         "lon": 51.4,
         "faction": [],
@@ -157,11 +167,12 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#FFFFFF",
-        "majorCities": []
+        "majorCities": [{"name":"Mashhad","lat":36.2605,"lon":59.6168}]
     },
     "JPN": {
         "name": "Japan",
         "iso2": "JP",
+        "capital": "Tokyo",
         "lat": 35.68,
         "lon": 139.65,
         "faction": [],
@@ -173,11 +184,12 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#BC002D",
-        "majorCities": []
+        "majorCities": [{"name":"Yokohama","lat":35.4437,"lon":139.6380}]
     },
     "DEU": {
         "name": "Germany",
         "iso2": "DE",
+        "capital": "Berlin",
         "lat": 52.52,
         "lon": 13.4,
         "faction": ["NATO"],
@@ -189,11 +201,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#2E3234",
-        "majorCities": []
+        "majorCities": [{"name":"Hamburg","lat":53.5511,"lon":9.9937}]
     },
     "CAN": {
         "name": "Canada",
         "iso2": "CA",
+        "capital": "Ottawa",
         "lat": 45.42,
         "lon": -75.7,
         "faction": ["NATO"],
@@ -205,11 +218,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#D80621",
-        "majorCities": []
+        "majorCities": [{"name":"Toronto","lat":43.65107,"lon":-79.347015}]
     },
     "ARG": {
         "name": "Argentina",
         "iso2": "AR",
+        "capital": "Buenos Aires",
         "lat": -34.6,
         "lon": -58.38,
         "faction": [],
@@ -221,11 +235,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#74ACDF",
-        "majorCities": []
+        "majorCities": [{"name":"Córdoba","lat":-31.4201,"lon":-64.1888}]
     },
     "KOR": {
         "name": "South Korea",
         "iso2": "KR",
+        "capital": "Seoul",
         "lat": 37.57,
         "lon": 126.98,
         "faction": [],
@@ -237,11 +252,12 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#003478",
-        "majorCities": []
+        "majorCities": [{"name":"Busan","lat":35.1796,"lon":129.0756}]
     },
     "SAU": {
         "name": "Saudi Arabia",
         "iso2": "SA",
+        "capital": "Riyadh",
         "lat": 24.71,
         "lon": 46.67,
         "faction": [],
@@ -253,11 +269,12 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#006C35",
-        "majorCities": []
+        "majorCities": [{"name":"Jeddah","lat":21.2854,"lon":39.2376}]
     },
     "TUR": {
         "name": "Türkiye",
         "iso2": "TR",
+        "capital": "Ankara",
         "lat": 39.93,
         "lon": 32.85,
         "faction": ["NATO"],
@@ -269,11 +286,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#E30A17",
-        "majorCities": []
+        "majorCities": [{"name":"Istanbul","lat":41.0082,"lon":28.9784}]
     },
     "BRA": {
         "name": "Brazil",
         "iso2": "BR",
+        "capital": "Brasília",
         "lat": -15.79,
         "lon": -47.88,
         "faction": [],
@@ -285,11 +303,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#009739",
-        "majorCities": []
+        "majorCities": [{"name":"São Paulo","lat":-23.5505,"lon":-46.6333}]
     },
     "TWN": {
         "name": "Taiwan",
         "iso2": "TW",
+        "capital": "Taipei",
         "lat": 25.03,
         "lon": 121.56,
         "faction": [],
@@ -301,11 +320,12 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#000097",
-        "majorCities": []
+        "majorCities": [{"name":"Kaohsiung","lat":22.6273,"lon":120.3014}]
     },
     "SWE": {
         "name": "Sweden",
         "iso2": "SE",
+        "capital": "Stockholm",
         "lat": 59.33,
         "lon": 18.07,
         "faction": ["NATO"],
@@ -317,11 +337,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#006AA7",
-        "majorCities": []
+        "majorCities": [{"name":"Gothenburg","lat":57.7089,"lon":11.9746}]
     },
     "ZAF": {
         "name": "South Africa",
         "iso2": "ZA",
+        "capital": "Pretoria",
         "lat": -25.75,
         "lon": 28.19,
         "faction": [],
@@ -333,11 +354,12 @@
         },
         "doctrine": "latent",
         "defaultColor": "#007749",
-        "majorCities": []
+        "majorCities": [{"name":"Johannesburg","lat":-26.2041,"lon":28.0473}]
     },
     "NLD": {
         "name": "Netherlands",
         "iso2": "NL",
+        "capital": "Amsterdam",
         "lat": 52.37,
         "lon": 4.89,
         "faction": ["NATO"],
@@ -349,6 +371,6 @@
         },
         "doctrine": "latent",
         "defaultColor": "#F36C21",
-        "majorCities": []
+        "majorCities": [{"name":"Rotterdam","lat":51.9244,"lon":4.4777}]
     }
 }

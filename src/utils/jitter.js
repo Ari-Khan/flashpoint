@@ -1,6 +1,6 @@
 import { latLonToVec3 } from "./latLonToVec3";
 
-export function getJitteredVec3(lat, lon, amount = 3, seed = 0) {
+export function getJitteredVec3(lat, lon, amount = 4, seed = 0) {
     const nLat = Number(lat);
     const nLon = Number(lon);
     const nSeed = Number(seed);
