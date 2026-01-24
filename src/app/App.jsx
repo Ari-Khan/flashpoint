@@ -1,7 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useRef } from "react";
 
 import Globe from "../components/Globe";
 import CountryBorders from "../components/CountryBorders";
@@ -65,12 +64,13 @@ export default function App() {
     if (!visible.length) return [];
     const isoSet = new Set();
     visible.forEach(e => {
-      if (e.type === "launch") {
-        const fromIso = world.nations[e.from]?.iso2;
-        const toIso = world.nations[e.to]?.iso2;
-        if (fromIso) isoSet.add(fromIso);
-        if (toIso) isoSet.add(toIso);
-      }
+      const ids = [e.from, e.to, e.attacker, e.target];
+      ids.forEach(id => {
+        if (id && world.nations[id]) {
+          const iso = world.nations[id].iso2;
+          if (iso) isoSet.add(iso);
+        }
+      });
     });
     return Array.from(isoSet);
   }, [visible]);
@@ -79,6 +79,9 @@ export default function App() {
     return (visible ?? []).map(e => {
       const copy = { ...e };
       delete copy.fromLat; delete copy.fromLon; delete copy.toLat; delete copy.toLon;
+      if (typeof copy.intensity === "number") {
+        copy.intensity = Math.round(copy.intensity * 10) / 10;
+      }
       return copy;
     });
   }, [visible]);
@@ -131,8 +134,8 @@ export default function App() {
         }}
       >
         <Skybox />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 5, 5]} />
+        <ambientLight intensity={0.4} /> 
+        <directionalLight position={[5, 5, 5]} intensity={1.0} />
 
         <ArcManager events={visible} nations={world.nations} currentTime={displayTick} />
         <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
@@ -150,15 +153,13 @@ export default function App() {
             enableDamping={true}
             dampingFactor={0.06}
             minDistance={1.2}
-            maxDistance={8}
+            maxDistance={32}
         />
 
         <SmoothZoom 
             controlsRef={controlsRef} 
             sensitivity={0.0001} 
             decay={0.90} 
-            minDistance={1.2} 
-            maxDistance={8} 
             enabled={zoomMode === "Smooth"}
         />
       </Canvas>

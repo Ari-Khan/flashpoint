@@ -11,12 +11,9 @@
             "CAN",
             "TUR",
             "SWE",
-            "NLD"
-        ],
-        "autoJoinTriggers": [
-            "memberNuked",
-            "memberNukesUsed",
-            "existentialThreat"
+            "NLD",
+            "POL",
+            "ITA"
         ]
     }
 }

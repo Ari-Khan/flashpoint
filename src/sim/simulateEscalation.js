@@ -82,7 +82,8 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
                 });
             }
         }
-        if (shouldRetaliate(nations[to])) {
+
+        if (canLaunch(to, state)) {
             const decision = pickWeightedTarget({ attacker: to, lastStriker: from, world, state });
             if (decision?.code && decision.code !== to) {
                 queue.push({

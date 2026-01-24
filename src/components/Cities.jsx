@@ -15,7 +15,7 @@ export default function Cities({ nations = {} }) {
           lat: N.lat,
           lon: N.lon,
           color: N.defaultColor ?? "#ffffff",
-          size: 0.0035
+          size: 0.004
         });
       }
 
@@ -28,7 +28,7 @@ export default function Cities({ nations = {} }) {
             lat: c.lat,
             lon: c.lon,
             color: N.defaultColor ?? "#ffffff",
-            size: 0.0028
+            size: 0.003
           });
         }
       });
@@ -41,15 +41,9 @@ export default function Cities({ nations = {} }) {
       {spots.map(s => {
         const pos = latLonToVec3(s.lat, s.lon, 1.002);
 
-        
-        const col = new THREE.Color(s.color || "#ffffff");
-        const hsl = { h: 0, s: 0, l: 0 };
-        col.getHSL(hsl);
-        if (hsl.l < 0.25) col.setHSL(hsl.h, hsl.s, 0.25);
-        const computedColor = `#${col.getHexString()}`;
+        const computedColor = s.color || "#ffffff";
 
-        
-        const radius = 0.002;
+        const radius = Math.max(0.0005, s.size ?? 0.002);
 
         return (
           <mesh key={s.key} position={pos}>

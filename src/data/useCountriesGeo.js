@@ -7,16 +7,20 @@ export function useCountriesGeo() {
 
     useEffect(() => {
         if (cache) {
-            queueMicrotask(() => setData(cache));
+            setData(cache);
             return;
         }
 
-        fetch("/src/data/country-shapes.geo.json")
-            .then((r) => r.json())
+        fetch("/data/country-shapes.geo.json")
+            .then((r) => {
+                if (!r.ok) throw new Error("Failed to load GeoJSON");
+                return r.json();
+            })
             .then((json) => {
                 cache = json;
                 setData(json);
-            });
+            })
+            .catch((err) => console.error("GeoJSON Load Error:", err));
     }, []);
 
     return data;

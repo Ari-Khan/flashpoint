@@ -93,7 +93,14 @@ function joinAllies({ victim, attacker, world, state }) {
         }
 
         if (isFactionMember || desireToJoin > joinThreshold) {
-            const reactionSpeed = C.powerTier * 0.2;
+            // doctrine modifies how quickly/naturally a country joins
+            let doctrineModifier = 1.0;
+            if (C.doctrine === "latent") doctrineModifier = 0.6; // slower, hesitant
+            else if (C.doctrine === "dormant") doctrineModifier = 0.3; // very slow/reluctant
+
+            const reactionSpeed = C.powerTier * 0.2 * doctrineModifier;
+            const effectiveIntensity = desireToJoin * doctrineModifier;
+
             if (Math.random() < 0.4 + reactionSpeed) {
                 state.involved.add(code);
                 joined.push(code);
@@ -103,7 +110,7 @@ function joinAllies({ victim, attacker, world, state }) {
                     type: isFactionMember ? "faction-join" : "ally-join",
                     country: code,
                     reason: victim,
-                    intensity: desireToJoin
+                    intensity: effectiveIntensity
                 });
             }
         }
@@ -111,21 +118,11 @@ function joinAllies({ victim, attacker, world, state }) {
 
     return joined;
 }
+
 function shouldRetaliate(nation) {
     if (!nation) return false;
-
-    switch (nation.doctrine) {
-        case "threshold":
-            return false;
-        case "ambiguous":
-            return Math.random() > 0.4;
-        case "no-first-use":
-        case "first-use":
-        case "retaliatory":
-        case "escalate-to-deescalate":
-        default:
-            return true;
-    }
+    const w = nation.weapons || {};
+    return (w.icbm || 0) + (w.slbm || 0) + (w.airLaunch || 0) > 0;
 }
 
 function canLaunch(country, state) {
@@ -149,15 +146,17 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     const nukeCount = state.events.filter(e => e.type === 'launch').length;
     const globalChaos = nukeCount * 0.75;
 
-    let focusOnLastStriker = 10.0;
     const docMap = {
-        "retaliatory": [20, 0.5],
-        "no-first-use": [20, 0.5],
-        "first-use": [5, 4.0],
-        "ambiguous": [2, 6],
-        "threshold": [1, 8]
+        "no-first-use": 20,
+        "retaliatory": 15,
+        "threshold": 15,
+        "latent": 10,
+        "first-use": 5,
+        "dormant": 5,
+        "ambiguous": 3
     };
-    [focusOnLastStriker] = docMap[doctrine] || [10];
+
+    let focusOnLastStriker = docMap[doctrine] ?? 10;
 
     let totalWeight = 0;
     const weighted = candidates.map((code) => {
@@ -214,14 +213,15 @@ function processGlobalDevelopment(state, world) {
             if (stock.slbm > 0) stock.slbm += rate * 0.3;
             continue; 
         }
-        if (N.doctrine === "threshold" || N.doctrine === "latent") {
+        if (N.doctrine === "threshold" || N.doctrine === "latent" || N.doctrine === "dormant") {
             if (state.devProgress[code] === undefined) state.devProgress[code] = 0;
             if (state.devProgress[code] === -1) continue; 
-            const base = N.doctrine === "threshold" ? 2.0 : 1.0;
+            const base = N.doctrine === "threshold" ? 2.0 : N.doctrine === "latent" ? 1.0 : 0.5;
+            const required = N.doctrine === "threshold" ? 50 : N.doctrine === "latent" ? 100 : 150;
             const swing = 0.2 + (Math.random() * 1.6);
             const floor = (N.powerTier || 1) * 0.1;
             state.devProgress[code] += (base * swing) + floor;
-            if (state.devProgress[code] >= 100) {
+            if (state.devProgress[code] >= required) {
                 const tier = N.powerTier || 1;
                 stock.icbm = tier * 3;
                 stock.air = tier * 2;
