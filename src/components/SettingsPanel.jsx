@@ -17,6 +17,8 @@ const TEXTURE_OPTIONS = [
   { label: "Night", value: "night.jpg" },
 ];
 
+import Tooltip from "./Tooltip";
+
 export default function SettingsPanel({
   tickStep,
   onTickStepChange,
@@ -28,7 +30,23 @@ export default function SettingsPanel({
   onTextureChange = () => {},
 }) {
   const [open, setOpen] = useState(false);
-  const padIfLong = (s) => s + (s.length >= 10 ? '\u00A0\u00A0' : '');
+  const [tipText, setTipText] = useState(null);
+  const [tipPos, setTipPos] = useState({ x: 0, y: 0 });
+  const padIfLong = (s) => s + (s.length >= 10 ? "\u00A0\u00A0" : "");
+
+  function showTipFor(el) {
+    if (!el) return;
+    const txt = el.getAttribute("data-tip");
+    if (!txt) return;
+    const r = el.getBoundingClientRect();
+    const x = Math.max(8, r.left);
+    const y = Math.max(8, r.top - 44);
+    setTipText(txt);
+    setTipPos({ x, y });
+  }
+  function hideTip() {
+    setTipText(null);
+  }
 
   return (
     <div className="settings-panel">
@@ -67,7 +85,7 @@ export default function SettingsPanel({
           </label>
 
               <label className="settings-row">
-                <span data-tip="Smooths edges with multi-sample AA; uses more GPU.">AA</span>
+                <span data-tip="Smooths edges with multi-sample AA; uses more GPU." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>AA</span>
                 <div className="control">
                   <select
                     title="Enable GPU antialiasing (smoother edges; higher GPU cost)"
@@ -86,7 +104,7 @@ export default function SettingsPanel({
               </label>
 
               <label className="settings-row">
-                <span data-tip="Caps rendering DPR to reduce GPU workload.">DPR Cap</span>
+                <span data-tip="Caps rendering DPR to reduce GPU workload." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>DPR Cap</span>
                 <div className="control">
                   <select
                     title="Maximum device pixel ratio to render at (limits HiDPI cost)"
@@ -107,7 +125,7 @@ export default function SettingsPanel({
               </label>
 
               <label className="settings-row">
-                <span data-tip="Browser hint to prefer discrete GPU when available.">Power</span>
+                <span data-tip="Browser hint to prefer discrete GPU when available." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Power</span>
                 <div className="control">
                   <select
                     title="Renderer hint: prefer discrete GPU (high-performance) or integrated (low-power)"
@@ -127,7 +145,7 @@ export default function SettingsPanel({
               </label> 
 
               <label className="settings-row">
-                <span data-tip="Retains framebuffer after draw; useful for screenshots.">Buffer</span>
+                <span data-tip="Retains framebuffer after draw; useful for screenshots." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Buffer</span>
                 <div className="control">
                   <select
                     title="Keep the drawing buffer after render (needed for screenshots; may reduce performance)"
@@ -146,7 +164,7 @@ export default function SettingsPanel({
               </label>
 
               <label className="settings-row">
-                <span data-tip="Choose a different Earth texture (night, terrain, etc.)">Texture</span>
+                <span data-tip="Choose a different Earth texture (night, terrain, etc.)" onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Texture</span>
                 <div className="control">
                   <select
                     title="Choose which texture to use for the Earth"
@@ -163,6 +181,7 @@ export default function SettingsPanel({
               </label> 
         </div>
       )}
+      <Tooltip text={tipText} x={tipPos.x} y={tipPos.y} />
     </div>
   );
 }

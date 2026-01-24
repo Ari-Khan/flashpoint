@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { useRef } from "react";
 
 import Globe from "../components/Globe";
 import CountryBorders from "../components/CountryBorders";
@@ -11,6 +12,7 @@ import Atmosphere from "../components/Atmosphere";
 import ExplosionManager from "../components/ExplosionManager";
 import ArcManager from "../components/ArcManager"; 
 import SettingsPanel from "../components/SettingsPanel";
+import SmoothZoom from "../components/SmoothZoom";
 
 import { useEventTimeline } from "../hooks/useEventTimeline";
 import { useSimulationClock } from "../hooks/useSimulationClock";
@@ -37,6 +39,7 @@ export default function App() {
   const [tickStep, setTickStep] = useState(perfCfg?.tickStep ?? 1);
   const [smoothMode, setSmoothMode] = useState("off");
   const [isPaused, setIsPaused] = useState(false);
+  const controlsRef = useRef();
 
   const timePerStep = BASE_TICK_MS * tickStep;
 
@@ -128,11 +131,21 @@ export default function App() {
 
         <CountryFillManager activeIso2={affectedIso2} nations={world.nations} />
 
-        <OrbitControls
-          enableDamping
-          minDistance={1.3}
-          maxDistance={8}
-          touches={{ ONE: 2, TWO: 1 }}
+        <OrbitControls 
+            ref={controlsRef} 
+            enableZoom={false}
+            enableDamping={true}
+            dampingFactor={0.06}
+            minDistance={1.2}
+            maxDistance={8}
+        />
+
+        <SmoothZoom 
+            controlsRef={controlsRef} 
+            sensitivity={0.0001} 
+            decay={0.90} 
+            minDistance={1.2} 
+            maxDistance={8} 
         />
       </Canvas>
     </div>

@@ -150,27 +150,20 @@ body {
     text-align: left;
     position: relative;
 }
-.settings-row span[data-tip]::after {
-    content: attr(data-tip);
-    position: absolute;
-    left: 0;
-    top: -40px;
+/* Tooltip moved to a portal so it is not clipped by container overflow */
+.floating-tooltip {
+    position: fixed;
     background: rgba(0, 0, 0, 0.9);
     color: #fff;
     padding: 6px 8px;
     border-radius: 4px;
     font-size: 12px;
-    max-width: 220px;
+    max-width: 320px;
     white-space: normal;
     word-break: break-word;
-    transform-origin: left bottom;
-    opacity: 0;
+    z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
     pointer-events: none;
-    transition: opacity 0.12s ease;
-    z-index: 1150;
-}
-.settings-row span[data-tip]:hover::after {
-    opacity: 1;
 }
 .settings-row .control {
     display: inline-flex;
