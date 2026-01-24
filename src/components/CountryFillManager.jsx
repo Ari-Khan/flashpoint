@@ -8,12 +8,9 @@ export default function CountryFillManager({ activeIso2, nations }) {
 
     const activeFeatures = useMemo(() => {
         if (!geo) return [];
-
         return activeIso2
             .map((iso) => {
-                const feature = geo.features.find((f) =>
-                    isoMatchesFeature(iso, f),
-                );
+                const feature = geo.features.find((f) => isoMatchesFeature(iso, f));
                 return feature ? { iso, feature } : null;
             })
             .filter(Boolean);

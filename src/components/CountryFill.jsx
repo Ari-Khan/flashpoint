@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import earcut from "earcut";
 import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModifier.js";
@@ -7,27 +7,34 @@ import { getCountryKey } from "../utils/countryUtils";
 
 const GEOMETRY_CACHE = new Map();
 
-export default function CountryFill({ feature, color, opacity = 1 }) {
-    const countryKey = feature ? getCountryKey(feature) : null;
+export default function CountryFill({ feature, color, opacity = 1, debug = false }) {
+    const countryKey = useMemo(() => (feature ? getCountryKey(feature) : null), [feature]);
+    
+    const [fadeOpacity, setFadeOpacity] = useState(0);
+    const [canDraw, setCanDraw] = useState(false);
+    const materialRefs = useRef([]);
+
+    useEffect(() => {
+        materialRefs.current = new Array(meshes.length).fill(null);
+    }, [meshes]);
+
+    useLayoutEffect(() => {
+        for (const m of materialRefs.current) if (m) m.opacity = 0;
+    }, [meshes]);
 
     const meshes = useMemo(() => {
         if (!feature) return [];
-        if (GEOMETRY_CACHE.has(countryKey)) {
-            return GEOMETRY_CACHE.get(countryKey);
-        }
+        if (GEOMETRY_CACHE.has(countryKey)) return GEOMETRY_CACHE.get(countryKey);
 
         const internalMeshes = [];
         const geom = feature.geometry;
 
         function buildMesh(rings) {
             if (!rings || rings.length === 0 || rings[0].length < 3) return;
-
             const vertices2D = [];
             const holeIndices = [];
             let centerLon = 0;
-            rings[0].forEach(([lon]) => {
-                centerLon += lon;
-            });
+            rings[0].forEach(([lon]) => { centerLon += lon; });
             centerLon /= rings[0].length;
 
             rings.forEach((ring, index) => {
@@ -41,24 +48,14 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
             });
 
             const rawIndices = earcut(vertices2D, holeIndices);
-            if (!rawIndices.length) return;
-
-            const isHuge =
-                feature.properties?.name === "Russia" ||
-                feature.properties?.iso_a3 === "RUS";
+            const isHuge = feature.properties?.iso_a3 === "RUS";
             const maxDist = isHuge ? 170 : 120;
             const cleanIndices = [];
-
             for (let i = 0; i < rawIndices.length; i += 3) {
-                const a = rawIndices[i],
-                    b = rawIndices[i + 1],
-                    c = rawIndices[i + 2];
-                if (
-                    Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
+                const a = rawIndices[i], b = rawIndices[i + 1], c = rawIndices[i + 2];
+                if (Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
                     Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > maxDist ||
-                    Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist
-                )
-                    continue;
+                    Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist) continue;
                 cleanIndices.push(a, b, c);
             }
 
@@ -69,10 +66,7 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
                 flatPositions[j + 1] = vertices2D[i + 1];
                 flatPositions[j + 2] = 0;
             }
-            geometry.setAttribute(
-                "position",
-                new THREE.BufferAttribute(flatPositions, 3),
-            );
+            geometry.setAttribute("position", new THREE.BufferAttribute(flatPositions, 3));
             geometry.setIndex(cleanIndices);
 
             try {
@@ -93,43 +87,57 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
             }
 
             geometry.computeVertexNormals();
-            geometry.computeBoundingSphere();
             internalMeshes.push(geometry);
         }
 
-        if (geom.type === "Polygon") {
-            buildMesh(JSON.parse(JSON.stringify(geom.coordinates)));
-        } else if (geom.type === "MultiPolygon") {
-            geom.coordinates.forEach((poly) => buildMesh(JSON.parse(JSON.stringify(poly))));
-        }
+        if (geom.type === "Polygon") buildMesh(geom.coordinates);
+        else if (geom.type === "MultiPolygon") geom.coordinates.forEach(poly => buildMesh(poly));
 
         GEOMETRY_CACHE.set(countryKey, internalMeshes);
         return internalMeshes;
     }, [feature, countryKey]);
 
-    const [fadeOpacity, setFadeOpacity] = useState(0);
-
     useEffect(() => {
+        setFadeOpacity(0);
+        setCanDraw(false);
+        
         let rafId;
         const start = performance.now();
         const duration = 1000;
 
         const animate = (now) => {
-            const t = Math.min(1, (now - start) / duration);
+            const elapsed = now - start;
+
+            if (elapsed > 16) setCanDraw(true);
+
+            const t = Math.min(1, elapsed / duration);
             const eased = t * t * (3 - 2 * t);
+
             setFadeOpacity(opacity * eased);
+
             if (t < 1) rafId = requestAnimationFrame(animate);
         };
 
         rafId = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(rafId);
-    }, [opacity, countryKey]);
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            if (debug) console.log(`[Debug] Cleaned up ${countryKey}`);
+        };
+    }, [countryKey, opacity]);
+
+    if (!feature) return null;
 
     return (
         <group>
             {meshes.map((geometry, i) => (
-                <mesh key={`${countryKey}-${i}`} geometry={geometry}>
+                <mesh 
+                    key={`${countryKey}-${i}`} 
+                    geometry={geometry}
+                    visible={canDraw}
+                >
                     <meshBasicMaterial
+                        ref={(el) => (materialRefs.current[i] = el)}
                         color={color}
                         transparent
                         opacity={fadeOpacity}
