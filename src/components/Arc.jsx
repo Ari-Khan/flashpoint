@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3";
-import { getJitteredVec3 } from "../utils/jitter";
+import { getJitteredVec3 } from "../utils/jitter.js";
 
 function getArcHeight(distance) {
   const baseHeight = Math.pow(distance, 0.7) * 0.5;
@@ -23,7 +23,7 @@ export default function Arc({
   const { points, geometry, curve, distance } = useMemo(() => {
     const start = latLonToVec3(fromLat, fromLon, 1.001);
     
-    const end = getJitteredVec3(toLat, toLon, 0.8, startTime);
+    const end = getJitteredVec3(Number(toLat), Number(toLon), 0.8, Number(startTime));
 
     const distance = start.distanceTo(end);
     const height = getArcHeight(distance);
