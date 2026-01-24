@@ -66,10 +66,11 @@ export default function ControlPanel({ nations, onRun }) {
                     onRun(actor, target);
                 }}
                 disabled={!!error}
+                className={error ? "dull" : ""}
+                title={error || "Run Simulation"}
             >
-                Run Simulation
+                {error ? <span className="button-message">{error}</span> : "Run Simulation"}
             </button>
-            {error && <div className="control-error">{error}</div>}
         </div>
     );
 }

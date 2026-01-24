@@ -63,7 +63,7 @@ export default function SettingsPanel({
       {open && (
         <div className="settings-body dropup">
           <label className="settings-row">
-            <span data-tip="How frequently the simulation advances (or Smooth for interpolation).">Tick</span>
+            <span data-tip="How frequently the simulation advances (or Smooth for interpolation)." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Tick</span>
             <div className="control">
               <select
                 title="Choose tick rate or Smooth for animated interpolation"
