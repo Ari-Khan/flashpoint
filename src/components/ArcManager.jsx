@@ -1,30 +1,57 @@
-import { useMemo } from "react";
-import Arc from "./Arc";
+import { useMemo, useState, useEffect } from "react";
+import Arc from "./Arc.jsx";
 
 export default function ArcManager({ events, nations, currentTime }) {
-    const launchEvents = useMemo(
-        () => (events ?? []).filter(e => e.type === "launch"),
-        [events]
-    );
+    const [liveLaunchIds, setLiveLaunchIds] = useState(new Set());
+
+    useEffect(() => {
+        const newLaunches = (events ?? []).filter(e => 
+            e.type === "launch" && 
+            currentTime >= e.t && 
+            currentTime < e.t + 1
+        );
+
+        if (newLaunches.length > 0) {
+            setLiveLaunchIds(prev => {
+                const next = new Set(prev);
+                newLaunches.forEach(e => next.add(`${e.from}-${e.to}-${e.t}`));
+                return next;
+            });
+        }
+    }, [currentTime, events]);
+
+    const handleComplete = (id) => {
+        setLiveLaunchIds(prev => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+        });
+    };
+
+    const activeEvents = useMemo(() => {
+        return (events ?? []).filter(e => liveLaunchIds.has(`${e.from}-${e.to}-${e.t}`));
+    }, [events, liveLaunchIds]);
 
     return (
         <>
-            {launchEvents.map((e, i) => {
+            {activeEvents.map((e) => {
                 const from = nations[e.from];
                 const to = nations[e.to];
-
+                const id = `${e.from}-${e.to}-${e.t}`;
                 if (!from || !to) return null;
 
                 return (
                     <Arc
-                        key={`${e.from}-${e.to}-${e.t}-${i}`}
-                        fromLat={from.lat} 
+                        key={id}
+                        id={id}
+                        fromLat={from.lat}
                         fromLon={from.lon}
                         toLat={to.lat}
                         toLon={to.lon}
                         weapon={e.weapon}
                         startTime={e.t}
                         currentTime={currentTime}
+                        onComplete={handleComplete}
                     />
                 );
             })}
