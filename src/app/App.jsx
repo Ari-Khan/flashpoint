@@ -23,6 +23,15 @@ import perfCfg from "../config/settings";
 const world = loadWorld();
 const BASE_TICK_MS = 1000;
 
+const TEXTURES = [
+  "specular.png",
+  "topography.jpg",
+  "terrain.jpg",
+  "bathymetry.jpg",
+  "physical.jpg",
+  "night.jpg",
+];
+
 export default function App() {
   const [events, setEvents] = useState(null);
   const [tickStep, setTickStep] = useState(perfCfg?.tickStep ?? 1);
@@ -40,6 +49,8 @@ export default function App() {
       preserveDrawingBuffer: cfg.preserveDrawingBuffer ?? false,
     };
   });
+
+  const [earthTexture, setEarthTexture] = useState(TEXTURES[0] ?? "specular.png");
 
   const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
   
@@ -78,6 +89,8 @@ export default function App() {
         onSmoothModeChange={setSmoothMode}
         performanceSettings={performanceSettings}
         onPerformanceChange={setPerformanceSettings}
+        texture={earthTexture}
+        onTextureChange={setEarthTexture}
       />
 
       <div className="time-controls">
@@ -110,7 +123,7 @@ export default function App() {
         <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
 
         <CountryBorders />
-        <Globe />
+        <Globe textureName={earthTexture} />
         <Atmosphere />
 
         <CountryFillManager activeIso2={affectedIso2} nations={world.nations} />

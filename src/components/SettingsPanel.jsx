@@ -8,6 +8,15 @@ const OPTIONS = [
   { label: "Smooth", value: 0.015625, smooth: "smooth32" },
 ];
 
+const TEXTURE_OPTIONS = [
+  { label: "Specular", value: "specular.png" },
+  { label: "Topography", value: "topography.jpg" },
+  { label: "Terrain", value: "terrain.jpg" },
+  { label: "Bathymetry", value: "bathymetry.jpg" },
+  { label: "Physical", value: "physical.jpg" },
+  { label: "Night", value: "night.jpg" },
+];
+
 export default function SettingsPanel({
   tickStep,
   onTickStepChange,
@@ -15,8 +24,11 @@ export default function SettingsPanel({
   onSmoothModeChange,
   performanceSettings = {},
   onPerformanceChange = () => {},
+  texture,
+  onTextureChange = () => {},
 }) {
   const [open, setOpen] = useState(false);
+  const padIfLong = (s) => s + (s.length >= 10 ? '\u00A0\u00A0' : '');
 
   return (
     <div className="settings-panel">
@@ -47,7 +59,7 @@ export default function SettingsPanel({
                     key={`${opt.value}-${opt.smooth}`}
                     value={`${opt.value}-${opt.smooth}`}
                   >
-                    {opt.label}
+                    {padIfLong(opt.label)}
                   </option>
                 ))}
               </select>
@@ -107,12 +119,12 @@ export default function SettingsPanel({
                       })
                     }
                   >
-                    <option value="default">default</option>
-                    <option value="high-performance">high-performance</option>
-                    <option value="low-power">low-power</option>
+                    <option value="default">Default</option>
+                    <option value="high-performance">{padIfLong("High Performance")}</option>
+                    <option value="low-power">Low Power</option>
                   </select>
                 </div>
-              </label>
+              </label> 
 
               <label className="settings-row">
                 <span data-tip="Retains framebuffer after draw; useful for screenshots.">Buffer</span>
@@ -132,6 +144,23 @@ export default function SettingsPanel({
                   </select>
                 </div>
               </label>
+
+              <label className="settings-row">
+                <span data-tip="Choose a different Earth texture (night, terrain, etc.)">Texture</span>
+                <div className="control">
+                  <select
+                    title="Choose which texture to use for the Earth"
+                    value={texture}
+                    onChange={(e) => onTextureChange(e.target.value)}
+                  >
+                    {TEXTURE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {padIfLong(opt.label)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </label> 
         </div>
       )}
     </div>

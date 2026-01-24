@@ -1,7 +1,7 @@
 import { Sphere, useTexture } from "@react-three/drei";
 
-export default function Globe() {
-    const earthTexture = useTexture("/textures/earth.png");
+export default function Globe({ textureName = "topography.jpg" }) {
+    const earthTexture = useTexture(`/textures/${textureName}`);
 
     return (
         <Sphere args={[1, 48, 48]}>
