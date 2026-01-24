@@ -5,7 +5,7 @@ import { latLonToVec3 } from "../utils/latLonToVec3.js";
 import { getJitteredVec3 } from "../utils/jitter.js";
 
 function getArcHeight(distance) {
-    return Math.min(1.5, Math.pow(distance, 0.7) * 0.5);
+    return 0.05 + (distance * 0.45); 
 }
 
 export default function Arc({
@@ -24,34 +24,38 @@ export default function Arc({
     const isDoneRef = useRef(false);
     const [coneOpacity, setConeOpacity] = useState(1);
 
-    const { points, geometry, curve, distance, duration, impactTime, origin, dotGeometry } = useMemo(() => {
-        const start = latLonToVec3(fromLat, fromLon, 1.001);
-        const end = getJitteredVec3(Number(toLat), Number(toLon), 0.8, Number(startTime));
-        const d = start.distanceTo(end);
-        const h = getArcHeight(d);
+	const { points, geometry, curve, distance, duration, impactTime, origin, dotGeometry } = useMemo(() => {
+		const start = latLonToVec3(fromLat, fromLon, 1.001);
+		const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
+		
+		const d = start.distanceTo(end);
+		const h = getArcHeight(d);
 
-        const mid = start.clone().add(end).multiplyScalar(0.5).normalize().multiplyScalar(1 + h);
-        const bezier = new THREE.QuadraticBezierCurve3(start, mid, end);
-        const pts = bezier.getPoints(128);
-        const geom = new THREE.BufferGeometry().setFromPoints(pts);
-        
-        // Sphere for the origin dot
-        const dotGeom = new THREE.SphereGeometry(0.002, 8, 8);
+		const midPoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+		
+		const mid = midPoint.clone().normalize().multiplyScalar(1 + h);
 
-        const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
-        const dur = Math.max(5, d * speedMultiplier);
+		const bezier = new THREE.QuadraticBezierCurve3(start, mid, end);
+		
+		const resolution = d > 1 ? 128 : 64;
+		const pts = bezier.getPoints(resolution);
+		const geom = new THREE.BufferGeometry().setFromPoints(pts);
+		
+		const dotGeom = new THREE.SphereGeometry(0.002, 8, 8);
+		const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
+		const dur = Math.max(5, d * speedMultiplier);
 
-        return { 
-            points: pts, 
-            geometry: geom, 
-            curve: bezier, 
-            distance: d, 
-            duration: dur,
-            impactTime: startTime + dur,
-            origin: start,
-            dotGeometry: dotGeom
-        };
-    }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
+		return { 
+			points: pts, 
+			geometry: geom, 
+			curve: bezier, 
+			distance: d, 
+			duration: dur,
+			impactTime: startTime + dur,
+			origin: start,
+			dotGeometry: dotGeom
+		};
+	}, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
 
     useEffect(() => {
         return () => {
@@ -72,7 +76,7 @@ export default function Arc({
         const drawCount = Math.max(1, Math.ceil(points.length * progress));
         geom.setDrawRange(0, drawCount);
 
-        const pauseDuration = 0.5;
+        const pauseDuration = 0.25;
         if (currentTime >= impactTime + pauseDuration) {
             const newOpacity = Math.max(0, mat.opacity - 0.05);
             mat.opacity = newOpacity;

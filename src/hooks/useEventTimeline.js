@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import cfg from "../config/settings";
+import cfg from "../config/settings.js";
 
 export function useEventTimeline(events, timePerStep = 1000, tickStep, isPaused = false) {
     const [visible, setVisible] = useState([]);

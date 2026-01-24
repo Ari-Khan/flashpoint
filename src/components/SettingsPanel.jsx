@@ -28,6 +28,8 @@ export default function SettingsPanel({
   onPerformanceChange = () => {},
   texture,
   onTextureChange = () => {},
+  zoomMode = "Smooth",
+  onZoomModeChange = () => {},
 }) {
   const [open, setOpen] = useState(false);
   const [tipText, setTipText] = useState(null);
@@ -159,6 +161,20 @@ export default function SettingsPanel({
                   >
                     <option value="off">Off</option>
                     <option value="on">On</option>
+                  </select>
+                </div>
+              </label>
+
+              <label className="settings-row">
+                <span data-tip="Choose zoom behavior: Smooth uses the smooth physics zoom; Block uses native immediate zoom." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Zoom</span>
+                <div className="control">
+                  <select
+                    title="Choose zoom behavior"
+                    value={zoomMode}
+                    onChange={(e) => onZoomModeChange(e.target.value)}
+                  >
+                    <option value="Smooth">Smooth</option>
+                    <option value="Block">Block</option>
                   </select>
                 </div>
               </label>

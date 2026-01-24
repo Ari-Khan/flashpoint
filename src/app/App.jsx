@@ -40,6 +40,7 @@ export default function App() {
   const [smoothMode, setSmoothMode] = useState("off");
   const [isPaused, setIsPaused] = useState(false);
   const controlsRef = useRef();
+  const [zoomMode, setZoomMode] = useState("Smooth");
 
   const timePerStep = BASE_TICK_MS * tickStep;
 
@@ -94,6 +95,8 @@ export default function App() {
         onPerformanceChange={setPerformanceSettings}
         texture={earthTexture}
         onTextureChange={setEarthTexture}
+        zoomMode={zoomMode}
+        onZoomModeChange={setZoomMode}
       />
 
       <div className="time-controls">
@@ -133,7 +136,7 @@ export default function App() {
 
         <OrbitControls 
             ref={controlsRef} 
-            enableZoom={false}
+            enableZoom={zoomMode === "Block"}
             enableDamping={true}
             dampingFactor={0.06}
             minDistance={1.2}
@@ -146,6 +149,7 @@ export default function App() {
             decay={0.90} 
             minDistance={1.2} 
             maxDistance={8} 
+            enabled={zoomMode === "Smooth"}
         />
       </Canvas>
     </div>
