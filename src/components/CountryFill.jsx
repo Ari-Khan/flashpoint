@@ -8,11 +8,10 @@ import { getCountryKey } from "../utils/countryUtils";
 const GEOMETRY_CACHE = new Map();
 
 export default function CountryFill({ feature, color, opacity = 1 }) {
-    if (!feature) return null;
-
-    const countryKey = getCountryKey(feature);
+    const countryKey = feature ? getCountryKey(feature) : null;
 
     const meshes = useMemo(() => {
+        if (!feature) return [];
         if (GEOMETRY_CACHE.has(countryKey)) {
             return GEOMETRY_CACHE.get(countryKey);
         }
@@ -79,7 +78,7 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
             try {
                 geometry = new TessellateModifier(1.0, 5).modify(geometry);
                 geometry = new TessellateModifier(0.15, 8).modify(geometry);
-            } catch (e) {
+            } catch {
                 geometry = new TessellateModifier(0.5, 4).modify(geometry);
             }
 
@@ -99,9 +98,9 @@ export default function CountryFill({ feature, color, opacity = 1 }) {
         }
 
         if (geom.type === "Polygon") {
-            buildMesh(geom.coordinates);
+            buildMesh(JSON.parse(JSON.stringify(geom.coordinates)));
         } else if (geom.type === "MultiPolygon") {
-            geom.coordinates.forEach((poly) => buildMesh(poly));
+            geom.coordinates.forEach((poly) => buildMesh(JSON.parse(JSON.stringify(poly))));
         }
 
         GEOMETRY_CACHE.set(countryKey, internalMeshes);

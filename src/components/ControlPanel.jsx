@@ -14,13 +14,15 @@ export default function ControlPanel({ nations, onRun }) {
     }, [actor, nations]);
 
     useEffect(() => {
-        if (actor === target) {
-            setError("A country can't nuke itself.");
-        } else if (!hasNukes) {
-            setError(`${actor} has no nuclear weapons.`);
-        } else {
-            setError(null);
-        }
+        queueMicrotask(() => {
+            if (actor === target) {
+                setError("A country can't nuke itself.");
+            } else if (!hasNukes) {
+                setError(`${actor} has no nuclear weapons.`);
+            } else {
+                setError(null);
+            }
+        });
     }, [actor, target, hasNukes]);
 
     return (

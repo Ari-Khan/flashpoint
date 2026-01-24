@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPaused = false) {
+import cfg from "../config/settings";
+
+export function useEventTimeline(events, timePerStep = 1000, tickStep, isPaused = false) {
     const [visible, setVisible] = useState([]);
     const [currentTick, setCurrentTick] = useState(0);
     const currentRef = useRef(0);
     const prevEventsRef = useRef(null);
 
-    const step = tickStep > 0 ? tickStep : 1;
+    const step = typeof tickStep === "number" && tickStep > 0 ? tickStep : (cfg.tickStep ?? 1);
 
     const { minT, maxT, byTick } = useMemo(() => {
         if (!events?.length) return { minT: 0, maxT: 0, byTick: new Map() };
@@ -31,8 +33,10 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPau
 
     useEffect(() => {
         if (!events?.length) {
-            setVisible([]);
-            setCurrentTick(0);
+            queueMicrotask(() => {
+                setVisible([]);
+                setCurrentTick(0);
+            });
             currentRef.current = 0;
             prevEventsRef.current = null;
             return;
@@ -40,8 +44,10 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep = 1, isPau
 
         if (prevEventsRef.current !== events) {
             prevEventsRef.current = events;
-            setVisible(byTick.get(minT) ?? []);
-            setCurrentTick(minT);
+            queueMicrotask(() => {
+                setVisible(byTick.get(minT) ?? []);
+                setCurrentTick(minT);
+            });
             currentRef.current = minT;
         }
     }, [events, minT, byTick]);

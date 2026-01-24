@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3";
@@ -56,6 +56,8 @@ export default function Arc({
     1
   );
 
+  const [coneOpacity, setConeOpacity] = useState(1);
+
   useFrame(() => {
     if (!lineRef.current) return;
 
@@ -64,10 +66,9 @@ export default function Arc({
     geom.setDrawRange(0, drawCount);
 
     if (progress >= 1) {
-      lineRef.current.material.opacity = Math.max(
-        0,
-        lineRef.current.material.opacity - 0.03
-      );
+      const newOpacity = Math.max(0, lineRef.current.material.opacity - 0.03);
+      lineRef.current.material.opacity = newOpacity;
+      if (Math.abs(coneOpacity - newOpacity) > 1e-5) setConeOpacity(newOpacity);
     }
   });
 
@@ -98,8 +99,6 @@ export default function Arc({
           direction = tipPoint.clone().sub(prevPoint).normalize();
           coneQuat.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
         }
-        const coneOpacity = lineRef.current?.material?.opacity ?? 1;
-
         const conePos = tipPoint.clone();
 
         return (

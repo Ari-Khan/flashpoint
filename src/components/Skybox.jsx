@@ -1,9 +1,10 @@
-import { useThree } from "@react-three/fiber";
+import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function Skybox() {
     const { scene, camera } = useThree();
+    const skyboxRef = useRef();
 
     useEffect(() => {
         const textureLoader = new THREE.TextureLoader();
@@ -15,18 +16,9 @@ export default function Skybox() {
             side: THREE.BackSide,
         });
         const skybox = new THREE.Mesh(geometry, material);
+        skyboxRef.current = skybox;
 
         scene.add(skybox);
-
-        const updateSkybox = () => {
-            skybox.position.copy(camera.position);
-        };
-
-        const originalUpdateWorldMatrix = camera.updateWorldMatrix.bind(camera);
-        camera.updateWorldMatrix = function (...args) {
-            originalUpdateWorldMatrix(...args);
-            updateSkybox();
-        };
 
         return () => {
             scene.remove(skybox);
@@ -35,6 +27,10 @@ export default function Skybox() {
             texture.dispose();
         };
     }, [scene, camera]);
+
+    useFrame(() => {
+        if (skyboxRef.current) skyboxRef.current.position.copy(camera.position);
+    });
 
     return null;
 }

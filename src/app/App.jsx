@@ -17,36 +17,31 @@ import { loadWorld } from "../data/loadData";
 import { simulateEscalation } from "../sim/simulateEscalation";
 
 import "../index.css";
+import perfCfg from "../config/settings";
 
 const world = loadWorld();
 const BASE_TICK_MS = 1000;
 
 export default function App() {
     const [events, setEvents] = useState(null);
-    const [tickStep, setTickStep] = useState(1);
+    const [tickStep, setTickStep] = useState(perfCfg?.tickStep ?? 1);
     const [smoothMode, setSmoothMode] = useState("off");
     const [displayTick, setDisplayTick] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
 
-    const lastTickTimeRef = useRef(performance.now());
+    const lastTickTimeRef = useRef(0);
 
     const timePerStep = BASE_TICK_MS * tickStep;
 
-    // Performance settings (can be changed from SettingsPanel)
+    
     const [performanceSettings, setPerformanceSettings] = useState(() => {
-        try {
-            // lazy load defaults from config
-            // eslint-disable-next-line import/no-unresolved
-            const cfg = require("../config/performanceConfig").default;
-            return cfg;
-        } catch (e) {
-            return {
-                antialias: true,
-                pixelRatioLimit: 2,
-                powerPreference: "high-performance",
-                preserveDrawingBuffer: false,
-            };
-        }
+        const cfg = perfCfg ?? {};
+        return {
+            antialias: cfg.antialias ?? true,
+            pixelRatioLimit: cfg.pixelRatioLimit ?? 2,
+            powerPreference: cfg.powerPreference ?? "high-performance",
+            preserveDrawingBuffer: cfg.preserveDrawingBuffer ?? false,
+        };
     });
 
     const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
@@ -67,11 +62,9 @@ export default function App() {
 
     useEffect(() => {
         if (smoothMode === "off") {
-            setDisplayTick(currentTick);
+            queueMicrotask(() => setDisplayTick(currentTick));
             return undefined;
         }
-
-        const frameMs = 1000 / 32;
         let rafId;
 
         const tick = () => {

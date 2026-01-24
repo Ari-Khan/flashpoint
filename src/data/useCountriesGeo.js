@@ -7,7 +7,7 @@ export function useCountriesGeo() {
 
     useEffect(() => {
         if (cache) {
-            setData(cache);
+            queueMicrotask(() => setData(cache));
             return;
         }
 

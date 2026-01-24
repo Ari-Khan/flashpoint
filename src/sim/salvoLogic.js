@@ -1,5 +1,3 @@
-import { exp } from "three/tsl";
-
 function computeSalvoCount({ time, powerTier, remaining, initialStock = 100, ramp = 8 }) {
     const maxByTier = { 
         5: 25,

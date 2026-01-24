@@ -60,7 +60,6 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
         const used = launchStrike({
             from,
             to,
-            nations,
             state,
             maxPerStrike: count,
             isBetrayal: isBetrayal || false

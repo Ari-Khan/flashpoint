@@ -6,7 +6,7 @@ function selectWeapon(stock) {
     return null;
 }
 
-function launchStrike({ from, to, nations, state, maxPerStrike = 1 }) {
+function launchStrike({ from, to, state, maxPerStrike = 1 }) {
     const stock = state.remaining[from];
     const weapon = selectWeapon(stock);
 
@@ -116,15 +116,15 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     const nukeCount = state.events.filter(e => e.type === 'launch').length;
     const globalChaos = nukeCount * 0.75;
 
-    let focusOnLastStriker = 10.0, strayBias = 1.0;
-    const docMap = { 
-        "retaliatory": [20, 0.5], 
-        "no-first-use": [20, 0.5], 
-        "first-use": [5, 4.0], 
-        "ambiguous": [2, 6], 
-        "threshold": [1, 8] 
+    let focusOnLastStriker = 10.0;
+    const docMap = {
+        "retaliatory": [20, 0.5],
+        "no-first-use": [20, 0.5],
+        "first-use": [5, 4.0],
+        "ambiguous": [2, 6],
+        "threshold": [1, 8]
     };
-    [focusOnLastStriker, strayBias] = docMap[doctrine] || [10, 1];
+    [focusOnLastStriker] = docMap[doctrine] || [10];
 
     let totalWeight = 0;
     const weighted = candidates.map((code) => {
