@@ -12,11 +12,12 @@ export default function ArcManager({ events, nations, currentTime }) {
         );
 
         if (newLaunches.length > 0) {
-            setLiveLaunchIds(prev => {
+            const id = setTimeout(() => setLiveLaunchIds(prev => {
                 const next = new Set(prev);
                 newLaunches.forEach(e => next.add(`${e.from}-${e.to}-${e.t}`));
                 return next;
-            });
+            }), 0);
+            return () => clearTimeout(id);
         }
     }, [currentTime, events]);
 
@@ -40,14 +41,19 @@ export default function ArcManager({ events, nations, currentTime }) {
                 const id = `${e.from}-${e.to}-${e.t}`;
                 if (!from || !to) return null;
 
+                const fromLat = e.fromLat ?? from.lat;
+                const fromLon = e.fromLon ?? from.lon;
+                const toLat = e.toLat ?? to.lat;
+                const toLon = e.toLon ?? to.lon;
+
                 return (
                     <Arc
                         key={id}
                         id={id}
-                        fromLat={from.lat}
-                        fromLon={from.lon}
-                        toLat={to.lat}
-                        toLon={to.lon}
+                        fromLat={fromLat}
+                        fromLon={fromLon}
+                        toLat={toLat}
+                        toLon={toLon}
                         weapon={e.weapon}
                         startTime={e.t}
                         currentTime={currentTime}

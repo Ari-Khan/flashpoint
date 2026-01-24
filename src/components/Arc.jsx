@@ -24,11 +24,10 @@ export default function Arc({
     onComplete
 }) {
     const lineRef = useRef();
-    const dotRef = useRef();
     const isDoneRef = useRef(false);
     const [coneOpacity, setConeOpacity] = useState(1);
 
-    const { points, geometry, curve, distance, duration, impactTime, origin, dotGeometry } = useMemo(() => {
+    const { points, geometry, curve, duration, impactTime } = useMemo(() => {
         const start = latLonToVec3(fromLat, fromLon, 1.001);
         const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
         
@@ -53,7 +52,6 @@ export default function Arc({
         const pts = cubicCurve.getPoints(resolution);
         const geom = new THREE.BufferGeometry().setFromPoints(pts);
         
-        const dotGeom = new THREE.SphereGeometry(0.002, 8, 8);
         const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
         const dur = Math.max(5, d * speedMultiplier);
 
@@ -64,17 +62,15 @@ export default function Arc({
             distance: d, 
             duration: dur,
             impactTime: startTime + dur,
-            origin: start,
-            dotGeometry: dotGeom
+            origin: start
         };
     }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
 
     useEffect(() => {
         return () => {
             geometry.dispose();
-            dotGeometry.dispose();
         };
-    }, [geometry, dotGeometry]);
+    }, [geometry]);
 
     const rawProgress = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
     
@@ -87,7 +83,6 @@ export default function Arc({
 
         const mat = lineRef.current.material;
         const geom = lineRef.current.geometry;
-        const dotMat = dotRef.current.material;
 
         const drawCount = Math.max(1, Math.ceil(points.length * progress));
         geom.setDrawRange(0, drawCount);
@@ -96,7 +91,6 @@ export default function Arc({
         if (currentTime >= impactTime + pauseDuration) {
             const newOpacity = Math.max(0, mat.opacity - 0.05);
             mat.opacity = newOpacity;
-            dotMat.opacity = newOpacity;
             
             if (Math.abs(coneOpacity - newOpacity) > 0.01) setConeOpacity(newOpacity);
 
@@ -118,10 +112,6 @@ export default function Arc({
 
     return (
         <group>
-            <mesh ref={dotRef} position={origin} geometry={dotGeometry}>
-                <meshBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
-            </mesh>
-
             <line ref={lineRef} geometry={geometry}>
                 <lineBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
                 <mesh position={tipPoint} quaternion={coneQuat}>

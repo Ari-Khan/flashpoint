@@ -9,7 +9,7 @@ import {
 } from "./escalationLogic";
 import { computeSalvoCount } from "./salvoLogic";
 
-export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 10000, maxTime = 500 }) {
+export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 10000, maxTime = 1000 }) {
     const worldClone = JSON.parse(JSON.stringify(world));
     const { nations } = worldClone;
     const state = createEscalationState();
@@ -62,7 +62,8 @@ export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 
             to,
             state,
             maxPerStrike: count,
-            isBetrayal: isBetrayal || false
+            isBetrayal: isBetrayal || false,
+            world
         });
         if (!used) {
             ticks++;

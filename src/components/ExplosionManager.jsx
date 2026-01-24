@@ -9,13 +9,27 @@ const FADE_WINDOW = 12;
 function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fadeWindow }) {
     const meshRef = useRef();
 
-    const { impactTick, position, geometry, material } = useMemo(() => {
-        const start = latLonToVec3(fromNation.lat, fromNation.lon, 1.001);
-        const end = getJitteredVec3(Number(targetNation.lat), Number(targetNation.lon), 0.8, Number(event.t));
+    const { impactTick, position, geometry, material, sizeMultiplier } = useMemo(() => {
+        const startLat = event.fromLat ?? fromNation.lat;
+        const startLon = event.fromLon ?? fromNation.lon;
+        const endLat = event.toLat ?? targetNation.lat;
+        const endLon = event.toLon ?? targetNation.lon;
+
+        const start = latLonToVec3(startLat, startLon, 1.001);
+        const end = getJitteredVec3(Number(endLat), Number(endLon), 0.8, Number(event.t));
 
         const distance = start.distanceTo(end);
         const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[event.weapon] ?? 20;
         const duration = Math.max(5, distance * speedMultiplier);
+
+        
+        const count = Math.max(1, Number(event.count) || 1);
+        const countFactor = 1 + Math.log2(count) * 0.35; 
+        const seed = Number(event.t) + (count * 13.37);
+        const rand = Math.abs(Math.sin(seed * 12.9898));
+        const randomFactor = 0.85 + rand * 0.3; 
+        const globalReduction = 0.6; 
+        const sizeMultiplier = countFactor * randomFactor * globalReduction;
 
         return {
             impactTick: event.t + duration,
@@ -25,7 +39,8 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
                 color: "#ffcc55",
                 transparent: true,
                 depthWrite: false,
-            })
+            }),
+            sizeMultiplier
         };
     }, [event, targetNation, fromNation]);
 
@@ -46,7 +61,8 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
 
         if (isVisible) {
             const progress = (displayTime - impactTick) / fadeWindow;
-            const scale = 0.005 + 0.04 * progress;
+            const baseScale = 0.005 + 0.04 * progress;
+            const scale = baseScale * (sizeMultiplier ?? 1);
             meshRef.current.scale.setScalar(scale);
             meshRef.current.material.opacity = Math.pow(1 - progress, 2);
         }
@@ -63,12 +79,13 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
 }
 
 export default function ExplosionManager({ events = [], nations, currentTime, smooth = true, speed = 2.0 }) {
-    const lastTickRef = useRef(performance.now());
+    const lastTickRef = useRef(0);
     const displayTimeRef = useRef(currentTime);
 
     useFrame(() => {
         if (smooth) {
             const now = performance.now();
+            if (lastTickRef.current === 0) lastTickRef.current = now;
             const deltaTicks = ((now - lastTickRef.current) / 1000) * speed;
             displayTimeRef.current += (currentTime + deltaTicks - displayTimeRef.current) * 0.1;
         } else {
@@ -85,15 +102,20 @@ export default function ExplosionManager({ events = [], nations, currentTime, sm
             const to = nations[e.to];
             if (!from || !to) return false;
 
-            const d = latLonToVec3(from.lat, from.lon, 1).distanceTo(
-                latLonToVec3(to.lat, to.lon, 1)
+            const fromLat = e.fromLat ?? from.lat;
+            const fromLon = e.fromLon ?? from.lon;
+            const toLat = e.toLat ?? to.lat;
+            const toLon = e.toLon ?? to.lon;
+
+            const d = latLonToVec3(fromLat, fromLon, 1).distanceTo(
+                latLonToVec3(toLat, toLon, 1)
             );
             const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[e.weapon] ?? 20;
             const impact = e.t + Math.max(5, d * speedMultiplier);
 
-            return displayTimeRef.current >= impact - 5 && displayTimeRef.current < impact + FADE_WINDOW + 5;
+            return currentTime >= impact - 5 && currentTime < impact + FADE_WINDOW + 5;
         });
-    }, [events, nations]);
+    }, [events, nations, currentTime]);
 
     return (
         <>

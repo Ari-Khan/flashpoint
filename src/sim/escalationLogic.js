@@ -6,7 +6,26 @@ function selectWeapon(stock) {
     return null;
 }
 
-function launchStrike({ from, to, state, maxPerStrike = 1 }) {
+function selectWeightedCity(nation, decay = 0.6) {
+    if (!nation) return null;
+    const capital = { name: nation.capital ?? nation.name, lat: nation.lat, lon: nation.lon };
+    const cities = [capital].concat(nation.majorCities || []);
+    if (!cities || cities.length === 0) return null;
+    if (cities.length === 1) return cities[0];
+
+    const weights = cities.map((_, i) => Math.pow(decay, i));
+    const totalWeight = weights.reduce((acc, w) => acc + w, 0);
+
+    let r = Math.random() * totalWeight;
+    for (let i = 0; i < cities.length; i++) {
+        if (r < weights[i]) return cities[i];
+        r -= weights[i];
+    }
+
+    return cities[0];
+}
+
+function launchStrike({ from, to, state, maxPerStrike = 1, world }) {
     const stock = state.remaining[from];
     const weapon = selectWeapon(stock);
 
@@ -16,6 +35,14 @@ function launchStrike({ from, to, state, maxPerStrike = 1 }) {
     stock[weapon] -= actualCount;
     if (stock[weapon] < 0) stock[weapon] = 0;
 
+    
+    const nations = world?.nations || {};
+    const fromNation = nations[from] || {};
+    const toNation = nations[to] || {};
+
+    const fromCity = selectWeightedCity(fromNation);
+    const toCity = selectWeightedCity(toNation);
+
     state.events.push({
         t: state.time,
         type: "launch",
@@ -23,6 +50,12 @@ function launchStrike({ from, to, state, maxPerStrike = 1 }) {
         to,
         weapon,
         count: actualCount,
+        fromLat: fromCity?.lat,
+        fromLon: fromCity?.lon,
+        fromCity: fromCity?.name,
+        toLat: toCity?.lat,
+        toLon: toCity?.lon,
+        toCity: toCity?.name,
     });
 
     state.involved.add(from);

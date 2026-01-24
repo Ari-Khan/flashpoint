@@ -15,19 +15,23 @@ export default function ControlPanel({ nations, onRun }) {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (aggressorCodes.length === 0) {
-            setError("No aggressors available (no nations have nukes).");
-            return;
-        }
-        if (!actor || !target) {
-            setError("Select valid countries.");
-            return;
-        }
-        if (actor === target) {
-            setError("A country can't nuke itself.");
-        } else {
-            setError(null);
-        }
+        let raf = null;
+        raf = requestAnimationFrame(() => {
+            if (aggressorCodes.length === 0) {
+                setError("No aggressors available (no nations have nukes).");
+                return;
+            }
+            if (!actor || !target) {
+                setError("Select valid countries.");
+                return;
+            }
+            if (actor === target) {
+                setError("A country can't nuke itself.");
+            } else {
+                setError(null);
+            }
+        });
+        return () => { if (raf) cancelAnimationFrame(raf); };
     }, [actor, target, aggressorCodes.length]);
 
     return (

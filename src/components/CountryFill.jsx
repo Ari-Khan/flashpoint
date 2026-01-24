@@ -78,8 +78,8 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
             internalMeshes.push(geometry);
         }
 
-        if (geom.type === "Polygon") buildMesh(geom.coordinates);
-        else if (geom.type === "MultiPolygon") geom.coordinates.forEach(poly => buildMesh(poly));
+        if (geom.type === "Polygon") buildMesh(JSON.parse(JSON.stringify(geom.coordinates)));
+        else if (geom.type === "MultiPolygon") geom.coordinates.forEach(poly => buildMesh(JSON.parse(JSON.stringify(poly))));
 
         GEOMETRY_CACHE.set(countryKey, internalMeshes);
         return internalMeshes;
@@ -94,13 +94,14 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
     }, [meshes]);
 
     useLayoutEffect(() => {
-        for (const m of materialRefs.current) if (m) m.opacity = 0;
+        const mats = materialRefs.current.slice();
+        const raf = requestAnimationFrame(() => {
+            mats.forEach(m => { if (m) m.opacity = 0; });
+        });
+        return () => cancelAnimationFrame(raf);
     }, [meshes]);
 
     useEffect(() => {
-        setFadeOpacity(0);
-        setCanDraw(false);
-        
         let rafId;
         const start = performance.now();
         const duration = 1000;
@@ -116,13 +117,18 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
             if (t < 1) rafId = requestAnimationFrame(animate);
         };
 
-        rafId = requestAnimationFrame(animate);
+        // schedule initial values to avoid synchronous setState in effect
+        rafId = requestAnimationFrame(() => {
+            setFadeOpacity(0);
+            setCanDraw(false);
+            rafId = requestAnimationFrame(animate);
+        });
 
         return () => {
             cancelAnimationFrame(rafId);
             if (debug) console.log(`[Debug] Cleaned up ${countryKey}`);
         };
-    }, [countryKey, opacity]);
+    }, [countryKey, opacity, debug]);
 
     if (!feature) return null;
 

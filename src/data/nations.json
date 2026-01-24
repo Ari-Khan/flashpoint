@@ -14,7 +14,7 @@
         },
         "doctrine": "retaliatory",
         "defaultColor": "#3C3B6E",
-        "majorCities": [{"name":"New York","lat":40.7128,"lon":-74.0060}]
+        "majorCities": [{"name":"New York","lat":40.7128,"lon":-74.0060},{"name":"Los Angeles","lat":34.0522,"lon":-118.2437},{"name":"Chicago","lat":41.8781,"lon":-87.6298},{"name":"Houston","lat":29.7604,"lon":-95.3698}]
     },
     "RUS": {
         "name": "Russia",
@@ -31,7 +31,7 @@
         },
         "doctrine": "first-use",
         "defaultColor": "#D62718",
-        "majorCities": [{"name":"Saint Petersburg","lat":59.9311,"lon":30.3609}]
+        "majorCities": [{"name":"St. Petersburg","lat":59.9311,"lon":30.3609},{"name":"Novosibirsk","lat":55.0084,"lon":82.9357},{"name":"Yekaterinburg","lat":56.8389,"lon":60.6057},{"name":"Kazan","lat":55.7961,"lon":49.1064}]
     },
     "CHN": {
         "name": "China",
@@ -48,7 +48,7 @@
         },
         "doctrine": "no-first-use",
         "defaultColor": "#EE1C25",
-        "majorCities": [{"name":"Shanghai","lat":31.2304,"lon":121.4737}]
+        "majorCities": [{"name":"Shanghai","lat":31.2304,"lon":121.4737},{"name":"Guangzhou","lat":23.1291,"lon":113.2644},{"name":"Shenzhen","lat":22.5431,"lon":114.0579},{"name":"Chengdu","lat":30.5728,"lon":104.0668}]
     },
     "FRA": {
         "name": "France",
@@ -65,7 +65,7 @@
         },
         "doctrine": "retaliatory",
         "defaultColor": "#0072BB",
-        "majorCities": [{"name":"Marseille","lat":43.2965,"lon":5.3698}]
+        "majorCities": [{"name":"Marseille","lat":43.2965,"lon":5.3698},{"name":"Lyon","lat":45.7640,"lon":4.8357},{"name":"Toulouse","lat":43.6047,"lon":1.4442},{"name":"Nice","lat":43.7102,"lon":7.2620}]
     },
     "GBR": {
         "name": "United Kingdom",
@@ -82,7 +82,7 @@
         },
         "doctrine": "retaliatory",
         "defaultColor": "#C8102E",
-        "majorCities": [{"name":"Birmingham","lat":52.4862,"lon":-1.8904}]
+        "majorCities": [{"name":"Birmingham","lat":52.4862,"lon":-1.8904},{"name":"Manchester","lat":53.4808,"lon":-2.2426},{"name":"Leeds","lat":53.8008,"lon":-1.5491},{"name":"Glasgow","lat":55.8642,"lon":-4.2518}]
     },
     "IND": {
         "name": "India",
@@ -99,7 +99,7 @@
         },
         "doctrine": "no-first-use",
         "defaultColor": "#FF9933",
-        "majorCities": [{"name":"Mumbai","lat":19.0760,"lon":72.8777}]
+        "majorCities": [{"name":"Mumbai","lat":19.0760,"lon":72.8777},{"name":"Bengaluru","lat":12.9716,"lon":77.5946},{"name":"Kolkata","lat":22.5726,"lon":88.3639},{"name":"Hyderabad","lat":17.3850,"lon":78.4867}]
     },
     "PAK": {
         "name": "Pakistan",
@@ -116,7 +116,7 @@
         },
         "doctrine": "first-use",
         "defaultColor": "#01411C",
-        "majorCities": [{"name":"Karachi","lat":24.8607,"lon":67.0011}]
+        "majorCities": [{"name":"Karachi","lat":24.8607,"lon":67.0011},{"name":"Lahore","lat":31.5204,"lon":74.3587},{"name":"Faisalabad","lat":31.4504,"lon":73.1350},{"name":"Rawalpindi","lat":33.5651,"lon":73.0169}]
     },
     "ISR": {
         "name": "Israel",
@@ -133,7 +133,7 @@
         },
         "doctrine": "ambiguous",
         "defaultColor": "#0038B8",
-        "majorCities": [{"name":"Tel Aviv","lat":32.0853,"lon":34.7818}]
+        "majorCities": [{"name":"Tel Aviv","lat":32.0853,"lon":34.7818},{"name":"Haifa","lat":32.7940,"lon":34.9896},{"name":"Beersheba","lat":31.2518,"lon":34.7915},{"name":"Nazareth","lat":32.6996,"lon":35.3035}]
     },
     "PRK": {
         "name": "North Korea",
@@ -150,7 +150,7 @@
         },
         "doctrine": "first-use",
         "defaultColor": "#ED1C27",
-        "majorCities": [{"name":"Hamhung","lat":39.9236,"lon":127.5456}]
+        "majorCities": [{"name":"Hamhung","lat":39.9236,"lon":127.5456},{"name":"Chongjin","lat":41.8061,"lon":129.7795},{"name":"Sinuiju","lat":40.0984,"lon":124.3984},{"name":"Pyongsong","lat":39.7100,"lon":125.7500}]
     },
     "IRN": {
         "name": "Iran",
@@ -167,7 +167,7 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#FFFFFF",
-        "majorCities": [{"name":"Mashhad","lat":36.2605,"lon":59.6168}]
+        "majorCities": [{"name":"Mashhad","lat":36.2605,"lon":59.6168},{"name":"Isfahan","lat":32.6522,"lon":51.6776},{"name":"Shiraz","lat":29.5918,"lon":52.5836},{"name":"Tabriz","lat":38.0962,"lon":46.2738}]
     },
     "JPN": {
         "name": "Japan",
@@ -184,7 +184,7 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#BC002D",
-        "majorCities": [{"name":"Yokohama","lat":35.4437,"lon":139.6380}]
+        "majorCities": [{"name":"Yokohama","lat":35.4437,"lon":139.6380},{"name":"Osaka","lat":34.6937,"lon":135.5023},{"name":"Nagoya","lat":35.1815,"lon":136.9066},{"name":"Sapporo","lat":43.0621,"lon":141.3544}]
     },
     "DEU": {
         "name": "Germany",
@@ -201,7 +201,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#2E3234",
-        "majorCities": [{"name":"Hamburg","lat":53.5511,"lon":9.9937}]
+        "majorCities": [{"name":"Hamburg","lat":53.5511,"lon":9.9937},{"name":"Munich","lat":48.1351,"lon":11.5820},{"name":"Cologne","lat":50.9375,"lon":6.9603},{"name":"Frankfurt","lat":50.1109,"lon":8.6821}]
     },
     "CAN": {
         "name": "Canada",
@@ -218,7 +218,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#D80621",
-        "majorCities": [{"name":"Toronto","lat":43.65107,"lon":-79.347015}]
+        "majorCities": [{"name":"Toronto","lat":43.65107,"lon":-79.347015},{"name":"Montreal","lat":45.5017,"lon":-73.5673},{"name":"Vancouver","lat":49.2827,"lon":-123.1207},{"name":"Calgary","lat":51.0447,"lon":-114.0719}]
     },
     "ARG": {
         "name": "Argentina",
@@ -235,7 +235,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#74ACDF",
-        "majorCities": [{"name":"Córdoba","lat":-31.4201,"lon":-64.1888}]
+        "majorCities": [{"name":"Córdoba","lat":-31.4201,"lon":-64.1888},{"name":"Rosario","lat":-32.9468,"lon":-60.6393},{"name":"Mendoza","lat":-32.8895,"lon":-68.8458},{"name":"Mar del Plata","lat":-38.0055,"lon":-57.5426}]
     },
     "KOR": {
         "name": "South Korea",
@@ -252,7 +252,7 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#003478",
-        "majorCities": [{"name":"Busan","lat":35.1796,"lon":129.0756}]
+        "majorCities": [{"name":"Busan","lat":35.1796,"lon":129.0756},{"name":"Incheon","lat":37.4563,"lon":126.7052},{"name":"Daegu","lat":35.8714,"lon":128.6014},{"name":"Gwangju","lat":35.1595,"lon":126.8526}]
     },
     "SAU": {
         "name": "Saudi Arabia",
@@ -269,7 +269,7 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#006C35",
-        "majorCities": [{"name":"Jeddah","lat":21.2854,"lon":39.2376}]
+        "majorCities": [{"name":"Jeddah","lat":21.2854,"lon":39.2376},{"name":"Dammam","lat":26.3927,"lon":49.9777},{"name":"Mecca","lat":21.3891,"lon":39.8579},{"name":"Medina","lat":24.5247,"lon":39.5692}]
     },
     "TUR": {
         "name": "Türkiye",
@@ -286,7 +286,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#E30A17",
-        "majorCities": [{"name":"Istanbul","lat":41.0082,"lon":28.9784}]
+        "majorCities": [{"name":"Istanbul","lat":41.0082,"lon":28.9784},{"name":"Izmir","lat":38.4237,"lon":27.1428},{"name":"Bursa","lat":40.1950,"lon":29.0600},{"name":"Antalya","lat":36.8841,"lon":30.7056}]
     },
     "BRA": {
         "name": "Brazil",
@@ -303,7 +303,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#009739",
-        "majorCities": [{"name":"São Paulo","lat":-23.5505,"lon":-46.6333}]
+        "majorCities": [{"name":"São Paulo","lat":-23.5505,"lon":-46.6333},{"name":"Rio de Janeiro","lat":-22.9068,"lon":-43.1729},{"name":"Salvador","lat":-12.9777,"lon":-38.5016},{"name":"Fortaleza","lat":-3.7172,"lon":-38.5434}]
     },
     "TWN": {
         "name": "Taiwan",
@@ -320,7 +320,7 @@
         },
         "doctrine": "threshold",
         "defaultColor": "#000097",
-        "majorCities": [{"name":"Kaohsiung","lat":22.6273,"lon":120.3014}]
+        "majorCities": [{"name":"Kaohsiung","lat":22.6273,"lon":120.3014},{"name":"Taichung","lat":24.1477,"lon":120.6736},{"name":"Hsinchu","lat":24.8138,"lon":120.9675},{"name":"Tainan","lat":23.0000,"lon":120.2270}]
     },
     "SWE": {
         "name": "Sweden",
@@ -337,7 +337,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#006AA7",
-        "majorCities": [{"name":"Gothenburg","lat":57.7089,"lon":11.9746}]
+        "majorCities": [{"name":"Gothenburg","lat":57.7089,"lon":11.9746},{"name":"Malmö","lat":55.6050,"lon":13.0038},{"name":"Uppsala","lat":59.8586,"lon":17.6389},{"name":"Västerås","lat":59.6099,"lon":16.5448}]
     },
     "ZAF": {
         "name": "South Africa",
@@ -354,7 +354,7 @@
         },
         "doctrine": "latent",
         "defaultColor": "#007749",
-        "majorCities": [{"name":"Johannesburg","lat":-26.2041,"lon":28.0473}]
+        "majorCities": [{"name":"Johannesburg","lat":-26.2041,"lon":28.0473},{"name":"Cape Town","lat":-33.9249,"lon":18.4241},{"name":"Durban","lat":-29.8587,"lon":31.0218},{"name":"Port Elizabeth","lat":-33.9618,"lon":25.6022}]
     },
     "NLD": {
         "name": "Netherlands",
@@ -371,6 +371,6 @@
         },
         "doctrine": "latent",
         "defaultColor": "#F36C21",
-        "majorCities": [{"name":"Rotterdam","lat":51.9244,"lon":4.4777}]
+        "majorCities": [{"name":"Rotterdam","lat":51.9244,"lon":4.4777},{"name":"Den Haag","lat":52.0705,"lon":4.3007},{"name":"Utrecht","lat":52.0907,"lon":5.1214},{"name":"Eindhoven","lat":51.4416,"lon":5.4697}]
     }
 }

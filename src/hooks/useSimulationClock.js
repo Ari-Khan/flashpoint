@@ -10,8 +10,8 @@ export function useSimulationClock(currentTick, tickStep, timePerStep, smoothMod
 
   useEffect(() => {
     if (smoothMode === "off") {
-      setDisplayTick(currentTick);
-      return;
+      const id = requestAnimationFrame(() => setDisplayTick(currentTick));
+      return () => cancelAnimationFrame(id);
     }
 
     let rafId;

@@ -11,6 +11,7 @@ import Skybox from "../components/Skybox";
 import Atmosphere from "../components/Atmosphere";
 import ExplosionManager from "../components/ExplosionManager";
 import ArcManager from "../components/ArcManager"; 
+import Cities from "../components/Cities";
 import SettingsPanel from "../components/SettingsPanel";
 import SmoothZoom from "../components/SmoothZoom";
 
@@ -74,6 +75,14 @@ export default function App() {
     return Array.from(isoSet);
   }, [visible]);
 
+  const visibleForLog = useMemo(() => {
+    return (visible ?? []).map(e => {
+      const copy = { ...e };
+      delete copy.fromLat; delete copy.fromLon; delete copy.toLat; delete copy.toLon;
+      return copy;
+    });
+  }, [visible]);
+
   function run(actor, target) {
     const rawTimeline = simulateEscalation({
       initiator: actor,
@@ -107,7 +116,7 @@ export default function App() {
       </div>
 
       <pre className="event-log">
-        {visible.length ? JSON.stringify([...visible].reverse(), null, 2) : "No events yet"}
+        {visible.length ? JSON.stringify([...visibleForLog].reverse(), null, 2) : "No events yet"}
       </pre>
 
       <Canvas
@@ -130,6 +139,7 @@ export default function App() {
 
         <CountryBorders />
         <Globe textureName={earthTexture} />
+        <Cities nations={world.nations} />
         <Atmosphere />
 
         <CountryFillManager activeIso2={affectedIso2} nations={world.nations} />

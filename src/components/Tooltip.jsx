@@ -8,19 +8,24 @@ export default function Tooltip({ text, x, y, fadeDuration = 150 }) {
 
   useEffect(() => {
     let t;
+    let raf;
     if (text) {
-      setVisibleText(text);
-      setPos({ x, y });
-      // use rAF to show immediately, letting the transition perform the fade
-      requestAnimationFrame(() => setShow(true));
-      return () => clearTimeout(t);
+      raf = requestAnimationFrame(() => {
+        setVisibleText(text);
+        setPos({ x, y });
+        setShow(true);
+      });
+      return () => {
+        if (raf) cancelAnimationFrame(raf);
+        clearTimeout(t);
+      };
     }
     if (visibleText) {
-      setShow(false);
+      raf = requestAnimationFrame(() => setShow(false));
       t = setTimeout(() => setVisibleText(null), fadeDuration + 10);
     }
-    return () => clearTimeout(t);
-  }, [text, x, y, fadeDuration]);
+    return () => { if (raf) cancelAnimationFrame(raf); clearTimeout(t); };
+  }, [text, x, y, fadeDuration, visibleText]);
 
   if (!visibleText) return null;
 
