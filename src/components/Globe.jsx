@@ -1,8 +1,10 @@
 import { Sphere, useTexture } from "@react-three/drei";
 import * as THREE from "three";
+import perfCfg from "../config/settings";
 
-export default function Globe({ textureName = "specular.png" }) {
-    const earthTexture = useTexture(`/textures/${textureName}`);
+export default function Globe({ textureName }) {
+    const texName = textureName || perfCfg.texture || "specular.avif";
+    const earthTexture = useTexture(`/textures/${texName}`);
 
     return (
         <Sphere args={[1, 64, 64]}>

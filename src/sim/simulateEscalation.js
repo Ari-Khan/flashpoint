@@ -1,7 +1,6 @@
 import { createEscalationState } from "./escalationState";
 import {
     launchStrike,
-    shouldRetaliate,
     joinAllies,
     canLaunch,
     pickWeightedTarget,

@@ -4,16 +4,9 @@ export function isoMatchesFeature(iso, feature) {
     const s = iso.toUpperCase();
 
     return (
-        p.SOVEREIGNT?.toUpperCase() === s ||
-        p.sovereignt?.toUpperCase() === s ||
-        p.BRK_A3?.toUpperCase() === s ||
-        p.ADM0_A3?.toUpperCase() === s ||
-        p.ISO_A3?.toUpperCase() === s ||
-        p.iso_a3?.toUpperCase() === s ||
-        p.GU_A3?.toUpperCase() === s ||
-        p.ADM0_ISO?.toUpperCase() === s ||
-        p.name?.toUpperCase() === s ||
-        p.NAME?.toUpperCase() === s
+        p.adm0_a3?.toUpperCase() === s ||
+        p.iso_a3_eh?.toUpperCase() === s ||
+        p.gu_a3?.toUpperCase() === s
     );
 }
 

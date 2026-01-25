@@ -93,10 +93,10 @@ function joinAllies({ victim, attacker, world, state }) {
         }
 
         if (isFactionMember || desireToJoin > joinThreshold) {
-            // doctrine modifies how quickly/naturally a country joins
+            
             let doctrineModifier = 1.0;
-            if (C.doctrine === "latent") doctrineModifier = 0.6; // slower, hesitant
-            else if (C.doctrine === "dormant") doctrineModifier = 0.3; // very slow/reluctant
+            if (C.doctrine === "latent") doctrineModifier = 0.6;
+            else if (C.doctrine === "dormant") doctrineModifier = 0.3;
 
             const reactionSpeed = C.powerTier * 0.2 * doctrineModifier;
             const effectiveIntensity = desireToJoin * doctrineModifier;
