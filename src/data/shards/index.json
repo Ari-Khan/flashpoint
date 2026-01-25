@@ -100,9 +100,24 @@
     "count": 25
   },
   {
-    "key": "north-america.northern-america",
-    "file": "countries.north-america.northern-america.geo.json",
-    "count": 5
+    "key": "north-america.northern-america.usa",
+    "file": "countries.north-america.northern-america.usa.geo.json",
+    "count": 1
+  },
+  {
+    "key": "north-america.northern-america.can",
+    "file": "countries.north-america.northern-america.can.geo.json",
+    "count": 1
+  },
+  {
+    "key": "north-america.northern-america.grl",
+    "file": "countries.north-america.northern-america.grl.geo.json",
+    "count": 1
+  },
+  {
+    "key": "north-america.northern-america.others",
+    "file": "countries.north-america.northern-america.others.geo.json",
+    "count": 2
   },
   {
     "key": "south-america",
