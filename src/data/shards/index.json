@@ -90,6 +90,11 @@
     "count": 8
   },
   {
+    "key": "north-america",
+    "file": "countries.north-america.geo.json",
+    "count": 38
+  },
+  {
     "key": "south-america",
     "file": "countries.south-america.geo.json",
     "count": 13
