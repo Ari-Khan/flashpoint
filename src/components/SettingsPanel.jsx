@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-// FPS Counter Hook
+
 function useFPS() {
   const [fps, setFps] = useState(0);
   const lastFrame = useRef(performance.now());

@@ -44,7 +44,9 @@ export default function Arc({
 
     const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
     
-    const dynamicSegments = Math.min(400, Math.max(50, Math.ceil(d * 400)));
+    const approxLength = start.distanceTo(ctrl1) + ctrl1.distanceTo(ctrl2) + ctrl2.distanceTo(end);
+    const dynamicSegments = Math.min(600, Math.max(40, Math.ceil(approxLength * 150)));
+    
     const pts = cubicCurve.getPoints(dynamicSegments);
     const geom = new THREE.BufferGeometry().setFromPoints(pts);
     
@@ -68,10 +70,7 @@ export default function Arc({
     if (!lineRef.current || !coneRef.current || isDoneRef.current) return;
 
     const t = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
-    
-    const progress = t < 0.5 
-        ? 2 * t * t 
-        : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const progress = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
     lineRef.current.geometry.setDrawRange(0, Math.ceil(progress * (segments + 1)));
 
@@ -79,7 +78,6 @@ export default function Arc({
       curve.getPoint(progress, coneRef.current.position);
       curve.getTangent(progress, tempVec);
       coneRef.current.quaternion.setFromUnitVectors(UP_AXIS, tempVec.normalize());
-      
       if (!coneRef.current.visible) coneRef.current.visible = true;
     } else {
       coneRef.current.visible = false;

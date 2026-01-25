@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import Arc from "./Arc.jsx";
 
 export default function ArcManager({ events, nations, currentTime }) {
