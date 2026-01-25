@@ -64,7 +64,8 @@ export default function Arc({
     }
 
     const speed = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
-    const dur = Math.max(5, d * speed);
+    const TERMINAL_MULTIPLIER = 1.5;
+    const dur = Math.max(5, (d * speed) / TERMINAL_MULTIPLIER);
 
     return { 
       geometry: geom, 

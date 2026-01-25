@@ -24,7 +24,9 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
 
         const distance = start.distanceTo(end);
         const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[event.weapon] ?? 20;
-        const duration = Math.max(5, distance * speedMultiplier);
+
+        const TERMINAL_MULTIPLIER = 1.5;
+        const duration = Math.max(5, (distance * speedMultiplier) / TERMINAL_MULTIPLIER);
 
         const count = Math.max(1, Number(event.count) || 1);
         const seed = Number(event.t) * 13.37 + (count * 7.77);
@@ -94,7 +96,8 @@ export default function ExplosionManager({ events = [], nations, currentTime, sm
             const d = latLonToVec3(e.fromLat ?? from.lat, e.fromLon ?? from.lon, 1).distanceTo(
                 latLonToVec3(e.toLat ?? to.lat, e.toLon ?? to.lon, 1)
             );
-            const impact = e.t + Math.max(5, d * ({ icbm: 15, slbm: 18, air: 30 }[e.weapon] ?? 20));
+            const TERMINAL_MULTIPLIER = 1.5;
+            const impact = e.t + Math.max(5, (d * ({ icbm: 15, slbm: 18, air: 30 }[e.weapon] ?? 20)) / TERMINAL_MULTIPLIER);
             return currentTime >= impact - 5 && currentTime < impact + FADE_WINDOW + 5;
         });
     }, [events, nations, currentTime]);
