@@ -3,33 +3,34 @@ import CountryFill from "./CountryFill";
 import { useCountriesGeo } from "../data/useCountriesGeo";
 import { isoMatchesFeature, getColorByIso } from "../utils/countryUtils";
 
-export default function CountryFillManager({ activeIso2 = [], nations = {} }) {
+export default function CountryFillManager({ activeIsos = [], nations = {} }) {
     const geo = useCountriesGeo();
 
-    const activeFeatures = useMemo(() => {
-        if (!geo || !activeIso2.length) return [];
+    const activeGroups = useMemo(() => {
+        if (!geo || !activeIsos.length) return [];
         
-        const uniqueIsos = Array.from(new Set(activeIso2));
+        const uniqueIsos = Array.from(new Set(activeIsos));
         
         return uniqueIsos
             .map((iso) => {
-                const feature = geo.features.find((f) => isoMatchesFeature(iso, f));
-                if (!feature) return null;
+                const matchingFeatures = geo.features.filter((f) => isoMatchesFeature(iso, f));
+                if (matchingFeatures.length === 0) return null;
 
                 const color = getColorByIso(iso, nations);
-                return { iso, feature, color };
+                return { iso, matchingFeatures, color };
             })
             .filter(Boolean);
-    }, [geo, activeIso2, nations]);
+    }, [geo, activeIsos, nations]);
 
     if (!geo) return null;
 
     return (
         <group>
-            {activeFeatures.map(({ iso, feature, color }) => (
+            {activeGroups.map(({ iso, matchingFeatures, color }) => (
                 <CountryFill
-                    key={`${iso}-${color}`}
-                    feature={feature}
+                    key={iso}
+                    features={matchingFeatures}
+                    countryCode={iso}
                     color={color}
                     opacity={0.35}
                 />

@@ -56,15 +56,15 @@ export default function App() {
   const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
   const displayTick = useSimulationClock(currentTick, tickStep, timePerStep, smoothMode);
 
-  const affectedIso2 = useMemo(() => {
+  const affectedIsos = useMemo(() => {
     const isoSet = new Set();
     for (let i = 0; i < visible.length; i++) {
       const e = visible[i];
       const ids = [e.from, e.to, e.attacker, e.target];
       for (let j = 0; j < ids.length; j++) {
         const id = ids[j];
-        if (id && world.nations[id]?.iso2) {
-          isoSet.add(world.nations[id].iso2);
+        if (id) {
+          isoSet.add(id.toUpperCase());
         }
       }
     }
@@ -72,13 +72,15 @@ export default function App() {
   }, [visible]);
 
   const visibleForLog = useMemo(() => {
-    return visible.map(e => {
-      const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
+    const logArray = [];
+    for (let i = visible.length - 1; i >= 0; i--) {
+      const { fromLat, fromLon, toLat, toLon, ...logFriendly } = visible[i];
       if (typeof logFriendly.intensity === "number") {
         logFriendly.intensity = Math.round(logFriendly.intensity * 10) / 10;
       }
-      return logFriendly;
-    }).reverse();
+      logArray.push(logFriendly);
+    }
+    return logArray;
   }, [visible]);
 
   function run(actor, target) {
@@ -139,7 +141,7 @@ export default function App() {
         <Cities nations={world.nations} />
         <Atmosphere />
 
-        <CountryFillManager activeIso2={affectedIso2} nations={world.nations} />
+        <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />
 
         <OrbitControls 
           ref={controlsRef} 

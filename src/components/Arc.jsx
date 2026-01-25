@@ -7,7 +7,7 @@ import { getJitteredVec3 } from "../utils/jitter.js";
 function getArcHeight(distance, seed) {
     const variance = (Math.sin(seed * 12.9898) * 0.03);
     
-    const loft = -0.5 + (distance * 0.7);
+    const loft = -0.75 + (distance * 0.85);
     
     return Math.max(0.1, loft) + variance;
 }
