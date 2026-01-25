@@ -19,9 +19,10 @@ export function useCountriesGeo() {
                 const index = idx.default ?? idx;
                 const shardMap = import.meta.glob('./shards/*.geo.json');
                 const imports = index.map((s) => {
-                    const key = `./shards/${s.file}`;
+                    const fileName = (s.file || '').replace(/^\.\//, '');
+                    const key = `./shards/${fileName}`;
                     const loader = shardMap[key];
-                    if (!loader) return Promise.reject(new Error(`Missing shard: ${s.file}`));
+                    if (!loader) return Promise.reject(new Error(`Missing shard: ${fileName}`));
                     return loader();
                 });
                 const modules = await Promise.all(imports);
