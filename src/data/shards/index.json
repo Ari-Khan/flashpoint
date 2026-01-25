@@ -1,0 +1,102 @@
+[
+  {
+    "key": "north-america",
+    "file": "./country-shapes.north-america.geo.json",
+    "count": 38
+  },
+  {
+    "key": "asia.south-eastern-asia",
+    "file": "./country-shapes.asia.south-eastern-asia.geo.json",
+    "count": 11
+  },
+  {
+    "key": "asia.western-asia",
+    "file": "./country-shapes.asia.western-asia.geo.json",
+    "count": 19
+  },
+  {
+    "key": "asia.southern-asia",
+    "file": "./country-shapes.asia.southern-asia.geo.json",
+    "count": 9
+  },
+  {
+    "key": "asia.eastern-asia",
+    "file": "./country-shapes.asia.eastern-asia.geo.json",
+    "count": 8
+  },
+  {
+    "key": "asia.central-asia",
+    "file": "./country-shapes.asia.central-asia.geo.json",
+    "count": 5
+  },
+  {
+    "key": "asia.seven-seas-(open-ocean)",
+    "file": "./country-shapes.asia.seven-seas-(open-ocean).geo.json",
+    "count": 1
+  },
+  {
+    "key": "south-america",
+    "file": "./country-shapes.south-america.geo.json",
+    "count": 13
+  },
+  {
+    "key": "africa.eastern-africa",
+    "file": "./country-shapes.africa.eastern-africa.geo.json",
+    "count": 17
+  },
+  {
+    "key": "africa.northern-africa",
+    "file": "./country-shapes.africa.northern-africa.geo.json",
+    "count": 7
+  },
+  {
+    "key": "africa.middle-africa",
+    "file": "./country-shapes.africa.middle-africa.geo.json",
+    "count": 9
+  },
+  {
+    "key": "africa.southern-africa",
+    "file": "./country-shapes.africa.southern-africa.geo.json",
+    "count": 5
+  },
+  {
+    "key": "africa.western-africa",
+    "file": "./country-shapes.africa.western-africa.geo.json",
+    "count": 16
+  },
+  {
+    "key": "europe.western-europe",
+    "file": "./country-shapes.europe.western-europe.geo.json",
+    "count": 9
+  },
+  {
+    "key": "europe.eastern-europe",
+    "file": "./country-shapes.europe.eastern-europe.geo.json",
+    "count": 10
+  },
+  {
+    "key": "europe.northern-europe",
+    "file": "./country-shapes.europe.northern-europe.geo.json",
+    "count": 15
+  },
+  {
+    "key": "europe.southern-europe",
+    "file": "./country-shapes.europe.southern-europe.geo.json",
+    "count": 16
+  },
+  {
+    "key": "oceania",
+    "file": "./country-shapes.oceania.geo.json",
+    "count": 25
+  },
+  {
+    "key": "antarctica",
+    "file": "./country-shapes.antarctica.geo.json",
+    "count": 1
+  },
+  {
+    "key": "seven-seas-(open-ocean)",
+    "file": "./country-shapes.seven-seas-(open-ocean).geo.json",
+    "count": 8
+  }
+]

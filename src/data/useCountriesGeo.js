@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import countriesGeo from "./country-shapes.geo.json";
 
 let cache = null;
 
@@ -12,8 +11,36 @@ export function useCountriesGeo() {
             return;
         }
 
-        cache = countriesGeo;
-        setData(countriesGeo);
+        let cancelled = false;
+
+        async function loadShards() {
+            try {
+                const idx = await import("./shards/index.json");
+                const index = idx.default ?? idx;
+                const shardMap = import.meta.glob('./shards/*.geo.json');
+                const imports = index.map((s) => {
+                    const key = `./shards/${s.file}`;
+                    const loader = shardMap[key];
+                    if (!loader) return Promise.reject(new Error(`Missing shard: ${s.file}`));
+                    return loader();
+                });
+                const modules = await Promise.all(imports);
+                if (cancelled) return;
+                const merged = { type: "FeatureCollection", features: [] };
+                for (const m of modules) {
+                    const json = m.default ?? m;
+                    merged.features.push(...(json.features || []));
+                }
+                cache = merged;
+                setData(merged);
+            } catch (err) {
+                console.error("GeoJSON shards load error:", err);
+            }
+        }
+
+        loadShards();
+
+        return () => { cancelled = true; };
     }, []);
 
     return data;

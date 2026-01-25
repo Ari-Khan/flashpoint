@@ -41,6 +41,13 @@ export default function App() {
   const [isPaused, setIsPaused] = useState(false);
   const controlsRef = useRef();
   const [zoomMode, setZoomMode] = useState("Smooth");
+  const [showGeo, setShowGeo] = useState(false);
+
+  // Defer mounting heavy/geo components to improve initial load
+  useEffect(() => {
+    const id = setTimeout(() => setShowGeo(true), 300);
+    return () => clearTimeout(id);
+  }, []);
 
   const timePerStep = BASE_TICK_MS * tickStep;
 
@@ -133,15 +140,17 @@ export default function App() {
         <ambientLight intensity={0.4} /> 
         <directionalLight position={[5, 5, 5]} intensity={1.0} />
 
-        <ArcManager events={visible} nations={world.nations} currentTime={displayTick} />
-        <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
+        <Suspense fallback={null}>
+          <ArcManager events={visible} nations={world.nations} currentTime={displayTick} />
+          <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
 
-        <CountryBorders />
+          {showGeo && <CountryBorders />}
+          {showGeo && <Cities nations={world.nations} />}
+          {showGeo && <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />}
+        </Suspense>
+
         <Globe textureName={earthTexture} />
-        <Cities nations={world.nations} />
         <Atmosphere />
-
-        <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />
 
         <OrbitControls 
           ref={controlsRef} 
