@@ -314,48 +314,117 @@ body {
     top: 16px;
     right: 16px;
     z-index: 1000;
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 48px;
+    gap: 12px;
     width: 210px;
+    align-items: center;
 }
 .time-display {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
     background: rgba(0, 0, 0, 0.9);
     border: 2px solid #00ff00;
     color: #0f0;
     padding: 12px 16px;
     border-radius: 4px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 104px;
+    height: 48px;
 }
-.pause-button {
+
+.fps-box {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 1200;
+    background: rgba(0,0,0,0.85);
+    color: #0f0;
+    border: 2px solid #00ff00;
+    border-radius: 4px;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 12px 16px;
+    box-shadow: 0 0 12px rgba(0,255,0,0.2);
+    width: 104px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+.fps-label {
+    width: 40px;
+    text-align: left;
+}
+.fps-value {
+    min-width: 20px;
+    margin-left: 4px;
+    text-align: left;
+}
+.control-rect {
     padding: 12px 16px;
     background: linear-gradient(135deg, #006600, #004400);
     color: #0f0;
     border: 2px solid #00ff00;
     border-radius: 4px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     font-family: monospace;
     text-transform: uppercase;
     cursor: pointer;
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
     transition: all 0.15s ease;
-    flex: 1;
+    width: 100%;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
-.pause-button:hover {
+.control-rect:hover {
     background: linear-gradient(135deg, #008800, #006600);
     box-shadow: 0 0 25px rgba(0, 255, 0, 0.5);
 }
-.pause-button:active {
-    transform: scale(0.95);
+.control-rect:active { transform: scale(0.98); }
+
+.time-controls > * {
+    width: 100%;
+    height: 48px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.pause-button { all: unset; }
+.pause-button { display: inline-block; }
+.reset-button { all: unset; }
+.reset-button { display: inline-block; }
+.hide-ui-button { all: unset; }
+.hide-ui-button { display: inline-block; }
+
+.hide-ui-button, .pause-button, .reset-button { padding: 0; }
+.hide-ui-button::before, .pause-button::before, .reset-button::before { content: none; }
+.hide-ui-button {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    justify-self: end;
+}
+
+.hide-ui-button, .pause-button, .reset-button { background: linear-gradient(135deg, #006600, #004400); color: #0f0; border: 2px solid #00ff00; border-radius: 4px; font-size: 16px; font-weight: bold; font-family: monospace; text-transform: uppercase; cursor: pointer; box-shadow: 0 0 15px rgba(0, 255, 0, 0.3); transition: all 0.15s ease; width: 100%; height: 48px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; }
+.hide-ui-button:hover, .pause-button:hover, .reset-button:hover { background: linear-gradient(135deg, #008800, #006600); box-shadow: 0 0 25px rgba(0, 255, 0, 0.5); }
+.hide-ui-button:active, .pause-button:active, .reset-button:active { transform: scale(0.98); }
 .event-log {
     position: fixed;
     right: 16px;

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { latLonToVec3 } from "./latLonToVec3.js";
 import { getJitteredVec3 } from "./jitter.js";
 
-export const TERMINAL_MULTIPLIER = 1.5;
+export const TERMINAL_MULTIPLIER = 1.25;
 export const SPEEDS = { icbm: 15, slbm: 18, air: 30 };
 
 export function computeStartEndDistance({ fromLat, fromLon, toLat, toLon, startTime }) {

@@ -40,10 +40,9 @@ export default function App() {
   const [smoothMode, setSmoothMode] = useState("off");
   const [isPaused, setIsPaused] = useState(false);
   const controlsRef = useRef();
-  const [zoomMode, setZoomMode] = useState("Smooth");
   const [showGeo, setShowGeo] = useState(false);
+  const [uiHidden, setUiHidden] = useState(false);
 
-  // Defer mounting heavy/geo components to improve initial load
   useEffect(() => {
     const id = setTimeout(() => setShowGeo(true), 300);
     return () => clearTimeout(id);
@@ -99,51 +98,73 @@ export default function App() {
     setEvents(rawTimeline);
   }
 
+  function resetCamera() {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    if (controls.object && typeof controls.object.position?.set === "function") {
+      controls.object.position.set(0, 0, 2);
+    }
+    if (controls.target && typeof controls.target.set === "function") {
+      controls.target.set(0, 0, 0);
+    }
+    controls.update();
+  }
+
   return (
     <div className="app-container">
-      <ControlPanel nations={world.nations} onRun={run} />
-      <SettingsPanel
-        tickStep={tickStep}
-        onTickStepChange={setTickStep}
-        smoothMode={smoothMode}
-        onSmoothModeChange={setSmoothMode}
-        performanceSettings={performanceSettings}
-        onPerformanceChange={setPerformanceSettings}
-        texture={earthTexture}
-        onTextureChange={setEarthTexture}
-        zoomMode={zoomMode}
-        onZoomModeChange={setZoomMode}
-      />
+      {!uiHidden && <ControlPanel nations={world.nations} onRun={run} />}
+      {!uiHidden && (
+        <SettingsPanel
+          tickStep={tickStep}
+          onTickStepChange={setTickStep}
+          smoothMode={smoothMode}
+          onSmoothModeChange={setSmoothMode}
+          performanceSettings={performanceSettings}
+          onPerformanceChange={setPerformanceSettings}
+          texture={earthTexture}
+          onTextureChange={setEarthTexture}
+        />
+      )}
 
       <div className="time-controls">
-        <button className="pause-button" onClick={() => setIsPaused(!isPaused)}>
-          {isPaused ? "Resume" : "Pause"}
-        </button>
         <div className="time-display">T+{Math.floor(displayTick)}</div>
+        <button className="hide-ui-button" onClick={() => setUiHidden((v) => !v)}>
+          {uiHidden ? "Show UI" : "Hide UI"}
+        </button>
+        {!uiHidden && (
+          <>
+            <button className="pause-button" onClick={() => setIsPaused(!isPaused)}>
+              {isPaused ? "Resume" : "Pause"}
+            </button>
+            <button className="pause-button reset-button" onClick={resetCamera}>Reset Cam</button>
+          </>
+        )}
       </div>
 
-      <pre className="event-log">
-        {visible.length ? JSON.stringify(visibleForLog, null, 2) : "No events yet"}
-      </pre>
+      {!uiHidden && (
+        <pre className="event-log">
+          {visible.length ? JSON.stringify(visibleForLog, null, 2) : "No events yet"}
+        </pre>
+      )}
 
       <Canvas
         className="canvas-3d"
-        camera={{ position: [0, 0, 2], fov: 65 }}
         dpr={[1, performanceSettings.pixelRatioLimit]}
         gl={{
           antialias: performanceSettings.antialias,
           powerPreference: performanceSettings.powerPreference,
           preserveDrawingBuffer: performanceSettings.preserveDrawingBuffer,
+          logarithmicDepthBuffer: true,
         }}
+        camera={{ position: [0, 0, 2], fov: 60, near: 0.01 }}
       >
         <Skybox />
-        <ambientLight intensity={0.4} /> 
+        <ambientLight intensity={0.5} /> 
         <directionalLight position={[5, 5, 5]} intensity={1.0} />
 
         <Suspense fallback={null}>
           <ArcManager events={visible} nations={world.nations} currentTime={displayTick} />
           <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
-
           {showGeo && <CountryBorders />}
           {showGeo && <Cities nations={world.nations} />}
           {showGeo && <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />}
@@ -154,18 +175,18 @@ export default function App() {
 
         <OrbitControls 
           ref={controlsRef} 
-          enableZoom={zoomMode === "Block"}
+          enableZoom={false}
           enableDamping={true}
-          dampingFactor={0.06}
-          minDistance={1.15}
+          dampingFactor={0.04}
+          minDistance={1.125}
           maxDistance={32}
         />
 
         <SmoothZoom 
           controlsRef={controlsRef} 
           sensitivity={0.0001} 
-          decay={0.90} 
-          enabled={zoomMode === "Smooth"}
+          decay={0.9} 
+          enabled={true}
         />
       </Canvas>
     </div>

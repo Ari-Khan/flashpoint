@@ -56,24 +56,7 @@ export default function SettingsPanel({
   onTextureChange = () => {},
 }) {
   const fps = useFPS();
-  const fpsBoxStyle = {
-    position: "fixed",
-    top: 16,
-    left: 16,
-    zIndex: 1200,
-    background: "rgba(0,0,0,0.85)",
-    color: "#0f0",
-    border: "2px solid #00ff00",
-    borderRadius: 4,
-    fontFamily: "monospace",
-    fontWeight: 700,
-    fontSize: 16,
-    padding: "8px 18px",
-    boxShadow: "0 0 12px rgba(0,255,0,0.2)",
-    minWidth: 60,
-    textAlign: "center",
-    pointerEvents: "none"
-  };
+  const fpsBoxStyle = null;
   const [open, setOpen] = useState(false);
   const [tipText, setTipText] = useState(null);
   const [tipPos, setTipPos] = useState({ x: 0, y: 0 });
@@ -95,7 +78,7 @@ export default function SettingsPanel({
 
   return (
     <>
-      <div style={fpsBoxStyle}>FPS: {fps}</div>
+      <div className="fps-box"><span className="fps-label">FPS:</span><span className="fps-value">{fps}</span></div>
       <div className="settings-panel">
       <button
         className="settings-toggle"
