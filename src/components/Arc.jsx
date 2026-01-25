@@ -1,8 +1,7 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { latLonToVec3 } from "../utils/latLonToVec3.js";
-import { getJitteredVec3 } from "../utils/jitter.js";
+import { computeTrajectory, buildCubicCurveAndGeometry } from "../utils/trajectory.js";
 
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
 
@@ -23,80 +22,46 @@ export default function Arc({
   const tempVec = useRef(new THREE.Vector3()).current;
 
   const { geometry, curve, duration, impactTime, segments, arcLengths, pointsCount } = useMemo(() => {
-    const start = latLonToVec3(fromLat, fromLon, 1.001);
-    const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
-    const d = start.distanceTo(end);
-    
-    const seed = Number(startTime);
-    const variance = (Math.sin(seed * 12.9898) * 0.03);
-    const h = Math.max(0.1, -0.75 + (d * 0.85)) + variance;
+    const { start, end, distance, duration: dur, impactTick } = computeTrajectory({ fromLat, fromLon, toLat, toLon, startTime, weapon });
+    const { curve: cubicCurve, geometry: geom, arcLengths, pointsCount, segments } = buildCubicCurveAndGeometry({ start, end, startTime });
 
-    let mid = new THREE.Vector3().addVectors(start, end).normalize();
-    if (start.dot(end) < -0.9) {
-      const axis = Math.abs(start.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
-      mid = new THREE.Vector3().crossVectors(start, axis).normalize();
-    }
-
-    const startDir = start.clone().normalize();
-    const endDir = end.clone().normalize();
-    const ctrl1 = new THREE.Vector3().lerpVectors(startDir, mid, 0.5).normalize().multiplyScalar(1.001 + h);
-    const ctrl2 = new THREE.Vector3().lerpVectors(endDir, mid, 0.5).normalize().multiplyScalar(1.001 + h);
-
-    const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
-    
-    const approxLength = start.distanceTo(ctrl1) + ctrl1.distanceTo(ctrl2) + ctrl2.distanceTo(end);
-    const dynamicSegments = Math.min(600, Math.max(40, Math.ceil(approxLength * 150)));
-    
-    const pts = cubicCurve.getPoints(dynamicSegments);
-    const geom = new THREE.BufferGeometry().setFromPoints(pts);
-
-    const arcLengths = new Float32Array(pts.length);
-    let totalLen = 0;
-    arcLengths[0] = 0;
-    for (let i = 1; i < pts.length; i++) {
-      totalLen += pts[i].distanceTo(pts[i - 1]);
-      arcLengths[i] = totalLen;
-    }
-    if (totalLen > 0) {
-      for (let i = 1; i < arcLengths.length; i++) arcLengths[i] /= totalLen;
-    } else {
-      for (let i = 1; i < arcLengths.length; i++) arcLengths[i] = i / (arcLengths.length - 1);
-    }
-
-    const speed = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
-    const TERMINAL_MULTIPLIER = 1.5;
-    const dur = Math.max(5, (d * speed) / TERMINAL_MULTIPLIER);
-
-    return { 
-      geometry: geom, 
-      curve: cubicCurve, 
+    return {
+      geometry: geom,
+      curve: cubicCurve,
       duration: dur,
-      impactTime: startTime + dur,
-      segments: dynamicSegments,
+      impactTime: impactTick,
+      segments,
       arcLengths,
-      pointsCount: pts.length
+      pointsCount
     };
   }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
 
   useEffect(() => {
-    return () => geometry.dispose();
+    return () => {
+      try { geometry.dispose(); } catch (e) {}
+      try { if (lineRef.current && lineRef.current.material) lineRef.current.material.dispose(); } catch (e) {}
+      try {
+        if (coneRef.current) {
+          if (coneRef.current.material) coneRef.current.material.dispose();
+          if (coneRef.current.geometry) coneRef.current.geometry.dispose();
+        }
+      } catch (e) {}
+    };
   }, [geometry]);
 
   useFrame(() => {
     if (!lineRef.current || !coneRef.current || isDoneRef.current) return;
 
     const t = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
-    // ease-in for the first portion, then linear to maintain terminal velocity (no ease-out)
-    const easeThreshold = 0.2; // fraction of duration to ease-in
+    const easeThreshold = 0.2;
     let progress;
     if (t < easeThreshold) {
-      const local = t / easeThreshold; // 0..1
-      progress = easeThreshold * (local * local); // quadratic ease-in mapped into [0, easeThreshold]
+      const local = t / easeThreshold;
+      progress = easeThreshold * (local * local);
     } else {
-      progress = t; // linear after ease-in
+      progress = t;
     }
 
-    // map progress (0..1 in arc length) to curve parameter u (0..1) using precomputed arcLengths
     let u = progress;
     if (arcLengths && arcLengths.length > 1) {
       if (progress <= 0) u = 0;

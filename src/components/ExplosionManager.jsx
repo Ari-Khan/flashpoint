@@ -1,8 +1,7 @@
 import { useMemo, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { latLonToVec3 } from "../utils/latLonToVec3.js";
-import { getJitteredVec3 } from "../utils/jitter.js";
+import { computeTrajectory } from "../utils/trajectory.js";
 
 const FADE_WINDOW = 6;
 
@@ -19,14 +18,14 @@ function SingleExplosion({ event, targetNation, fromNation, currentTimeRef, fade
     }), []);
 
     const { impactTick, position, sizeMultiplier } = useMemo(() => {
-        const start = latLonToVec3(event.fromLat ?? fromNation.lat, event.fromLon ?? fromNation.lon, 1.001);
-        const end = getJitteredVec3(Number(event.toLat ?? targetNation.lat), Number(event.toLon ?? targetNation.lon), 0.8, Number(event.t));
-
-        const distance = start.distanceTo(end);
-        const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[event.weapon] ?? 20;
-
-        const TERMINAL_MULTIPLIER = 1.5;
-        const duration = Math.max(5, (distance * speedMultiplier) / TERMINAL_MULTIPLIER);
+        const { start, end, distance, duration } = computeTrajectory({
+            fromLat: event.fromLat ?? fromNation.lat,
+            fromLon: event.fromLon ?? fromNation.lon,
+            toLat: event.toLat ?? targetNation.lat,
+            toLon: event.toLon ?? targetNation.lon,
+            startTime: event.t,
+            weapon: event.weapon
+        });
 
         const count = Math.max(1, Number(event.count) || 1);
         const seed = Number(event.t) * 13.37 + (count * 7.77);
@@ -93,12 +92,15 @@ export default function ExplosionManager({ events = [], nations, currentTime, sm
             const to = nations[e.to];
             if (!from || !to) return false;
 
-            const d = latLonToVec3(e.fromLat ?? from.lat, e.fromLon ?? from.lon, 1).distanceTo(
-                latLonToVec3(e.toLat ?? to.lat, e.toLon ?? to.lon, 1)
-            );
-            const TERMINAL_MULTIPLIER = 1.5;
-            const impact = e.t + Math.max(5, (d * ({ icbm: 15, slbm: 18, air: 30 }[e.weapon] ?? 20)) / TERMINAL_MULTIPLIER);
-            return currentTime >= impact - 5 && currentTime < impact + FADE_WINDOW + 5;
+            const { distance, duration, impactTick } = computeTrajectory({
+                fromLat: e.fromLat ?? from.lat,
+                fromLon: e.fromLon ?? from.lon,
+                toLat: e.toLat ?? to.lat,
+                toLon: e.toLon ?? to.lon,
+                startTime: e.t,
+                weapon: e.weapon
+            });
+            return currentTime >= impactTick - 5 && currentTime < impactTick + FADE_WINDOW + 5;
         });
     }, [events, nations, currentTime]);
 
