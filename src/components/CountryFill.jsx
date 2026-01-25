@@ -75,7 +75,7 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
                 } catch {
                     try {
                         geometry = new TessellateModifier(0.5, 4).modify(geometry);
-                    } catch (e) {
+                    } catch {
                     }
                 }
 

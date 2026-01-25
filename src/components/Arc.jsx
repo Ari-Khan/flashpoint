@@ -83,7 +83,7 @@ export default function Arc({
       coneRef.current.visible = false;
     }
 
-    const fadeStart = impactTime + 0.25;
+    const fadeStart = impactTime;
     if (currentTime >= fadeStart) {
       const opacity = Math.max(0, 1 - (currentTime - fadeStart) * 5);
       lineRef.current.material.opacity = opacity;
