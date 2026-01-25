@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from "react";
 
 function useFPS() {
   const [fps, setFps] = useState(0);
-  const lastFrame = useRef(performance.now());
   const frames = useRef(0);
-  const lastFpsUpdate = useRef(performance.now());
+  const lastFpsUpdate = useRef(0);
 
   useEffect(() => {
     let running = true;
+    lastFpsUpdate.current = performance.now();
     function loop() {
       if (!running) return;
       frames.current++;
@@ -25,15 +25,18 @@ function useFPS() {
   return fps;
 }
 
-const OPTIONS = [
-  { label: "1 tick/sec", value: 1, smooth: "off" },
-  { label: "2 ticks/sec", value: 0.5, smooth: "off" },
-  { label: "4 ticks/sec", value: 0.25, smooth: "off" },
-  { label: "8 ticks/sec", value: 0.125, smooth: "off" },
-  { label: "Smooth", value: 0.015625, smooth: "smooth32" },
+import perfCfg from "../config/settings";
+
+const OPTIONS = perfCfg.tickOptions || [
+  { label: "1 tick/sec", value: 1 },
+  { label: "2 ticks/sec", value: 0.5 },
+  { label: "4 ticks/sec", value: 0.25 },
+  { label: "8 ticks/sec", value: 0.125 },
+  { label: "16 ticks/sec", value: 0.0625 },
+  { label: "Smooth", value: 0.03125 },
 ];
 
-const TEXTURE_OPTIONS = [
+const TEXTURE_OPTIONS = perfCfg.textureOptions || [
   { label: "Specular", value: "specular.avif" },
   { label: "Topography", value: "topography.avif" },
   { label: "Terrain", value: "terrain.avif" },
@@ -47,20 +50,12 @@ import Tooltip from "./Tooltip";
 export default function SettingsPanel({
   tickStep,
   onTickStepChange,
-  smoothMode,
-  onSmoothModeChange,
   performanceSettings = {},
   onPerformanceChange = () => {},
   texture,
   onTextureChange = () => {},
-  zoomMode = "Smooth",
-  onZoomModeChange = () => {},
 }) {
   const fps = useFPS();
-  // FPS Box (top left, styled like tick counter)
-  // You may want to adjust the className/style to match your tick counter
-  // If you have a tick counter box, use the same className for consistency
-  // Here, we use a fixed style for demonstration
   const fpsBoxStyle = {
     position: "fixed",
     top: 16,
@@ -117,18 +112,13 @@ export default function SettingsPanel({
             <div className="control">
               <select
                 title="Choose tick rate or Smooth for animated interpolation"
-                value={`${tickStep}-${smoothMode}`}
+                value={tickStep}
                 onChange={(e) => {
-                  const [val, mode] = e.target.value.split("-");
-                  onTickStepChange(Number(val));
-                  onSmoothModeChange(mode);
+                  onTickStepChange(Number(e.target.value));
                 }}
               >
                 {OPTIONS.map((opt) => (
-                  <option
-                    key={`${opt.value}-${opt.smooth}`}
-                    value={`${opt.value}-${opt.smooth}`}
-                  >
+                  <option key={opt.value} value={opt.value}>
                     {padIfLong(opt.label)}
                   </option>
                 ))}
@@ -215,19 +205,6 @@ export default function SettingsPanel({
                 </div>
               </label>
 
-              <label className="settings-row">
-                <span data-tip="Choose zoom behavior: Smooth uses the smooth physics zoom; Block uses native immediate zoom." onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Zoom</span>
-                <div className="control">
-                  <select
-                    title="Choose zoom behavior"
-                    value={zoomMode}
-                    onChange={(e) => onZoomModeChange(e.target.value)}
-                  >
-                    <option value="Smooth">Smooth</option>
-                    <option value="Block">Block</option>
-                  </select>
-                </div>
-              </label>
 
               <label className="settings-row">
                 <span data-tip="Choose a different Earth texture (night, terrain, etc.)" onMouseEnter={(e) => showTipFor(e.currentTarget)} onMouseLeave={hideTip}>Texture</span>

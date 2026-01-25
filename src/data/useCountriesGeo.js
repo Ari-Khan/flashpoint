@@ -7,7 +7,7 @@ export function useCountriesGeo() {
 
     useEffect(() => {
         if (cache) {
-            setData(cache);
+            setTimeout(() => setData(cache), 0);
             return;
         }
 
