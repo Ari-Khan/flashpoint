@@ -1,4 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+// FPS Counter Hook
+function useFPS() {
+  const [fps, setFps] = useState(0);
+  const lastFrame = useRef(performance.now());
+  const frames = useRef(0);
+  const lastFpsUpdate = useRef(performance.now());
+
+  useEffect(() => {
+    let running = true;
+    function loop() {
+      if (!running) return;
+      frames.current++;
+      const now = performance.now();
+      if (now - lastFpsUpdate.current > 500) {
+        setFps(Math.round((frames.current * 1000) / (now - lastFpsUpdate.current)));
+        frames.current = 0;
+        lastFpsUpdate.current = now;
+      }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    return () => { running = false; };
+  }, []);
+  return fps;
+}
 
 const OPTIONS = [
   { label: "1 tick/sec", value: 1, smooth: "off" },
@@ -31,6 +56,29 @@ export default function SettingsPanel({
   zoomMode = "Smooth",
   onZoomModeChange = () => {},
 }) {
+  const fps = useFPS();
+  // FPS Box (top left, styled like tick counter)
+  // You may want to adjust the className/style to match your tick counter
+  // If you have a tick counter box, use the same className for consistency
+  // Here, we use a fixed style for demonstration
+  const fpsBoxStyle = {
+    position: "fixed",
+    top: 16,
+    left: 16,
+    zIndex: 1200,
+    background: "rgba(0,0,0,0.85)",
+    color: "#0f0",
+    border: "2px solid #00ff00",
+    borderRadius: 4,
+    fontFamily: "monospace",
+    fontWeight: 700,
+    fontSize: 16,
+    padding: "8px 18px",
+    boxShadow: "0 0 12px rgba(0,255,0,0.2)",
+    minWidth: 60,
+    textAlign: "center",
+    pointerEvents: "none"
+  };
   const [open, setOpen] = useState(false);
   const [tipText, setTipText] = useState(null);
   const [tipPos, setTipPos] = useState({ x: 0, y: 0 });
@@ -51,7 +99,9 @@ export default function SettingsPanel({
   }
 
   return (
-    <div className="settings-panel">
+    <>
+      <div style={fpsBoxStyle}>FPS: {fps}</div>
+      <div className="settings-panel">
       <button
         className="settings-toggle"
         onClick={() => setOpen((v) => !v)}
@@ -199,5 +249,6 @@ export default function SettingsPanel({
       )}
       <Tooltip text={tipText} x={tipPos.x} y={tipPos.y} />
     </div>
+    </>
   );
 }

@@ -148,7 +148,7 @@ export default function App() {
           enableZoom={zoomMode === "Block"}
           enableDamping={true}
           dampingFactor={0.06}
-          minDistance={1.2}
+          minDistance={1.15}
           maxDistance={32}
         />
 

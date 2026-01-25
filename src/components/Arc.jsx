@@ -1,124 +1,112 @@
-import { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3.js";
 import { getJitteredVec3 } from "../utils/jitter.js";
 
-function getArcHeight(distance, seed) {
-    const variance = (Math.sin(seed * 12.9898) * 0.03);
-    
-    const loft = -0.75 + (distance * 0.85);
-    
-    return Math.max(0.1, loft) + variance;
-}
+const UP_AXIS = new THREE.Vector3(0, 1, 0);
 
 export default function Arc({
-    id,
-    fromLat,
-    fromLon,
-    toLat,
-    toLon,
-    weapon,
-    startTime,
-    currentTime,
-    onComplete
+  id,
+  fromLat,
+  fromLon,
+  toLat,
+  toLon,
+  weapon,
+  startTime,
+  currentTime,
+  onComplete
 }) {
-    const lineRef = useRef();
-    const isDoneRef = useRef(false);
-    const [coneOpacity, setConeOpacity] = useState(1);
+  const lineRef = useRef();
+  const coneRef = useRef();
+  const isDoneRef = useRef(false);
+  const tempVec = useRef(new THREE.Vector3()).current;
 
-    const { points, geometry, curve, duration, impactTime } = useMemo(() => {
-        const start = latLonToVec3(fromLat, fromLon, 1.001);
-        const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
-        
-        const d = start.distanceTo(end);
-        const h = getArcHeight(d, Number(startTime));
-
-        let midPoint = new THREE.Vector3().addVectors(start, end).normalize();
-        if (start.dot(end) < -0.9) {
-            const tempAxis = Math.abs(start.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
-            midPoint = new THREE.Vector3().crossVectors(start, tempAxis).normalize();
-        }
-
-        const startDir = start.clone().normalize();
-        const endDir = end.clone().normalize();
-
-        const ctrl1 = new THREE.Vector3().lerpVectors(startDir, midPoint, 0.5).normalize().multiplyScalar(1.001 + h);
-        const ctrl2 = new THREE.Vector3().lerpVectors(endDir, midPoint, 0.5).normalize().multiplyScalar(1.001 + h);
-
-        const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
-        
-        const resolution = d > 1 ? 160 : 80;
-        const pts = cubicCurve.getPoints(resolution);
-        const geom = new THREE.BufferGeometry().setFromPoints(pts);
-        
-        const speedMultiplier = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
-        const dur = Math.max(5, d * speedMultiplier);
-
-        return { 
-            points: pts, 
-            geometry: geom, 
-            curve: cubicCurve, 
-            distance: d, 
-            duration: dur,
-            impactTime: startTime + dur,
-            origin: start
-        };
-    }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
-
-    useEffect(() => {
-        return () => {
-            geometry.dispose();
-        };
-    }, [geometry]);
-
-    const rawProgress = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
+  const { geometry, curve, duration, impactTime, segments } = useMemo(() => {
+    const start = latLonToVec3(fromLat, fromLon, 1.001);
+    const end = getJitteredVec3(Number(toLat), Number(toLon), 1.001, Number(startTime));
+    const d = start.distanceTo(end);
     
-    const progress = rawProgress < 0.5 
-        ? 2 * rawProgress * rawProgress 
-        : 1 - Math.pow(-2 * rawProgress + 2, 2) / 2;
+    const seed = Number(startTime);
+    const variance = (Math.sin(seed * 12.9898) * 0.03);
+    const h = Math.max(0.1, -0.75 + (d * 0.85)) + variance;
 
-    useFrame(() => {
-        if (!lineRef.current || isDoneRef.current) return;
+    let mid = new THREE.Vector3().addVectors(start, end).normalize();
+    if (start.dot(end) < -0.9) {
+      const axis = Math.abs(start.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+      mid = new THREE.Vector3().crossVectors(start, axis).normalize();
+    }
 
-        const mat = lineRef.current.material;
-        const geom = lineRef.current.geometry;
+    const startDir = start.clone().normalize();
+    const endDir = end.clone().normalize();
+    const ctrl1 = new THREE.Vector3().lerpVectors(startDir, mid, 0.5).normalize().multiplyScalar(1.001 + h);
+    const ctrl2 = new THREE.Vector3().lerpVectors(endDir, mid, 0.5).normalize().multiplyScalar(1.001 + h);
 
-        const drawCount = Math.max(1, Math.ceil(points.length * progress));
-        geom.setDrawRange(0, drawCount);
+    const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
+    
+    const dynamicSegments = Math.min(400, Math.max(50, Math.ceil(d * 400)));
+    const pts = cubicCurve.getPoints(dynamicSegments);
+    const geom = new THREE.BufferGeometry().setFromPoints(pts);
+    
+    const speed = { icbm: 15, slbm: 18, air: 30 }[weapon] ?? 20;
+    const dur = Math.max(5, d * speed);
 
-        const pauseDuration = 0.25;
-        if (currentTime >= impactTime + pauseDuration) {
-            const newOpacity = Math.max(0, mat.opacity - 0.05);
-            mat.opacity = newOpacity;
-            
-            if (Math.abs(coneOpacity - newOpacity) > 0.01) setConeOpacity(newOpacity);
+    return { 
+      geometry: geom, 
+      curve: cubicCurve, 
+      duration: dur,
+      impactTime: startTime + dur,
+      segments: dynamicSegments
+    };
+  }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
 
-            if (newOpacity <= 0 && !isDoneRef.current) {
-                isDoneRef.current = true;
-                onComplete(id);
-            }
-        }
-    });
+  useEffect(() => {
+    return () => geometry.dispose();
+  }, [geometry]);
 
-    const currentDrawCount = Math.max(1, Math.ceil(points.length * progress));
-    const tParam = Math.min(1, (currentDrawCount - 1) / (points.length - 1));
-    const tipPoint = curve.getPoint(tParam);
-    const tangent = curve.getTangent(tParam);
-    const coneQuat = new THREE.Quaternion().setFromUnitVectors(
-        new THREE.Vector3(0, 1, 0),
-        tangent.normalize()
-    );
+  useFrame(() => {
+    if (!lineRef.current || !coneRef.current || isDoneRef.current) return;
 
-    return (
-        <group>
-            <line ref={lineRef} geometry={geometry}>
-                <lineBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
-                <mesh position={tipPoint} quaternion={coneQuat}>
-                    <coneGeometry args={[0.003, 0.01, 8]} />
-                    <meshBasicMaterial color="#ff5533" transparent opacity={coneOpacity} depthWrite={false} />
-                </mesh>
-            </line>
-        </group>
-    );
+    const t = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
+    
+    const progress = t < 0.5 
+        ? 2 * t * t 
+        : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+    lineRef.current.geometry.setDrawRange(0, Math.ceil(progress * (segments + 1)));
+
+    if (progress < 1) {
+      curve.getPoint(progress, coneRef.current.position);
+      curve.getTangent(progress, tempVec);
+      coneRef.current.quaternion.setFromUnitVectors(UP_AXIS, tempVec.normalize());
+      
+      if (!coneRef.current.visible) coneRef.current.visible = true;
+    } else {
+      coneRef.current.visible = false;
+    }
+
+    const fadeStart = impactTime + 0.25;
+    if (currentTime >= fadeStart) {
+      const opacity = Math.max(0, 1 - (currentTime - fadeStart) * 5);
+      lineRef.current.material.opacity = opacity;
+      coneRef.current.material.opacity = opacity;
+
+      if (opacity <= 0) {
+        isDoneRef.current = true;
+        onComplete(id);
+      }
+    }
+  });
+
+  return (
+    <group>
+      <line ref={lineRef} geometry={geometry}>
+        <lineBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
+      </line>
+      <mesh ref={coneRef} visible={false}>
+        <coneGeometry args={[0.003, 0.01, 8]} />
+        <meshBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
+      </mesh>
+    </group>
+  );
 }
