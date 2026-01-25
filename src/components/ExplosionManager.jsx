@@ -1,7 +1,7 @@
 import { useMemo, useRef, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { latLonToVec3 } from "../utils/latLonToVec3";
+import { latLonToVec3 } from "../utils/latLonToVec3.js";
 import { getJitteredVec3 } from "../utils/jitter.js";
 
 const FADE_WINDOW = 6;

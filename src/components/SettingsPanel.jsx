@@ -25,7 +25,7 @@ function useFPS() {
   return fps;
 }
 
-import perfCfg from "../config/settings";
+import perfCfg from "../config/settings.js";
 
 const OPTIONS = perfCfg.tickOptions || [
   { label: "1 tick/sec", value: 1 },
@@ -45,7 +45,7 @@ const TEXTURE_OPTIONS = perfCfg.textureOptions || [
   { label: "Night", value: "night.avif" },
 ];
 
-import Tooltip from "./Tooltip";
+import Tooltip from "./Tooltip.jsx";
 
 export default function SettingsPanel({
   tickStep,

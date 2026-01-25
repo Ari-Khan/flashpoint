@@ -1,12 +1,12 @@
-import { createEscalationState } from "./escalationState";
+import { createEscalationState } from "./escalationState.js";
 import {
     launchStrike,
     joinAllies,
     canLaunch,
     pickWeightedTarget,
     processGlobalDevelopment
-} from "./escalationLogic";
-import { computeSalvoCount } from "./salvoLogic";
+} from "./escalationLogic.js";
+import { computeSalvoCount } from "./salvoLogic.js";
 
 export function simulateEscalation({ initiator, firstTarget, world, maxEvents = 10000, maxTime = 1000 }) {
     const worldClone = JSON.parse(JSON.stringify(world));

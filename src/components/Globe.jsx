@@ -1,6 +1,6 @@
 import { Sphere, useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import perfCfg from "../config/settings";
+import perfCfg from "../config/settings.js";
 
 export default function Globe({ textureName }) {
     const texName = textureName || perfCfg.texture || "specular.avif";

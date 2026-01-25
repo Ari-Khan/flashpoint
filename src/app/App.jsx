@@ -2,25 +2,25 @@ import { useMemo, useState, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
-import Globe from "../components/Globe";
-import CountryBorders from "../components/CountryBorders";
-import ControlPanel from "../components/ControlPanel";
-import CountryFillManager from "../components/CountryFillManager";
-import Skybox from "../components/Skybox";
-import Atmosphere from "../components/Atmosphere";
-import ExplosionManager from "../components/ExplosionManager";
-import ArcManager from "../components/ArcManager"; 
-import Cities from "../components/Cities";
-import SettingsPanel from "../components/SettingsPanel";
-import SmoothZoom from "../components/SmoothZoom";
+import Globe from "../components/Globe.jsx";
+import CountryBorders from "../components/CountryBorders.jsx";
+import ControlPanel from "../components/ControlPanel.jsx";
+import CountryFillManager from "../components/CountryFillManager.jsx";
+import Skybox from "../components/Skybox.jsx";
+import Atmosphere from "../components/Atmosphere.jsx";
+import ExplosionManager from "../components/ExplosionManager.jsx";
+import ArcManager from "../components/ArcManager.jsx";
+import Cities from "../components/Cities.jsx";
+import SettingsPanel from "../components/SettingsPanel.jsx";
+import SmoothZoom from "../components/SmoothZoom.jsx";
 
-import { useEventTimeline } from "../hooks/useEventTimeline";
-import { useSimulationClock } from "../hooks/useSimulationClock";
-import { loadWorld } from "../data/loadData";
-import { simulateEscalation } from "../sim/simulateEscalation";
+import { useEventTimeline } from "../hooks/useEventTimeline.js";
+import { useSimulationClock } from "../hooks/useSimulationClock.js";
+import { loadWorld } from "../data/loadData.js";
+import { simulateEscalation } from "../sim/simulateEscalation.js";
 
 import "../index.css";
-import perfCfg from "../config/settings";
+import perfCfg from "../config/settings.js";
 
 const world = loadWorld();
 const BASE_TICK_MS = 1000;

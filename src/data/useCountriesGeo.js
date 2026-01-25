@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import countriesGeo from "./country-shapes.geo.json";
 
 let cache = null;
 
@@ -11,16 +12,8 @@ export function useCountriesGeo() {
             return;
         }
 
-        fetch("/src/data/country-shapes.geo.json")
-            .then((r) => {
-                if (!r.ok) throw new Error("Failed to load GeoJSON");
-                return r.json();
-            })
-            .then((json) => {
-                cache = json;
-                setData(json);
-            })
-            .catch((err) => console.error("GeoJSON Load Error:", err));
+        cache = countriesGeo;
+        setData(countriesGeo);
     }, []);
 
     return data;

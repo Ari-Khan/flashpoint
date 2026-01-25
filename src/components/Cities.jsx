@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { latLonToVec3 } from "../utils/latLonToVec3";
+import { latLonToVec3 } from "../utils/latLonToVec3.js";
 
 export default function Cities({ nations = {} }) {
   const spots = useMemo(() => {

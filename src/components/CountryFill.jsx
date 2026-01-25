@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import earcut from "earcut";
 import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModifier.js";
-import { latLonToVec3 } from "../utils/latLonToVec3";
+import { latLonToVec3 } from "../utils/latLonToVec3.js";
 
 const GEOMETRY_CACHE = new Map();
 
