@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import earcut from "earcut";
 import { TessellateModifier } from "three/examples/jsm/modifiers/TessellateModifier.js";
@@ -7,23 +7,31 @@ import { getCountryKey } from "../utils/countryUtils";
 
 const GEOMETRY_CACHE = new Map();
 
-export default function CountryFill({ feature, color, opacity = 1, debug = false }) {
+export default function CountryFill({ feature, color, opacity = 1 }) {
     const countryKey = useMemo(() => (feature ? getCountryKey(feature) : null), [feature]);
+    const materialRefs = useRef([]);
+    const countryColor = useMemo(() => new THREE.Color(color), [color]);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const meshes = useMemo(() => {
-        if (!feature) return [];
+        if (!feature || !countryKey) return [];
         if (GEOMETRY_CACHE.has(countryKey)) return GEOMETRY_CACHE.get(countryKey);
 
         const internalMeshes = [];
         const geom = feature.geometry;
 
         function buildMesh(rings) {
-            if (!rings || rings.length === 0 || rings[0].length < 3) return;
+            if (!rings || rings.length === 0) return;
+            
             const vertices2D = [];
             const holeIndices = [];
+            const outerRing = rings[0];
+            
+            if (!outerRing || outerRing.length < 3) return;
+
             let centerLon = 0;
-            rings[0].forEach(([lon]) => { centerLon += lon; });
-            centerLon /= rings[0].length;
+            outerRing.forEach(([lon]) => { centerLon += lon; });
+            centerLon /= outerRing.length;
 
             rings.forEach((ring, index) => {
                 if (index > 0) holeIndices.push(vertices2D.length / 2);
@@ -36,7 +44,9 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
             });
 
             const rawIndices = earcut(vertices2D, holeIndices);
-            const isHuge = feature.properties?.iso_a3 === "RUS";
+            if (!rawIndices.length) return;
+
+            const isHuge = feature.properties?.iso_a3 === "RUS" || feature.properties?.ISO_A3 === "RUS";
             const maxDist = isHuge ? 170 : 120;
             const cleanIndices = [];
             for (let i = 0; i < rawIndices.length; i += 3) {
@@ -61,7 +71,11 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
                 geometry = new TessellateModifier(1.0, 5).modify(geometry);
                 geometry = new TessellateModifier(0.15, 8).modify(geometry);
             } catch {
-                geometry = new TessellateModifier(0.5, 4).modify(geometry);
+                try {
+                    geometry = new TessellateModifier(0.5, 4).modify(geometry);
+                } catch (e) {
+                    console.warn("Tessellation failed for", countryKey);
+                }
             }
 
             const posAttr = geometry.getAttribute("position");
@@ -78,75 +92,62 @@ export default function CountryFill({ feature, color, opacity = 1, debug = false
             internalMeshes.push(geometry);
         }
 
-        if (geom.type === "Polygon") buildMesh(JSON.parse(JSON.stringify(geom.coordinates)));
-        else if (geom.type === "MultiPolygon") geom.coordinates.forEach(poly => buildMesh(JSON.parse(JSON.stringify(poly))));
+        if (geom.type === "Polygon") {
+            buildMesh(geom.coordinates);
+        } else if (geom.type === "MultiPolygon") {
+            geom.coordinates.forEach(polygonRings => buildMesh(polygonRings));
+        }
 
         GEOMETRY_CACHE.set(countryKey, internalMeshes);
         return internalMeshes;
     }, [feature, countryKey]);
 
-    const [fadeOpacity, setFadeOpacity] = useState(0);
-    const [canDraw, setCanDraw] = useState(false);
-    const materialRefs = useRef([]);
-
     useEffect(() => {
-        materialRefs.current = new Array(meshes.length).fill(null);
-    }, [meshes]);
-
-    useLayoutEffect(() => {
-        const mats = materialRefs.current.slice();
-        const raf = requestAnimationFrame(() => {
-            mats.forEach(m => { if (m) m.opacity = 0; });
-        });
-        return () => cancelAnimationFrame(raf);
-    }, [meshes]);
-
-    useEffect(() => {
+        setIsInitialized(false);
         let rafId;
-        const start = performance.now();
-        const duration = 1000;
 
-        const animate = (now) => {
-            const elapsed = now - start;
-            if (elapsed > 16) setCanDraw(true);
-
-            const t = Math.min(1, elapsed / duration);
-            const eased = t * t * (3 - 2 * t);
-            setFadeOpacity(opacity * eased);
-
-            if (t < 1) rafId = requestAnimationFrame(animate);
-        };
-
-        // schedule initial values to avoid synchronous setState in effect
         rafId = requestAnimationFrame(() => {
-            setFadeOpacity(0);
-            setCanDraw(false);
-            rafId = requestAnimationFrame(animate);
+            rafId = requestAnimationFrame(() => {
+                setIsInitialized(true);
+                const start = performance.now();
+                const duration = 600;
+
+                const animate = (now) => {
+                    const elapsed = now - start;
+                    const t = Math.min(1, elapsed / duration);
+                    const eased = t * t * (3 - 2 * t);
+                    
+                    materialRefs.current.forEach(m => {
+                        if (m) {
+                            m.opacity = opacity * eased;
+                            m.color.copy(countryColor);
+                        }
+                    });
+
+                    if (t < 1) rafId = requestAnimationFrame(animate);
+                };
+                rafId = requestAnimationFrame(animate);
+            });
         });
 
-        return () => {
-            cancelAnimationFrame(rafId);
-            if (debug) console.log(`[Debug] Cleaned up ${countryKey}`);
-        };
-    }, [countryKey, opacity, debug]);
+        return () => cancelAnimationFrame(rafId);
+    }, [countryKey, opacity, countryColor]);
 
-    if (!feature) return null;
+    if (!feature || meshes.length === 0) return null;
 
     return (
-        <group>
+        <group visible={isInitialized}>
             {meshes.map((geometry, i) => (
-                <mesh 
-                    key={`${countryKey}-${i}`} 
-                    geometry={geometry}
-                    visible={canDraw}
-                >
+                <mesh key={`${countryKey}-${i}`} geometry={geometry} renderOrder={10}>
                     <meshBasicMaterial
                         ref={(el) => (materialRefs.current[i] = el)}
-                        color={color}
-                        transparent
-                        opacity={fadeOpacity}
+                        color={countryColor}
+                        transparent={true}
+                        opacity={0}
                         side={THREE.DoubleSide}
                         depthWrite={false}
+                        depthTest={true}
+                        blending={THREE.NormalBlending}
                         toneMapped={false}
                     />
                 </mesh>

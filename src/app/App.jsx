@@ -26,12 +26,12 @@ const world = loadWorld();
 const BASE_TICK_MS = 1000;
 
 const TEXTURES = [
-  "specular.png",
-  "topography.jpg",
-  "terrain.jpg",
-  "bathymetry.jpg",
-  "physical.jpg",
-  "night.jpg",
+  "specular.avif",
+  "topography.avif",
+  "terrain.avif",
+  "bathymetry.avif",
+  "physical.avif",
+  "night.avif",
 ];
 
 export default function App() {
@@ -44,46 +44,41 @@ export default function App() {
 
   const timePerStep = BASE_TICK_MS * tickStep;
 
-  const [performanceSettings, setPerformanceSettings] = useState(() => {
-    const cfg = perfCfg ?? {};
-    return {
-      antialias: cfg.antialias ?? true,
-      pixelRatioLimit: cfg.pixelRatioLimit ?? 2,
-      powerPreference: cfg.powerPreference ?? "high-performance",
-      preserveDrawingBuffer: cfg.preserveDrawingBuffer ?? false,
-    };
-  });
+  const [performanceSettings, setPerformanceSettings] = useState(() => ({
+    antialias: perfCfg?.antialias ?? true,
+    pixelRatioLimit: perfCfg?.pixelRatioLimit ?? 2,
+    powerPreference: perfCfg?.powerPreference ?? "high-performance",
+    preserveDrawingBuffer: perfCfg?.preserveDrawingBuffer ?? false,
+  }));
 
-  const [earthTexture, setEarthTexture] = useState(TEXTURES[0] ?? "specular.png");
+  const [earthTexture, setEarthTexture] = useState(TEXTURES[0] ?? "specular.avif");
 
   const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
-  
   const displayTick = useSimulationClock(currentTick, tickStep, timePerStep, smoothMode);
 
   const affectedIso2 = useMemo(() => {
-    if (!visible.length) return [];
     const isoSet = new Set();
-    visible.forEach(e => {
+    for (let i = 0; i < visible.length; i++) {
+      const e = visible[i];
       const ids = [e.from, e.to, e.attacker, e.target];
-      ids.forEach(id => {
-        if (id && world.nations[id]) {
-          const iso = world.nations[id].iso2;
-          if (iso) isoSet.add(iso);
+      for (let j = 0; j < ids.length; j++) {
+        const id = ids[j];
+        if (id && world.nations[id]?.iso2) {
+          isoSet.add(world.nations[id].iso2);
         }
-      });
-    });
+      }
+    }
     return Array.from(isoSet);
   }, [visible]);
 
   const visibleForLog = useMemo(() => {
-    return (visible ?? []).map(e => {
-      const copy = { ...e };
-      delete copy.fromLat; delete copy.fromLon; delete copy.toLat; delete copy.toLon;
-      if (typeof copy.intensity === "number") {
-        copy.intensity = Math.round(copy.intensity * 10) / 10;
+    return visible.map(e => {
+      const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
+      if (typeof logFriendly.intensity === "number") {
+        logFriendly.intensity = Math.round(logFriendly.intensity * 10) / 10;
       }
-      return copy;
-    });
+      return logFriendly;
+    }).reverse();
   }, [visible]);
 
   function run(actor, target) {
@@ -119,11 +114,10 @@ export default function App() {
       </div>
 
       <pre className="event-log">
-        {visible.length ? JSON.stringify([...visibleForLog].reverse(), null, 2) : "No events yet"}
+        {visible.length ? JSON.stringify(visibleForLog, null, 2) : "No events yet"}
       </pre>
 
       <Canvas
-        key={JSON.stringify(performanceSettings)}
         className="canvas-3d"
         camera={{ position: [0, 0, 2], fov: 65 }}
         dpr={[1, performanceSettings.pixelRatioLimit]}
@@ -148,19 +142,19 @@ export default function App() {
         <CountryFillManager activeIso2={affectedIso2} nations={world.nations} />
 
         <OrbitControls 
-            ref={controlsRef} 
-            enableZoom={zoomMode === "Block"}
-            enableDamping={true}
-            dampingFactor={0.06}
-            minDistance={1.2}
-            maxDistance={32}
+          ref={controlsRef} 
+          enableZoom={zoomMode === "Block"}
+          enableDamping={true}
+          dampingFactor={0.06}
+          minDistance={1.2}
+          maxDistance={32}
         />
 
         <SmoothZoom 
-            controlsRef={controlsRef} 
-            sensitivity={0.0001} 
-            decay={0.90} 
-            enabled={zoomMode === "Smooth"}
+          controlsRef={controlsRef} 
+          sensitivity={0.0001} 
+          decay={0.90} 
+          enabled={zoomMode === "Smooth"}
         />
       </Canvas>
     </div>

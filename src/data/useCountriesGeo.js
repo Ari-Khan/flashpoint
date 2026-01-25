@@ -11,7 +11,7 @@ export function useCountriesGeo() {
             return;
         }
 
-        fetch("/data/country-shapes.geo.json")
+        fetch("/src/data/country-shapes.geo.json")
             .then((r) => {
                 if (!r.ok) throw new Error("Failed to load GeoJSON");
                 return r.json();

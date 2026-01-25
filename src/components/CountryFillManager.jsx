@@ -3,31 +3,37 @@ import CountryFill from "./CountryFill";
 import { useCountriesGeo } from "../data/useCountriesGeo";
 import { isoMatchesFeature, getColorByIso } from "../utils/countryUtils";
 
-export default function CountryFillManager({ activeIso2, nations }) {
+export default function CountryFillManager({ activeIso2 = [], nations = {} }) {
     const geo = useCountriesGeo();
 
     const activeFeatures = useMemo(() => {
-        if (!geo) return [];
-        return activeIso2
+        if (!geo || !activeIso2.length) return [];
+        
+        const uniqueIsos = Array.from(new Set(activeIso2));
+        
+        return uniqueIsos
             .map((iso) => {
                 const feature = geo.features.find((f) => isoMatchesFeature(iso, f));
-                return feature ? { iso, feature } : null;
+                if (!feature) return null;
+
+                const color = getColorByIso(iso, nations);
+                return { iso, feature, color };
             })
             .filter(Boolean);
-    }, [geo, activeIso2]);
+    }, [geo, activeIso2, nations]);
 
     if (!geo) return null;
 
     return (
-        <>
-            {activeFeatures.map(({ iso, feature }) => (
+        <group>
+            {activeFeatures.map(({ iso, feature, color }) => (
                 <CountryFill
-                    key={iso}
+                    key={`${iso}-${color}`}
                     feature={feature}
-                    color={getColorByIso(iso, nations)}
+                    color={color}
                     opacity={0.35}
                 />
             ))}
-        </>
+        </group>
     );
 }

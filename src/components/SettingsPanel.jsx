@@ -9,12 +9,12 @@ const OPTIONS = [
 ];
 
 const TEXTURE_OPTIONS = [
-  { label: "Specular", value: "specular.png" },
-  { label: "Topography", value: "topography.jpg" },
-  { label: "Terrain", value: "terrain.jpg" },
-  { label: "Bathymetry", value: "bathymetry.jpg" },
-  { label: "Physical", value: "physical.jpg" },
-  { label: "Night", value: "night.jpg" },
+  { label: "Specular", value: "specular.avif" },
+  { label: "Topography", value: "topography.avif" },
+  { label: "Terrain", value: "terrain.avif" },
+  { label: "Bathymetry", value: "bathymetry.avif" },
+  { label: "Physical", value: "physical.avif" },
+  { label: "Night", value: "night.avif" },
 ];
 
 import Tooltip from "./Tooltip";

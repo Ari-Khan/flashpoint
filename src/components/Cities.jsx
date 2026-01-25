@@ -39,7 +39,7 @@ export default function Cities({ nations = {} }) {
   return (
     <group>
       {spots.map(s => {
-        const pos = latLonToVec3(s.lat, s.lon, 1.002);
+        const pos = latLonToVec3(s.lat, s.lon, 1.001);
 
         const computedColor = s.color || "#ffffff";
 
