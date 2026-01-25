@@ -17,7 +17,7 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep, isPaused 
     }, [events, currentTick]);
 
     useEffect(() => {
-        setCurrentTick(minT);
+        setTimeout(() => setCurrentTick(minT), 0);
     }, [events, minT]);
 
     useEffect(() => {
@@ -31,7 +31,7 @@ export function useEventTimeline(events, timePerStep = 1000, tickStep, isPaused 
         }, timePerStep);
 
         return () => clearInterval(interval);
-    }, [events, isPaused, maxT, timePerStep, step]);
+    }, [events, isPaused, maxT, timePerStep, step, currentTick]);
 
     return { visible, currentTick };
 }
