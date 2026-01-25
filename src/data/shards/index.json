@@ -90,9 +90,19 @@
     "count": 8
   },
   {
-    "key": "north-america",
-    "file": "countries.north-america.geo.json",
-    "count": 38
+    "key": "north-america.central-america",
+    "file": "countries.north-america.central-america.geo.json",
+    "count": 8
+  },
+  {
+    "key": "north-america.caribbean",
+    "file": "countries.north-america.caribbean.geo.json",
+    "count": 25
+  },
+  {
+    "key": "north-america.northern-america",
+    "file": "countries.north-america.northern-america.geo.json",
+    "count": 5
   },
   {
     "key": "south-america",
