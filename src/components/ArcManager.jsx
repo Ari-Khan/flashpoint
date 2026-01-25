@@ -4,37 +4,42 @@ import Arc from "./Arc.jsx";
 export default function ArcManager({ events, nations, currentTime }) {
   const [liveLaunchIds, setLiveLaunchIds] = useState(new Set());
   const processedEvents = useRef(new Set());
+  const prevTimeRef = useRef(currentTime);
 
   useEffect(() => {
-    if (currentTime <= 0) {
+    if (currentTime < prevTimeRef.current) {
       processedEvents.current.clear();
       setLiveLaunchIds(new Set());
     }
+    prevTimeRef.current = currentTime;
   }, [currentTime]);
 
   useEffect(() => {
-    const newLaunches = (events ?? []).filter(e => {
-      const id = `${e.from}-${e.to}-${e.t}`;
-      return e.type === "launch" && 
-             currentTime >= e.t && 
-             !processedEvents.current.has(id);
-    });
+    if (!events) return;
 
-    if (newLaunches.length > 0) {
-      setLiveLaunchIds(prev => {
-        const next = new Set(prev);
-        newLaunches.forEach(e => {
-          const id = `${e.from}-${e.to}-${e.t}`;
-          next.add(id);
-          processedEvents.current.add(id);
-        });
-        return next;
-      });
+    let hasNew = false;
+    const newBatch = new Set(liveLaunchIds);
+
+    for (let i = 0; i < events.length; i++) {
+      const e = events[i];
+      if (e.type !== "launch") continue;
+
+      const id = `${e.from}-${e.to}-${e.t}`;
+      if (currentTime >= e.t && !processedEvents.current.has(id)) {
+        newBatch.add(id);
+        processedEvents.current.add(id);
+        hasNew = true;
+      }
+    }
+
+    if (hasNew) {
+      setLiveLaunchIds(newBatch);
     }
   }, [currentTime, events]);
 
   const handleComplete = (id) => {
     setLiveLaunchIds(prev => {
+      if (!prev.has(id)) return prev;
       const next = new Set(prev);
       next.delete(id);
       return next;
@@ -42,7 +47,8 @@ export default function ArcManager({ events, nations, currentTime }) {
   };
 
   const activeEvents = useMemo(() => {
-    return (events ?? []).filter(e => liveLaunchIds.has(`${e.from}-${e.to}-${e.t}`));
+    if (!events) return [];
+    return events.filter(e => liveLaunchIds.has(`${e.from}-${e.to}-${e.t}`));
   }, [events, liveLaunchIds]);
 
   return (

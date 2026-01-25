@@ -34,14 +34,21 @@ const TEXTURES = [
   "night.avif",
 ];
 
+const CAM_CONFIG = {
+  position: [0, 1.2, 1.8],
+  fov: 60,
+  near: 0.01,
+  far: 1000
+};
+
 export default function App() {
   const [events, setEvents] = useState(null);
   const [tickStep, setTickStep] = useState(perfCfg?.tickStep ?? 1);
   const [smoothMode, setSmoothMode] = useState("off");
   const [isPaused, setIsPaused] = useState(false);
-  const controlsRef = useRef();
   const [showGeo, setShowGeo] = useState(false);
   const [uiHidden, setUiHidden] = useState(false);
+  const controlsRef = useRef();
 
   useEffect(() => {
     const id = setTimeout(() => setShowGeo(true), 300);
@@ -57,7 +64,7 @@ export default function App() {
     preserveDrawingBuffer: perfCfg?.preserveDrawingBuffer ?? false,
   }));
 
-  const [earthTexture, setEarthTexture] = useState(TEXTURES[0] ?? "specular.avif");
+  const [earthTexture, setEarthTexture] = useState(TEXTURES[0]);
 
   const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
   const displayTick = useSimulationClock(currentTick, tickStep, timePerStep, smoothMode);
@@ -68,62 +75,52 @@ export default function App() {
       const e = visible[i];
       const ids = [e.from, e.to, e.attacker, e.target];
       for (let j = 0; j < ids.length; j++) {
-        const id = ids[j];
-        if (id) {
-          isoSet.add(id.toUpperCase());
-        }
+        if (ids[j]) isoSet.add(ids[j].toUpperCase());
       }
     }
     return Array.from(isoSet);
   }, [visible]);
 
   const visibleForLog = useMemo(() => {
-    const logArray = [];
-    for (let i = visible.length - 1; i >= 0; i--) {
-      const { fromLat, fromLon, toLat, toLon, ...logFriendly } = visible[i];
+    return visible.slice(-10).reverse().map(e => {
+      const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
       if (typeof logFriendly.intensity === "number") {
         logFriendly.intensity = Math.round(logFriendly.intensity * 10) / 10;
       }
-      logArray.push(logFriendly);
-    }
-    return logArray;
+      return logFriendly;
+    });
   }, [visible]);
 
   function run(actor, target) {
-    const rawTimeline = simulateEscalation({
-      initiator: actor,
-      firstTarget: target,
-      world,
-    });
-    setEvents(rawTimeline);
+    setEvents(simulateEscalation({ initiator: actor, firstTarget: target, world }));
   }
 
   function resetCamera() {
     const controls = controlsRef.current;
     if (!controls) return;
-    if (controls.object && typeof controls.object.position?.set === "function") {
-      controls.object.position.set(0, 0, 2);
-    }
-    if (controls.target && typeof controls.target.set === "function") {
-      controls.target.set(0, 0, 0);
-    }
+    if (window.__resetZoomVelocity) window.__resetZoomVelocity();
+    
+    controls.object.position.set(...CAM_CONFIG.position);
+    controls.target.set(0, 0, 0);
     controls.update();
   }
 
   return (
     <div className="app-container">
-      {!uiHidden && <ControlPanel nations={world.nations} onRun={run} />}
       {!uiHidden && (
-        <SettingsPanel
-          tickStep={tickStep}
-          onTickStepChange={setTickStep}
-          smoothMode={smoothMode}
-          onSmoothModeChange={setSmoothMode}
-          performanceSettings={performanceSettings}
-          onPerformanceChange={setPerformanceSettings}
-          texture={earthTexture}
-          onTextureChange={setEarthTexture}
-        />
+        <>
+          <ControlPanel nations={world.nations} onRun={run} />
+          <SettingsPanel
+            tickStep={tickStep}
+            onTickStepChange={setTickStep}
+            smoothMode={smoothMode}
+            onSmoothModeChange={setSmoothMode}
+            performanceSettings={performanceSettings}
+            onPerformanceChange={setPerformanceSettings}
+            texture={earthTexture}
+            onTextureChange={setEarthTexture}
+          />
+        </>
       )}
 
       <div className="time-controls">
@@ -136,18 +133,21 @@ export default function App() {
             <button className="pause-button" onClick={() => setIsPaused(!isPaused)}>
               {isPaused ? "Resume" : "Pause"}
             </button>
-            <button className="pause-button reset-button" onClick={resetCamera}>Reset Cam</button>
+            <button className="pause-button reset-button" onClick={resetCamera}>
+              Reset Cam
+            </button>
           </>
         )}
       </div>
 
       {!uiHidden && (
         <pre className="event-log">
-          {visible.length ? JSON.stringify(visibleForLog, null, 2) : "No events yet"}
+          {visible.length ? JSON.stringify(visibleForLog, null, 2) : "SYSTEM READY"}
         </pre>
       )}
 
       <Canvas
+        key={`${performanceSettings.antialias}-${performanceSettings.pixelRatioLimit}`}
         className="canvas-3d"
         dpr={[1, performanceSettings.pixelRatioLimit]}
         gl={{
@@ -156,7 +156,7 @@ export default function App() {
           preserveDrawingBuffer: performanceSettings.preserveDrawingBuffer,
           logarithmicDepthBuffer: true,
         }}
-        camera={{ position: [0, 0, 2], fov: 60, near: 0.01 }}
+        camera={CAM_CONFIG}
       >
         <Skybox />
         <ambientLight intensity={0.5} /> 
@@ -165,9 +165,13 @@ export default function App() {
         <Suspense fallback={null}>
           <ArcManager events={visible} nations={world.nations} currentTime={displayTick} />
           <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
-          {showGeo && <CountryBorders />}
-          {showGeo && <Cities nations={world.nations} />}
-          {showGeo && <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />}
+          {showGeo && (
+            <>
+              <CountryBorders />
+              <Cities nations={world.nations} />
+              <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />
+            </>
+          )}
         </Suspense>
 
         <Globe textureName={earthTexture} />
@@ -185,7 +189,9 @@ export default function App() {
         <SmoothZoom 
           controlsRef={controlsRef} 
           sensitivity={0.0001} 
-          decay={0.9} 
+          decay={0.925} 
+          minDistance={1.125}
+          maxDistance={32}
           enabled={true}
         />
       </Canvas>

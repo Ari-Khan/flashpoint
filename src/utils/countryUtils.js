@@ -1,27 +1,23 @@
-export function isoMatchesFeature(iso, feature) {
-    if (!iso || !feature.properties) return false;
-    const p = feature.properties;
-    const s = iso.toUpperCase();
-
-    return (
-        p.adm0_a3?.toUpperCase() === s ||
-        p.iso_a3_eh?.toUpperCase() === s ||
-        p.gu_a3?.toUpperCase() === s
-    );
-}
-
-export function getNationByIso(iso, nations) {
-    if (!iso || !nations) return undefined;
-    const s = iso.toUpperCase();
-    if (nations[s]) return nations[s];
-    return Object.values(nations).find(n => 
-        n.iso2?.toUpperCase() === s || 
-        n.iso3?.toUpperCase() === s ||
-        n.name?.toUpperCase() === s
-    );
-}
+const COLOR_CACHE = new Map();
+let LAST_NATIONS_REF = null;
 
 export function getColorByIso(iso, nations, defaultColor = "#FF69B4") {
-    const nation = getNationByIso(iso, nations);
-    return nation?.defaultColor ?? defaultColor;
+    if (!iso || !nations) return defaultColor;
+
+    if (nations !== LAST_NATIONS_REF) {
+        COLOR_CACHE.clear();
+        Object.entries(nations).forEach(([key, n]) => {
+            const color = n.defaultColor;
+            if (!color) return;
+
+            COLOR_CACHE.set(key.toUpperCase(), color);
+            if (n.iso2) COLOR_CACHE.set(n.iso2.toUpperCase(), color);
+            if (n.iso3) COLOR_CACHE.set(n.iso3.toUpperCase(), color);
+            if (n.name) COLOR_CACHE.set(n.name.toUpperCase(), color);
+        });
+        LAST_NATIONS_REF = nations;
+    }
+
+    const s = iso.toUpperCase();
+    return COLOR_CACHE.get(s) ?? defaultColor;
 }

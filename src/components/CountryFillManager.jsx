@@ -1,26 +1,56 @@
 import { useMemo } from "react";
 import CountryFill from "./CountryFill.jsx";
 import { useCountriesGeo } from "../data/useCountriesGeo.js";
-import { isoMatchesFeature, getColorByIso } from "../utils/countryUtils.js";
+import { getColorByIso } from "../utils/countryUtils.js";
 
 export default function CountryFillManager({ activeIsos = [], nations = {} }) {
     const geo = useCountriesGeo();
 
-    const activeGroups = useMemo(() => {
-        if (!geo || !activeIsos.length) return [];
+    const geoMap = useMemo(() => {
+        if (!geo?.features) return null;
+        const map = new Map();
         
-        const uniqueIsos = Array.from(new Set(activeIsos));
-        
-        return uniqueIsos
-            .map((iso) => {
-                const matchingFeatures = geo.features.filter((f) => isoMatchesFeature(iso, f));
-                if (matchingFeatures.length === 0) return null;
+        geo.features.forEach(f => {
+            const p = f.properties || {};
+            const keys = [
+                p.adm0_a3,
+                p.iso_a3_eh,
+                p.gu_a3
+            ];
 
-                const color = getColorByIso(iso, nations);
-                return { iso, matchingFeatures, color };
-            })
-            .filter(Boolean);
-    }, [geo, activeIsos, nations]);
+            const seen = new Set();
+            keys.forEach(key => {
+                if (key && typeof key === 'string' && key !== "-99") {
+                    const normalized = key.toUpperCase();
+                    if (!seen.has(normalized)) {
+                        if (!map.has(normalized)) map.set(normalized, []);
+                        map.get(normalized).push(f);
+                        seen.add(normalized);
+                    }
+                }
+            });
+        });
+        return map;
+    }, [geo]);
+
+    const activeGroups = useMemo(() => {
+        if (!geoMap || !activeIsos.length) return [];
+        
+        const uniqueIsos = Array.from(new Set(activeIsos.map(i => i.toUpperCase())));
+        const groups = [];
+
+        for (const iso of uniqueIsos) {
+            const matchingFeatures = geoMap.get(iso);
+            if (matchingFeatures) {
+                groups.push({
+                    iso,
+                    matchingFeatures,
+                    color: getColorByIso(iso, nations)
+                });
+            }
+        }
+        return groups;
+    }, [geoMap, activeIsos, nations]);
 
     if (!geo) return null;
 

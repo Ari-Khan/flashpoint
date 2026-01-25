@@ -21,31 +21,30 @@ export default function Arc({
   const isDoneRef = useRef(false);
   const tempVec = useRef(new THREE.Vector3()).current;
 
-  const { geometry, curve, duration, impactTime, segments, arcLengths, pointsCount } = useMemo(() => {
-    const { start, end, distance, duration: dur, impactTick } = computeTrajectory({ fromLat, fromLon, toLat, toLon, startTime, weapon });
-    const { curve: cubicCurve, geometry: geom, arcLengths, pointsCount, segments } = buildCubicCurveAndGeometry({ start, end, startTime });
+  const { geometry, curve, duration, impactTime, pointsCount, arcLengths } = useMemo(() => {
+    const { start, end, duration: dur, impactTick } = computeTrajectory({ fromLat, fromLon, toLat, toLon, startTime, weapon });
+    const { curve: cubicCurve, geometry: geom, arcLengths: arcs, pointsCount: count } = buildCubicCurveAndGeometry({ start, end, startTime });
 
     return {
       geometry: geom,
       curve: cubicCurve,
       duration: dur,
       impactTime: impactTick,
-      segments,
-      arcLengths,
-      pointsCount
+      pointsCount: count,
+      arcLengths: arcs
     };
   }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
 
   useEffect(() => {
     return () => {
-      try { geometry.dispose(); } catch (e) {}
-      try { if (lineRef.current && lineRef.current.material) lineRef.current.material.dispose(); } catch (e) {}
-      try {
-        if (coneRef.current) {
-          if (coneRef.current.material) coneRef.current.material.dispose();
-          if (coneRef.current.geometry) coneRef.current.geometry.dispose();
-        }
-      } catch (e) {}
+      geometry.dispose();
+      if (lineRef.current) {
+        lineRef.current.material.dispose();
+      }
+      if (coneRef.current) {
+        coneRef.current.geometry.dispose();
+        coneRef.current.material.dispose();
+      }
     };
   }, [geometry]);
 
@@ -53,17 +52,15 @@ export default function Arc({
     if (!lineRef.current || !coneRef.current || isDoneRef.current) return;
 
     const t = THREE.MathUtils.clamp((currentTime - startTime) / duration, 0, 1);
-    const easeThreshold = 0.2;
-    let progress;
-    if (t < easeThreshold) {
-      const local = t / easeThreshold;
-      progress = easeThreshold * (local * local);
-    } else {
-      progress = t;
+    
+    let progress = t;
+    if (t < 0.2) {
+      const local = t / 0.2;
+      progress = 0.2 * (local * local);
     }
 
     let u = progress;
-    if (arcLengths && arcLengths.length > 1) {
+    if (arcLengths?.length > 1) {
       if (progress <= 0) u = 0;
       else if (progress >= 1) u = 1;
       else {
@@ -93,9 +90,8 @@ export default function Arc({
       coneRef.current.visible = false;
     }
 
-    const fadeStart = impactTime;
-    if (currentTime >= fadeStart) {
-      const opacity = Math.max(0, 1 - (currentTime - fadeStart) * 5);
+    if (currentTime >= impactTime) {
+      const opacity = Math.max(0, 1 - (currentTime - impactTime) * 5);
       lineRef.current.material.opacity = opacity;
       coneRef.current.material.opacity = opacity;
 
@@ -109,11 +105,23 @@ export default function Arc({
   return (
     <group>
       <line ref={lineRef} geometry={geometry}>
-        <lineBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
+        <lineBasicMaterial 
+          color="#ff5533" 
+          transparent 
+          opacity={1} 
+          depthWrite={false} 
+          blending={THREE.AdditiveBlending}
+        />
       </line>
       <mesh ref={coneRef} visible={false}>
         <coneGeometry args={[0.003, 0.01, 8]} />
-        <meshBasicMaterial color="#ff5533" transparent opacity={1} depthWrite={false} />
+        <meshBasicMaterial 
+          color="#ff5533" 
+          transparent 
+          opacity={1} 
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </mesh>
     </group>
   );

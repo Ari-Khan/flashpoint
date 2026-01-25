@@ -12,8 +12,7 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
     const [isInitialized, setIsInitialized] = useState(false);
 
     const meshes = useMemo(() => {
-        if (!features || !features.length || !countryCode) return [];
-        
+        if (!features?.length || !countryCode) return [];
         if (GEOMETRY_CACHE.has(countryCode)) return GEOMETRY_CACHE.get(countryCode);
 
         const internalGeometries = [];
@@ -23,13 +22,13 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
             if (!geom) return;
 
             function buildMesh(rings) {
-                if (!rings || rings.length === 0) return;
+                if (!rings?.length) return;
                 
                 const vertices2D = [];
                 const holeIndices = [];
                 const outerRing = rings[0];
                 
-                if (!outerRing || outerRing.length < 3) return;
+                if (outerRing.length < 3) return;
 
                 let centerLon = 0;
                 outerRing.forEach(([lon]) => { centerLon += lon; });
@@ -75,8 +74,7 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
                 } catch {
                     try {
                         geometry = new TessellateModifier(0.5, 4).modify(geometry);
-                    } catch {
-                    }
+                    } catch (e) {}
                 }
 
                 const posAttr = geometry.getAttribute("position");
@@ -105,34 +103,39 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
     }, [features, countryCode]);
 
     useEffect(() => {
-        setIsInitialized(false);
+        let active = true;
         let rafId;
 
+        const animate = (startTime) => {
+            const duration = 600;
+            const step = (now) => {
+                if (!active) return;
+                const elapsed = now - startTime;
+                const t = Math.min(1, elapsed / duration);
+                const eased = t * t * (3 - 2 * t);
+                
+                materialRefs.current.forEach(m => {
+                    if (m) {
+                        m.opacity = opacity * eased;
+                        m.color.copy(countryColor);
+                    }
+                });
+
+                if (t < 1) rafId = requestAnimationFrame(step);
+            };
+            rafId = requestAnimationFrame(step);
+        };
+
         rafId = requestAnimationFrame(() => {
-            rafId = requestAnimationFrame(() => {
-                setIsInitialized(true);
-                const start = performance.now();
-                const duration = 600;
-
-                const animate = (now) => {
-                    const elapsed = now - start;
-                    const t = Math.min(1, elapsed / duration);
-                    const eased = t * t * (3 - 2 * t);
-                    
-                    materialRefs.current.forEach(m => {
-                        if (m) {
-                            m.opacity = opacity * eased;
-                            m.color.copy(countryColor);
-                        }
-                    });
-
-                    if (t < 1) rafId = requestAnimationFrame(animate);
-                };
-                rafId = requestAnimationFrame(animate);
-            });
+            if (!active) return;
+            setIsInitialized(true);
+            animate(performance.now());
         });
 
-        return () => cancelAnimationFrame(rafId);
+        return () => {
+            active = false;
+            cancelAnimationFrame(rafId);
+        };
     }, [countryCode, opacity, countryColor]);
 
     if (!features || meshes.length === 0) return null;
@@ -149,7 +152,6 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
                         side={THREE.DoubleSide}
                         depthWrite={false}
                         depthTest={true}
-                        blending={THREE.NormalBlending}
                         toneMapped={false}
                     />
                 </mesh>

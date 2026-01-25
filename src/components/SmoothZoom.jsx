@@ -15,6 +15,15 @@ export default function SmoothZoom({
   const lastPinchDistance = useRef(0);
 
   useEffect(() => {
+    window.__resetZoomVelocity = () => {
+      zoomVelocity.current = 0;
+    };
+    return () => {
+      delete window.__resetZoomVelocity;
+    };
+  }, []);
+
+  useEffect(() => {
     const el = gl.domElement;
 
     function onWheel(e) {
@@ -24,9 +33,7 @@ export default function SmoothZoom({
     }
 
     function getTouchDistance(t0, t1) {
-      const dx = t0.clientX - t1.clientX;
-      const dy = t0.clientY - t1.clientY;
-      return Math.hypot(dx, dy);
+      return Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
     }
 
     function onTouchStart(e) {
@@ -85,7 +92,7 @@ export default function SmoothZoom({
     if (!controls || !enabled) return;
 
     if (Math.abs(zoomVelocity.current) > 0.0001) {
-      const frameDelta = Math.min(delta * 60, 1);
+      const frameDelta = Math.min(delta * 60, 2);
       const zoomFactor = 1 + (zoomVelocity.current * frameDelta);
       const cam = state.camera;
       
@@ -102,16 +109,13 @@ export default function SmoothZoom({
       if (dist < minDistance) {
         offset.setLength(minDistance);
         zoomVelocity.current = 0; 
-      }
-      if (dist > maxDistance) {
+      } else if (dist > maxDistance) {
         offset.setLength(maxDistance);
         zoomVelocity.current = 0;
       }
 
       cam.position.copy(controls.target).add(offset);
-      
-      const frameDecay = Math.pow(decay, frameDelta);
-      zoomVelocity.current *= frameDecay;
+      zoomVelocity.current *= Math.pow(decay, frameDelta);
       
       controls.update();
     } else {

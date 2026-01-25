@@ -1,38 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function ControlPanel({ nations, onRun }) {
-    const allCodes = Object.keys(nations);
-    const aggressorCodes = allCodes.filter((code) => {
-        const w = nations[code]?.weapons;
-        return (w?.icbm || 0) + (w?.slbm || 0) + (w?.airLaunch || 0) > 0;
-    });
+    const allCodes = useMemo(() => Object.keys(nations), [nations]);
+    
+    const aggressorCodes = useMemo(() => {
+        return allCodes.filter((code) => {
+            const w = nations[code]?.weapons;
+            return (w?.icbm || 0) + (w?.slbm || 0) + (w?.airLaunch || 0) > 0;
+        });
+    }, [allCodes, nations]);
 
-    const [actor, setActor] = useState(aggressorCodes[0] ?? allCodes[0] ?? "");
-    const [target, setTarget] = useState(() => {
-        const defaultTarget = allCodes.find((c) => c !== (aggressorCodes[0] ?? allCodes[0]));
-        return defaultTarget ?? allCodes[0] ?? "";
-    });
-    const [error, setError] = useState(null);
+    const [actor, setActor] = useState("");
+    const [target, setTarget] = useState("");
 
     useEffect(() => {
-        let raf = null;
-        raf = requestAnimationFrame(() => {
-            if (aggressorCodes.length === 0) {
-                setError("No aggressors available (no nations have nukes).");
-                return;
-            }
-            if (!actor || !target) {
-                setError("Select valid countries.");
-                return;
-            }
-            if (actor === target) {
-                setError("A country can't nuke itself.");
-            } else {
-                setError(null);
-            }
-        });
-        return () => { if (raf) cancelAnimationFrame(raf); };
-    }, [actor, target, aggressorCodes.length]);
+        if (aggressorCodes.length > 0 && !actor) {
+            setActor(aggressorCodes[0]);
+        }
+    }, [aggressorCodes, actor]);
+
+    useEffect(() => {
+        if (allCodes.length > 0 && !target) {
+            const defaultTarget = allCodes.find((c) => c !== (actor || aggressorCodes[0]));
+            setTarget(defaultTarget ?? allCodes[0]);
+        }
+    }, [allCodes, actor, target, aggressorCodes]);
+
+    const error = useMemo(() => {
+        if (aggressorCodes.length === 0) return "No aggressors available (no nations have nukes).";
+        if (!actor || !target) return "Select valid countries.";
+        if (actor === target) return "A country can't nuke itself.";
+        return null;
+    }, [actor, target, aggressorCodes]);
 
     return (
         <div className="control-panel">
@@ -44,7 +43,7 @@ export default function ControlPanel({ nations, onRun }) {
                 >
                     {aggressorCodes.map((c) => (
                         <option key={c} value={c}>
-                            {c}
+                            {nations[c]?.name || c}
                         </option>
                     ))}
                 </select>
@@ -58,7 +57,7 @@ export default function ControlPanel({ nations, onRun }) {
                 >
                     {allCodes.map((c) => (
                         <option key={c} value={c}>
-                            {c}
+                            {nations[c]?.name || c}
                         </option>
                     ))}
                 </select>
@@ -66,8 +65,7 @@ export default function ControlPanel({ nations, onRun }) {
 
             <button
                 onClick={() => {
-                    if (error) return;
-                    onRun(actor, target);
+                    if (!error) onRun(actor, target);
                 }}
                 disabled={!!error}
                 className={error ? "dull" : ""}
