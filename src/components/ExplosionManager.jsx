@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { computeTrajectory } from "../utils/trajectory.js";
+import { computeTrajectory } from "../utils/trajectoryUtils.js";
 
 const FADE_WINDOW = 6;
 const SHARED_GEOM = new THREE.SphereGeometry(1, 16, 16);

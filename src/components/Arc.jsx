@@ -4,7 +4,7 @@ import * as THREE from "three";
 import {
     computeTrajectory,
     buildCubicCurveAndGeometry,
-} from "../utils/trajectory.js";
+} from "../utils/trajectoryUtils.js";
 
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
 

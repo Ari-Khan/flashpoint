@@ -12,7 +12,7 @@ export function useCountriesGeo(activeCountryIds = []) {
         }
 
         let cancelled = false;
-        const worker = new Worker(new URL("geoHandler.js", import.meta.url), {
+        const worker = new Worker(new URL("../utils/geoHandler.js", import.meta.url), {
             type: "module",
         });
 
