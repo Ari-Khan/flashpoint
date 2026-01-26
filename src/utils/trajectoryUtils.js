@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { latLonToVec3 } from "./latLonToVec3.js";
 
 export const TERMINAL_MULTIPLIER = 1.25;
-export const SPEEDS = { icbm: 15, slbm: 18, air: 30 };
+export const SPEEDS = { icbm: 15, slbm: 20, air: 30 };
 
 function getJitteredVec3(lat, lon, amount = 2, seed = 0) {
     const nLat = Number(lat);
