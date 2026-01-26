@@ -1,10 +1,8 @@
 import { createEscalationState } from "./state.js";
-import {
-    launchStrike,
-    canLaunch,
-    pickWeightedTarget,
-    processGlobalDevelopment,
-} from "./logic.js";
+import { launchStrike } from "./strikes.js";
+import { canLaunch } from "./weapons.js";
+import { pickWeightedTarget } from "./targeting.js";
+import { processGlobalDevelopment } from "./development.js";
 import { computeSalvoCount } from "./salvo.js";
 import { joinAllies } from "./diplomacy.js";
 
