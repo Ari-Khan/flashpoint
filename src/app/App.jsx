@@ -17,7 +17,7 @@ import SmoothZoom from "../components/SmoothZoom.jsx";
 import { useEventTimeline } from "../hooks/useEventTimeline.js";
 import { useSimulationClock } from "../hooks/useSimulationClock.js";
 import { loadWorld } from "../utils/loadData.js";
-import { simulateEscalation } from "../sim/simulateEscalation.js";
+import { simulateEscalation } from "../sim/simulator.js";
 
 import "../index.css";
 import settings from "../config/settings.json";

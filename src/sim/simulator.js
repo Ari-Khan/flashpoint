@@ -1,12 +1,12 @@
-import { createEscalationState } from "./escalationState.js";
+import { createEscalationState } from "./state.js";
 import {
     launchStrike,
-    joinAllies,
     canLaunch,
     pickWeightedTarget,
     processGlobalDevelopment,
-} from "./escalationLogic.js";
-import { computeSalvoCount } from "./salvoLogic.js";
+} from "./logic.js";
+import { computeSalvoCount } from "./salvo.js";
+import { joinAllies } from "./diplomacy.js";
 
 export function simulateEscalation({
     initiator,
