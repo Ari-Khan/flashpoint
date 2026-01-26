@@ -16,11 +16,11 @@ import SmoothZoom from "../components/SmoothZoom.jsx";
 
 import { useEventTimeline } from "../hooks/useEventTimeline.js";
 import { useSimulationClock } from "../hooks/useSimulationClock.js";
-import { loadWorld } from "../data/loadData.js";
+import { loadWorld } from "../utils/loadData.js";
 import { simulateEscalation } from "../sim/simulateEscalation.js";
 
 import "../index.css";
-import perfCfg from "../config/settings.js";
+import settings from "../config/settings.json";
 
 const world = loadWorld();
 const BASE_TICK_MS = 1000;
@@ -43,7 +43,7 @@ const CAM_CONFIG = {
 
 export default function App() {
   const [events, setEvents] = useState(null);
-  const [tickStep, setTickStep] = useState(perfCfg?.tickStep ?? 1);
+  const [tickStep, setTickStep] = useState(settings.tickStep);
   const [smoothMode, setSmoothMode] = useState("off");
   const [isPaused, setIsPaused] = useState(false);
   const [showGeo, setShowGeo] = useState(false);
@@ -58,13 +58,13 @@ export default function App() {
   const timePerStep = BASE_TICK_MS * tickStep;
 
   const [performanceSettings, setPerformanceSettings] = useState(() => ({
-    antialias: perfCfg?.antialias ?? true,
-    pixelRatioLimit: perfCfg?.pixelRatioLimit ?? 2,
-    powerPreference: perfCfg?.powerPreference ?? "high-performance",
-    preserveDrawingBuffer: perfCfg?.preserveDrawingBuffer ?? false,
+    antialias: settings.antialias,
+    pixelRatioLimit: settings.pixelRatioLimit,
+    powerPreference: settings.powerPreference,
+    preserveDrawingBuffer: settings.preserveDrawingBuffer,
   }));
 
-  const [earthTexture, setEarthTexture] = useState(TEXTURES[0]);
+  const [earthTexture, setEarthTexture] = useState(settings.texture || TEXTURES[0]);
 
   const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
   const displayTick = useSimulationClock(currentTick, tickStep, timePerStep, smoothMode);

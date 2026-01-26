@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import CountryFill from "./CountryFill.jsx";
-import { useCountriesGeo } from "../data/useCountriesGeo.js";
+import { useCountriesGeo } from "../hooks/useCountriesGeo.js";
 import { getColorByIso } from "../utils/countryUtils.js";
 
 export default function CountryFillManager({ activeIsos = [], nations = {} }) {

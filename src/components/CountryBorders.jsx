@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3.js";
-import { useCountriesGeo } from "../data/useCountriesGeo.js";
+import { useCountriesGeo } from "../hooks/useCountriesGeo.js";
 
 export default function CountryBorders() {
     const geo = useCountriesGeo();

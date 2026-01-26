@@ -2,18 +2,6 @@
     "NATO": {
         "name": "North Atlantic Treaty Organization",
         "baseColor": "#2563EB",
-        "shadeVariance": 0.15,
-        "members": [
-            "USA",
-            "GBR",
-            "FRA",
-            "DEU",
-            "CAN",
-            "TUR",
-            "SWE",
-            "NLD",
-            "POL",
-            "ITA"
-        ]
+        "shadeVariance": 0.15
     }
 }

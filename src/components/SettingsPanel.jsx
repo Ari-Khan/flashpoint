@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Tooltip from "./Tooltip.jsx";
-import perfCfg from "../config/settings.js";
 
 function useFPS() {
     const [fps, setFps] = useState(0);
@@ -27,7 +26,7 @@ function useFPS() {
     return fps;
 }
 
-const TICK_OPTIONS = perfCfg.tickOptions || [
+const TICK_OPTIONS = [
     { label: "1 tick/sec", value: 1 },
     { label: "2 ticks/sec", value: 0.5 },
     { label: "4 ticks/sec", value: 0.25 },

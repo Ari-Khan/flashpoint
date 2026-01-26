@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import perfCfg from "../config/settings.js";
 
 export default function Globe({ textureName }) {
-    const texName = textureName || perfCfg.texture || "specular.avif";
+    const texName = textureName || "specular.avif";
     const earthTexture = useTexture(`/textures/${texName}`);
     
     const geometry = useMemo(() => new THREE.SphereGeometry(1, 48, 48), []);

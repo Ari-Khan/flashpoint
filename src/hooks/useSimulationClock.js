@@ -1,28 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 
 export function useSimulationClock(currentTick, tickStep, timePerStep, smoothMode) {
-  const [displayTick, setDisplayTick] = useState(0);
-  const lastTickTimeRef = useRef(0);
+  const [displayTick, setDisplayTick] = useState(currentTick);
+  const lastTickTimeRef = useRef(performance.now());
 
   useEffect(() => {
     lastTickTimeRef.current = performance.now();
-  }, [currentTick]);
+    if (smoothMode === "off") {
+      setDisplayTick(currentTick);
+    }
+  }, [currentTick, smoothMode]);
 
   useEffect(() => {
-    if (smoothMode === "off") {
-      const id = requestAnimationFrame(() => setDisplayTick(currentTick));
-      return () => cancelAnimationFrame(id);
-    }
+    if (smoothMode === "off") return;
 
     let rafId;
-    const tick = () => {
+    const update = () => {
       const elapsed = performance.now() - lastTickTimeRef.current;
-      const factor = Math.min(1, elapsed / timePerStep);
-      setDisplayTick(currentTick + factor * tickStep);
-      rafId = requestAnimationFrame(tick);
+      const progress = Math.min(1, elapsed / timePerStep);
+      
+      setDisplayTick(currentTick + (progress * tickStep));
+      rafId = requestAnimationFrame(update);
     };
 
-    rafId = requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(update);
     return () => cancelAnimationFrame(rafId);
   }, [smoothMode, currentTick, tickStep, timePerStep]);
 
