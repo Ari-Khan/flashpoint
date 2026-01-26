@@ -82,7 +82,7 @@ export default function App() {
   }, [visible]);
 
   const visibleForLog = useMemo(() => {
-    return visible.slice(-10).reverse().map(e => {
+    return visible.slice().reverse().map(e => {
       const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
       if (typeof logFriendly.intensity === "number") {
         logFriendly.intensity = Math.round(logFriendly.intensity * 10) / 10;

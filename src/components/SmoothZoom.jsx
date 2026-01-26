@@ -1,126 +1,101 @@
 import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
+
+const _offset = new THREE.Vector3();
 
 export default function SmoothZoom({ 
   controlsRef, 
-  sensitivity, 
-  decay, 
-  minDistance, 
-  maxDistance,
-  enabled
+  sensitivity = 0.001, 
+  decay = 0.9, 
+  minDistance = 1.1, 
+  maxDistance = 10,
+  enabled = true
 }) {
-  const { gl } = useThree();
+  const { gl, camera } = useThree();
   const zoomVelocity = useRef(0);
   const pinchActive = useRef(false);
   const lastPinchDistance = useRef(0);
 
   useEffect(() => {
-    window.__resetZoomVelocity = () => {
-      zoomVelocity.current = 0;
-    };
-    return () => {
-      delete window.__resetZoomVelocity;
-    };
+    window.__resetZoomVelocity = () => { zoomVelocity.current = 0; };
+    return () => { delete window.__resetZoomVelocity; };
   }, []);
 
   useEffect(() => {
     const el = gl.domElement;
+    if (!el) return;
 
-    function onWheel(e) {
+    const onWheel = (e) => {
       if (!enabled || !controlsRef.current) return;
       e.preventDefault();
       zoomVelocity.current += e.deltaY * sensitivity;
-    }
+    };
 
-    function getTouchDistance(t0, t1) {
-      return Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
-    }
+    const getDist = (t0, t1) => Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
 
-    function onTouchStart(e) {
-      if (!enabled || !controlsRef.current) return;
-      if (e.touches && e.touches.length === 2) {
+    const onTouchStart = (e) => {
+      if (enabled && e.touches?.length === 2) {
         pinchActive.current = true;
-        lastPinchDistance.current = getTouchDistance(e.touches[0], e.touches[1]);
-        e.preventDefault();
+        lastPinchDistance.current = getDist(e.touches[0], e.touches[1]);
       }
-    }
+    };
 
-    function onTouchMove(e) {
-      if (!pinchActive.current || !controlsRef.current) return;
-      if (e.touches && e.touches.length === 2) {
-        const dist = getTouchDistance(e.touches[0], e.touches[1]);
+    const onTouchMove = (e) => {
+      if (enabled && pinchActive.current && e.touches?.length === 2) {
+        const dist = getDist(e.touches[0], e.touches[1]);
         const delta = lastPinchDistance.current - dist;
-        if (Math.abs(delta) > 0.5) {
-          zoomVelocity.current += delta * (sensitivity * 10);
-          lastPinchDistance.current = dist;
-        }
-        e.preventDefault();
+        zoomVelocity.current += delta * sensitivity * 2;
+        lastPinchDistance.current = dist;
+        if (e.cancelable) e.preventDefault();
       }
-    }
+    };
 
-    function endPinch() {
-      pinchActive.current = false;
-      lastPinchDistance.current = 0;
-    }
-
-    function onTouchEnd(e) {
-      if (!enabled) return;
-      if (!e.touches || e.touches.length < 2) endPinch();
-    }
-
-    const previousTouchAction = el.style.touchAction;
-    if (enabled) el.style.touchAction = "none";
+    const endPinch = () => { pinchActive.current = false; };
 
     el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("touchstart", onTouchStart, { passive: false });
     el.addEventListener("touchmove", onTouchMove, { passive: false });
-    el.addEventListener("touchend", onTouchEnd, { passive: false });
-    el.addEventListener("touchcancel", endPinch, { passive: false });
+    el.addEventListener("touchend", endPinch);
+    el.addEventListener("touchcancel", endPinch);
 
     return () => {
       el.removeEventListener("wheel", onWheel);
       el.removeEventListener("touchstart", onTouchStart);
       el.removeEventListener("touchmove", onTouchMove);
-      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchend", endPinch);
       el.removeEventListener("touchcancel", endPinch);
-      el.style.touchAction = previousTouchAction;
     };
-  }, [gl, sensitivity, controlsRef, enabled]);
+  }, [gl, sensitivity, enabled, controlsRef]);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     const controls = controlsRef.current;
-    if (!controls || !enabled) return;
-
-    if (Math.abs(zoomVelocity.current) > 0.0001) {
-      const frameDelta = Math.min(delta * 60, 2);
-      const zoomFactor = 1 + (zoomVelocity.current * frameDelta);
-      const cam = state.camera;
-      
-      const offset = cam.position.clone().sub(controls.target);
-
-      if (offset.length() < 0.001) {
-        offset.set(0, 0, minDistance);
-      }
-
-      offset.multiplyScalar(zoomFactor);
-      
-      const dist = offset.length();
-      
-      if (dist < minDistance) {
-        offset.setLength(minDistance);
-        zoomVelocity.current = 0; 
-      } else if (dist > maxDistance) {
-        offset.setLength(maxDistance);
-        zoomVelocity.current = 0;
-      }
-
-      cam.position.copy(controls.target).add(offset);
-      zoomVelocity.current *= Math.pow(decay, frameDelta);
-      
-      controls.update();
-    } else {
-      zoomVelocity.current = 0;
+    if (!controls || !enabled || Math.abs(zoomVelocity.current) < 0.0001) {
+      if (zoomVelocity.current !== 0) zoomVelocity.current = 0;
+      return;
     }
+
+    const frameDelta = Math.min(delta * 60, 2);
+    const zoomFactor = 1 + (zoomVelocity.current * frameDelta);
+    
+    _offset.copy(camera.position).sub(controls.target);
+    
+    let dist = _offset.length();
+    if (dist <= 0) dist = minDistance;
+
+    let newDist = dist * zoomFactor;
+    newDist = Math.max(minDistance, Math.min(maxDistance, newDist));
+
+    _offset.setLength(newDist);
+    camera.position.copy(controls.target).add(_offset);
+    
+    if (newDist === minDistance || newDist === maxDistance) {
+      zoomVelocity.current = 0;
+    } else {
+      zoomVelocity.current *= Math.pow(decay, frameDelta);
+    }
+
+    controls.update();
   });
 
   return null;

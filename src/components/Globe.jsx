@@ -1,21 +1,24 @@
-import { Sphere, useTexture } from "@react-three/drei";
+import { useMemo } from "react";
+import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import perfCfg from "../config/settings.js";
 
 export default function Globe({ textureName }) {
     const texName = textureName || perfCfg.texture || "specular.avif";
     const earthTexture = useTexture(`/textures/${texName}`);
+    
+    const geometry = useMemo(() => new THREE.SphereGeometry(1, 48, 48), []);
 
     return (
-        <Sphere args={[1, 64, 64]}>
+        <mesh geometry={geometry} renderOrder={1}>
             <meshStandardMaterial
                 map={earthTexture}
-                roughness={0.8}
-                metalness={0.1}
+                roughness={0.7}
+                metalness={0.0}
+                emissive="#000000"
                 transparent={false}
                 depthWrite={true}
-                renderOrder={1} 
             />
-        </Sphere>
+        </mesh>
     );
 }
