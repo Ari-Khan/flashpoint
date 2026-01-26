@@ -1,14 +1,14 @@
-function computeSalvoCount({
-    powerTier,
-    remaining,
-}) {
-    const totalRemaining = Object.values(remaining).reduce((a, b) => a + Math.floor(b), 0);
-    
+function computeSalvoCount({ powerTier, remaining }) {
+    const totalRemaining = Object.values(remaining).reduce(
+        (a, b) => a + Math.floor(b),
+        0
+    );
+
     if (totalRemaining <= 0) return 0;
 
     const baseSalvo = powerTier * 5;
-    const stockCap = totalRemaining * 0.10;
-    
+    const stockCap = totalRemaining * 0.1;
+
     const limitedSalvo = Math.min(baseSalvo, stockCap);
 
     const variance = 0.6 + Math.random() * 0.8;

@@ -15,10 +15,26 @@
         "doctrine": "retaliatory",
         "defaultColor": "#002868",
         "majorCities": [
-            { "name": "New York", "lat": 40.7128, "lon": -74.006 },
-            { "name": "Los Angeles", "lat": 34.0522, "lon": -118.2437 },
-            { "name": "Chicago", "lat": 41.8781, "lon": -87.6298 },
-            { "name": "Houston", "lat": 29.7604, "lon": -95.3698 }
+            {
+                "name": "New York",
+                "lat": 40.7128,
+                "lon": -74.006
+            },
+            {
+                "name": "Los Angeles",
+                "lat": 34.0522,
+                "lon": -118.2437
+            },
+            {
+                "name": "Chicago",
+                "lat": 41.8781,
+                "lon": -87.6298
+            },
+            {
+                "name": "Houston",
+                "lat": 29.7604,
+                "lon": -95.3698
+            }
         ]
     },
     "RUS": {
@@ -37,10 +53,26 @@
         "doctrine": "first-use",
         "defaultColor": "#D62718",
         "majorCities": [
-            { "name": "St. Petersburg", "lat": 59.9311, "lon": 30.3609 },
-            { "name": "Novosibirsk", "lat": 55.0084, "lon": 82.9357 },
-            { "name": "Yekaterinburg", "lat": 56.8389, "lon": 60.6057 },
-            { "name": "Kazan", "lat": 55.7961, "lon": 49.1064 }
+            {
+                "name": "St. Petersburg",
+                "lat": 59.9311,
+                "lon": 30.3609
+            },
+            {
+                "name": "Novosibirsk",
+                "lat": 55.0084,
+                "lon": 82.9357
+            },
+            {
+                "name": "Yekaterinburg",
+                "lat": 56.8389,
+                "lon": 60.6057
+            },
+            {
+                "name": "Kazan",
+                "lat": 55.7961,
+                "lon": 49.1064
+            }
         ]
     },
     "CHN": {
@@ -59,54 +91,26 @@
         "doctrine": "no-first-use",
         "defaultColor": "#EE1C25",
         "majorCities": [
-            { "name": "Shanghai", "lat": 31.2304, "lon": 121.4737 },
-            { "name": "Guangzhou", "lat": 23.1291, "lon": 113.2644 },
-            { "name": "Shenzhen", "lat": 22.5431, "lon": 114.0579 },
-            { "name": "Chengdu", "lat": 30.5728, "lon": 104.0668 }
-        ]
-    },
-    "FRA": {
-        "name": "France",
-        "iso2": "FR",
-        "capital": "Paris",
-        "lat": 48.8566,
-        "lon": 2.3522,
-        "faction": ["NATO"],
-        "powerTier": 4,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 240,
-            "airLaunch": 50
-        },
-        "doctrine": "retaliatory",
-        "defaultColor": "#0072BB",
-        "majorCities": [
-            { "name": "Marseille", "lat": 43.2965, "lon": 5.3698 },
-            { "name": "Lyon", "lat": 45.764, "lon": 4.8357 },
-            { "name": "Toulouse", "lat": 43.6047, "lon": 1.4442 },
-            { "name": "Nice", "lat": 43.7102, "lon": 7.262 }
-        ]
-    },
-    "GBR": {
-        "name": "United Kingdom",
-        "iso2": "GB",
-        "capital": "London",
-        "lat": 51.5074,
-        "lon": -0.1278,
-        "faction": ["NATO"],
-        "powerTier": 4,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 120,
-            "airLaunch": 0
-        },
-        "doctrine": "retaliatory",
-        "defaultColor": "#C8102E",
-        "majorCities": [
-            { "name": "Birmingham", "lat": 52.4862, "lon": -1.8904 },
-            { "name": "Manchester", "lat": 53.4808, "lon": -2.2426 },
-            { "name": "Leeds", "lat": 53.8008, "lon": -1.5491 },
-            { "name": "Glasgow", "lat": 55.8642, "lon": -4.2518 }
+            {
+                "name": "Shanghai",
+                "lat": 31.2304,
+                "lon": 121.4737
+            },
+            {
+                "name": "Guangzhou",
+                "lat": 23.1291,
+                "lon": 113.2644
+            },
+            {
+                "name": "Shenzhen",
+                "lat": 22.5431,
+                "lon": 114.0579
+            },
+            {
+                "name": "Chengdu",
+                "lat": 30.5728,
+                "lon": 104.0668
+            }
         ]
     },
     "IND": {
@@ -125,186 +129,26 @@
         "doctrine": "no-first-use",
         "defaultColor": "#FF9933",
         "majorCities": [
-            { "name": "Mumbai", "lat": 19.076, "lon": 72.8777 },
-            { "name": "Bengaluru", "lat": 12.9716, "lon": 77.5946 },
-            { "name": "Kolkata", "lat": 22.5726, "lon": 88.3639 },
-            { "name": "Hyderabad", "lat": 17.385, "lon": 78.4867 }
-        ]
-    },
-    "PAK": {
-        "name": "Pakistan",
-        "iso2": "PK",
-        "capital": "Islamabad",
-        "lat": 33.6844,
-        "lon": 73.0479,
-        "faction": [],
-        "powerTier": 3,
-        "weapons": {
-            "icbm": 100,
-            "slbm": 0,
-            "airLaunch": 70
-        },
-        "doctrine": "first-use",
-        "defaultColor": "#01411C",
-        "majorCities": [
-            { "name": "Karachi", "lat": 24.8607, "lon": 67.0011 },
-            { "name": "Lahore", "lat": 31.5204, "lon": 74.3587 },
-            { "name": "Faisalabad", "lat": 31.4504, "lon": 73.135 },
-            { "name": "Rawalpindi", "lat": 33.5651, "lon": 73.0169 }
-        ]
-    },
-    "ISR": {
-        "name": "Israel",
-        "iso2": "IL",
-        "capital": "Jerusalem",
-        "lat": 31.7683,
-        "lon": 35.2137,
-        "faction": [],
-        "powerTier": 3,
-        "weapons": {
-            "icbm": 30,
-            "slbm": 20,
-            "airLaunch": 40
-        },
-        "doctrine": "ambiguous",
-        "defaultColor": "#0038B8",
-        "majorCities": [
-            { "name": "Tel Aviv", "lat": 32.0853, "lon": 34.7818 },
-            { "name": "Haifa", "lat": 32.794, "lon": 34.9896 },
-            { "name": "Beersheba", "lat": 31.2518, "lon": 34.7915 },
-            { "name": "Nazareth", "lat": 32.6996, "lon": 35.3035 }
-        ]
-    },
-    "PRK": {
-        "name": "North Korea",
-        "iso2": "KP",
-        "capital": "Pyongyang",
-        "lat": 39.0392,
-        "lon": 125.7625,
-        "faction": [],
-        "powerTier": 3,
-        "weapons": {
-            "icbm": 25,
-            "slbm": 0,
-            "airLaunch": 25
-        },
-        "doctrine": "first-use",
-        "defaultColor": "#ED1C27",
-        "majorCities": [
-            { "name": "Hamhung", "lat": 39.9236, "lon": 127.5456 },
-            { "name": "Chongjin", "lat": 41.8061, "lon": 129.7795 },
-            { "name": "Sinuiju", "lat": 40.0984, "lon": 124.3984 },
-            { "name": "Pyongsong", "lat": 39.71, "lon": 125.75 }
-        ]
-    },
-    "IRN": {
-        "name": "Iran",
-        "iso2": "IR",
-        "capital": "Tehran",
-        "lat": 35.6892,
-        "lon": 51.389,
-        "faction": [],
-        "powerTier": 3,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 0,
-            "airLaunch": 0
-        },
-        "doctrine": "threshold",
-        "defaultColor": "#FFFFFF",
-        "majorCities": [
-            { "name": "Mashhad", "lat": 36.2605, "lon": 59.6168 },
-            { "name": "Isfahan", "lat": 32.6522, "lon": 51.6776 },
-            { "name": "Shiraz", "lat": 29.5918, "lon": 52.5836 },
-            { "name": "Tabriz", "lat": 38.0962, "lon": 46.2738 }
-        ]
-    },
-    "JPN": {
-        "name": "Japan",
-        "iso2": "JP",
-        "capital": "Tokyo",
-        "lat": 35.6895,
-        "lon": 139.6917,
-        "faction": [],
-        "powerTier": 3,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 0,
-            "airLaunch": 0
-        },
-        "doctrine": "threshold",
-        "defaultColor": "#BC002D",
-        "majorCities": [
-            { "name": "Yokohama", "lat": 35.4437, "lon": 139.638 },
-            { "name": "Osaka", "lat": 34.6937, "lon": 135.5023 },
-            { "name": "Nagoya", "lat": 35.1815, "lon": 136.9066 },
-            { "name": "Sapporo", "lat": 43.0621, "lon": 141.3544 }
-        ]
-    },
-    "DEU": {
-        "name": "Germany",
-        "iso2": "DE",
-        "capital": "Berlin",
-        "lat": 52.52,
-        "lon": 13.405,
-        "faction": ["NATO"],
-        "powerTier": 3,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 0,
-            "airLaunch": 0
-        },
-        "doctrine": "latent",
-        "defaultColor": "#BBBBBB",
-        "majorCities": [
-            { "name": "Hamburg", "lat": 53.5511, "lon": 9.9937 },
-            { "name": "Munich", "lat": 48.1351, "lon": 11.582 },
-            { "name": "Cologne", "lat": 50.9375, "lon": 6.9603 },
-            { "name": "Frankfurt", "lat": 50.1109, "lon": 8.6821 }
-        ]
-    },
-    "CAN": {
-        "name": "Canada",
-        "iso2": "CA",
-        "capital": "Ottawa",
-        "lat": 45.4215,
-        "lon": -75.6972,
-        "faction": ["NATO"],
-        "powerTier": 2,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 0,
-            "airLaunch": 0
-        },
-        "doctrine": "latent",
-        "defaultColor": "#D80621",
-        "majorCities": [
-            { "name": "Toronto", "lat": 43.65107, "lon": -79.347015 },
-            { "name": "Montreal", "lat": 45.5017, "lon": -73.5673 },
-            { "name": "Vancouver", "lat": 49.2827, "lon": -123.1207 },
-            { "name": "Calgary", "lat": 51.0447, "lon": -114.0719 }
-        ]
-    },
-    "ARG": {
-        "name": "Argentina",
-        "iso2": "AR",
-        "capital": "Buenos Aires",
-        "lat": -34.6037,
-        "lon": -58.3816,
-        "faction": [],
-        "powerTier": 2,
-        "weapons": {
-            "icbm": 0,
-            "slbm": 0,
-            "airLaunch": 0
-        },
-        "doctrine": "latent",
-        "defaultColor": "#74ACDF",
-        "majorCities": [
-            { "name": "Córdoba", "lat": -31.4201, "lon": -64.1888 },
-            { "name": "Rosario", "lat": -32.9468, "lon": -60.6393 },
-            { "name": "Mendoza", "lat": -32.8895, "lon": -68.8458 },
-            { "name": "Mar del Plata", "lat": -38.0055, "lon": -57.5426 }
+            {
+                "name": "Mumbai",
+                "lat": 19.076,
+                "lon": 72.8777
+            },
+            {
+                "name": "Bengaluru",
+                "lat": 12.9716,
+                "lon": 77.5946
+            },
+            {
+                "name": "Kolkata",
+                "lat": 22.5726,
+                "lon": 88.3639
+            },
+            {
+                "name": "Hyderabad",
+                "lat": 17.385,
+                "lon": 78.4867
+            }
         ]
     },
     "KOR": {
@@ -314,7 +158,7 @@
         "lat": 37.5665,
         "lon": 126.978,
         "faction": [],
-        "powerTier": 2,
+        "powerTier": 4,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -323,32 +167,140 @@
         "doctrine": "threshold",
         "defaultColor": "#003478",
         "majorCities": [
-            { "name": "Busan", "lat": 35.1796, "lon": 129.0756 },
-            { "name": "Incheon", "lat": 37.4563, "lon": 126.7052 },
-            { "name": "Daegu", "lat": 35.8714, "lon": 128.6014 },
-            { "name": "Gwangju", "lat": 35.1595, "lon": 126.8526 }
+            {
+                "name": "Busan",
+                "lat": 35.1796,
+                "lon": 129.0756
+            },
+            {
+                "name": "Incheon",
+                "lat": 37.4563,
+                "lon": 126.7052
+            },
+            {
+                "name": "Daegu",
+                "lat": 35.8714,
+                "lon": 128.6014
+            },
+            {
+                "name": "Gwangju",
+                "lat": 35.1595,
+                "lon": 126.8526
+            }
         ]
     },
-    "SAU": {
-        "name": "Saudi Arabia",
-        "iso2": "SA",
-        "capital": "Riyadh",
-        "lat": 24.7136,
-        "lon": 46.6753,
+    "FRA": {
+        "name": "France",
+        "iso2": "FR",
+        "capital": "Paris",
+        "lat": 48.8566,
+        "lon": 2.3522,
+        "faction": ["NATO"],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 240,
+            "airLaunch": 50
+        },
+        "doctrine": "retaliatory",
+        "defaultColor": "#0072BB",
+        "majorCities": [
+            {
+                "name": "Marseille",
+                "lat": 43.2965,
+                "lon": 5.3698
+            },
+            {
+                "name": "Lyon",
+                "lat": 45.764,
+                "lon": 4.8357
+            },
+            {
+                "name": "Toulouse",
+                "lat": 43.6047,
+                "lon": 1.4442
+            },
+            {
+                "name": "Nice",
+                "lat": 43.7102,
+                "lon": 7.262
+            }
+        ]
+    },
+    "JPN": {
+        "name": "Japan",
+        "iso2": "JP",
+        "capital": "Tokyo",
+        "lat": 35.6895,
+        "lon": 139.6917,
         "faction": [],
-        "powerTier": 3,
+        "powerTier": 4,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
             "airLaunch": 0
         },
         "doctrine": "threshold",
-        "defaultColor": "#006C35",
+        "defaultColor": "#BC002D",
         "majorCities": [
-            { "name": "Jeddah", "lat": 21.2854, "lon": 39.2376 },
-            { "name": "Dammam", "lat": 26.3927, "lon": 49.9777 },
-            { "name": "Mecca", "lat": 21.3891, "lon": 39.8579 },
-            { "name": "Medina", "lat": 24.5247, "lon": 39.5692 }
+            {
+                "name": "Yokohama",
+                "lat": 35.4437,
+                "lon": 139.638
+            },
+            {
+                "name": "Osaka",
+                "lat": 34.6937,
+                "lon": 135.5023
+            },
+            {
+                "name": "Nagoya",
+                "lat": 35.1815,
+                "lon": 136.9066
+            },
+            {
+                "name": "Sapporo",
+                "lat": 43.0621,
+                "lon": 141.3544
+            }
+        ]
+    },
+    "GBR": {
+        "name": "United Kingdom",
+        "iso2": "GB",
+        "capital": "London",
+        "lat": 51.5074,
+        "lon": -0.1278,
+        "faction": ["NATO"],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 120,
+            "airLaunch": 0
+        },
+        "doctrine": "retaliatory",
+        "defaultColor": "#C8102E",
+        "majorCities": [
+            {
+                "name": "Birmingham",
+                "lat": 52.4862,
+                "lon": -1.8904
+            },
+            {
+                "name": "Manchester",
+                "lat": 53.4808,
+                "lon": -2.2426
+            },
+            {
+                "name": "Leeds",
+                "lat": 53.8008,
+                "lon": -1.5491
+            },
+            {
+                "name": "Glasgow",
+                "lat": 55.8642,
+                "lon": -4.2518
+            }
         ]
     },
     "TUR": {
@@ -358,7 +310,7 @@
         "lat": 39.9208,
         "lon": 32.8541,
         "faction": ["NATO"],
-        "powerTier": 3,
+        "powerTier": 4,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -367,10 +319,64 @@
         "doctrine": "latent",
         "defaultColor": "#E30A17",
         "majorCities": [
-            { "name": "Istanbul", "lat": 41.0082, "lon": 28.9784 },
-            { "name": "Izmir", "lat": 38.4237, "lon": 27.1428 },
-            { "name": "Bursa", "lat": 40.195, "lon": 29.06 },
-            { "name": "Antalya", "lat": 36.8841, "lon": 30.7056 }
+            {
+                "name": "Istanbul",
+                "lat": 41.0082,
+                "lon": 28.9784
+            },
+            {
+                "name": "Izmir",
+                "lat": 38.4237,
+                "lon": 27.1428
+            },
+            {
+                "name": "Bursa",
+                "lat": 40.195,
+                "lon": 29.06
+            },
+            {
+                "name": "Antalya",
+                "lat": 36.8841,
+                "lon": 30.7056
+            }
+        ]
+    },
+    "ITA": {
+        "name": "Italy",
+        "iso2": "IT",
+        "capital": "Rome",
+        "lat": 41.9028,
+        "lon": 12.4964,
+        "faction": ["NATO"],
+        "powerTier": 4,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "dormant",
+        "defaultColor": "#008C45",
+        "majorCities": [
+            {
+                "name": "Milan",
+                "lat": 45.4642,
+                "lon": 9.19
+            },
+            {
+                "name": "Naples",
+                "lat": 40.8518,
+                "lon": 14.2681
+            },
+            {
+                "name": "Turin",
+                "lat": 45.0703,
+                "lon": 7.6869
+            },
+            {
+                "name": "Palermo",
+                "lat": 38.1157,
+                "lon": 13.3615
+            }
         ]
     },
     "BRA": {
@@ -389,10 +395,406 @@
         "doctrine": "latent",
         "defaultColor": "#009739",
         "majorCities": [
-            { "name": "São Paulo", "lat": -23.5505, "lon": -46.6333 },
-            { "name": "Rio de Janeiro", "lat": -22.9068, "lon": -43.1729 },
-            { "name": "Salvador", "lat": -12.9777, "lon": -38.5016 },
-            { "name": "Fortaleza", "lat": -3.7172, "lon": -38.5434 }
+            {
+                "name": "São Paulo",
+                "lat": -23.5505,
+                "lon": -46.6333
+            },
+            {
+                "name": "Rio de Janeiro",
+                "lat": -22.9068,
+                "lon": -43.1729
+            },
+            {
+                "name": "Salvador",
+                "lat": -12.9777,
+                "lon": -38.5016
+            },
+            {
+                "name": "Fortaleza",
+                "lat": -3.7172,
+                "lon": -38.5434
+            }
+        ]
+    },
+    "DEU": {
+        "name": "Germany",
+        "iso2": "DE",
+        "capital": "Berlin",
+        "lat": 52.52,
+        "lon": 13.405,
+        "faction": ["NATO"],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#BBBBBB",
+        "majorCities": [
+            {
+                "name": "Hamburg",
+                "lat": 53.5511,
+                "lon": 9.9937
+            },
+            {
+                "name": "Munich",
+                "lat": 48.1351,
+                "lon": 11.582
+            },
+            {
+                "name": "Cologne",
+                "lat": 50.9375,
+                "lon": 6.9603
+            },
+            {
+                "name": "Frankfurt",
+                "lat": 50.1109,
+                "lon": 8.6821
+            }
+        ]
+    },
+    "IDN": {
+        "name": "Indonesia",
+        "iso2": "ID",
+        "capital": "Jakarta",
+        "lat": -6.2088,
+        "lon": 106.8456,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#E74C3C",
+        "majorCities": [
+            {
+                "name": "Surabaya",
+                "lat": -7.2575,
+                "lon": 112.7521
+            },
+            {
+                "name": "Bandung",
+                "lat": -6.9175,
+                "lon": 107.6191
+            },
+            {
+                "name": "Medan",
+                "lat": 3.5952,
+                "lon": 98.6722
+            },
+            {
+                "name": "Semarang",
+                "lat": -6.9667,
+                "lon": 110.4167
+            }
+        ]
+    },
+    "PAK": {
+        "name": "Pakistan",
+        "iso2": "PK",
+        "capital": "Islamabad",
+        "lat": 33.6844,
+        "lon": 73.0479,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 100,
+            "slbm": 0,
+            "airLaunch": 70
+        },
+        "doctrine": "first-use",
+        "defaultColor": "#01411C",
+        "majorCities": [
+            {
+                "name": "Karachi",
+                "lat": 24.8607,
+                "lon": 67.0011
+            },
+            {
+                "name": "Lahore",
+                "lat": 31.5204,
+                "lon": 74.3587
+            },
+            {
+                "name": "Faisalabad",
+                "lat": 31.4504,
+                "lon": 73.135
+            },
+            {
+                "name": "Rawalpindi",
+                "lat": 33.5651,
+                "lon": 73.0169
+            }
+        ]
+    },
+    "ISR": {
+        "name": "Israel",
+        "iso2": "IL",
+        "capital": "Jerusalem",
+        "lat": 31.7683,
+        "lon": 35.2137,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 30,
+            "slbm": 20,
+            "airLaunch": 40
+        },
+        "doctrine": "ambiguous",
+        "defaultColor": "#0038B8",
+        "majorCities": [
+            {
+                "name": "Tel Aviv",
+                "lat": 32.0853,
+                "lon": 34.7818
+            },
+            {
+                "name": "Haifa",
+                "lat": 32.794,
+                "lon": 34.9896
+            },
+            {
+                "name": "Beersheba",
+                "lat": 31.2518,
+                "lon": 34.7915
+            },
+            {
+                "name": "Nazareth",
+                "lat": 32.6996,
+                "lon": 35.3035
+            }
+        ]
+    },
+    "IRN": {
+        "name": "Iran",
+        "iso2": "IR",
+        "capital": "Tehran",
+        "lat": 35.6892,
+        "lon": 51.389,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#FFFFFF",
+        "majorCities": [
+            {
+                "name": "Mashhad",
+                "lat": 36.2605,
+                "lon": 59.6168
+            },
+            {
+                "name": "Isfahan",
+                "lat": 32.6522,
+                "lon": 51.6776
+            },
+            {
+                "name": "Shiraz",
+                "lat": 29.5918,
+                "lon": 52.5836
+            },
+            {
+                "name": "Tabriz",
+                "lat": 38.0962,
+                "lon": 46.2738
+            }
+        ]
+    },
+    "AUS": {
+        "name": "Australia",
+        "iso2": "AU",
+        "capital": "Canberra",
+        "lat": -35.2809,
+        "lon": 149.13,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "dormant",
+        "defaultColor": "#FFB300",
+        "majorCities": [
+            {
+                "name": "Sydney",
+                "lat": -33.8688,
+                "lon": 151.2093
+            },
+            {
+                "name": "Melbourne",
+                "lat": -37.8136,
+                "lon": 144.9631
+            },
+            {
+                "name": "Brisbane",
+                "lat": -27.4698,
+                "lon": 153.0251
+            },
+            {
+                "name": "Perth",
+                "lat": -31.9505,
+                "lon": 115.8605
+            }
+        ]
+    },
+    "ESP": {
+        "name": "Spain",
+        "iso2": "ES",
+        "capital": "Madrid",
+        "lat": 40.4168,
+        "lon": -3.7038,
+        "faction": ["NATO"],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#F1C40F",
+        "majorCities": [
+            {
+                "name": "Barcelona",
+                "lat": 41.3851,
+                "lon": 2.1734
+            },
+            {
+                "name": "Valencia",
+                "lat": 39.4699,
+                "lon": -0.3763
+            },
+            {
+                "name": "Seville",
+                "lat": 37.3891,
+                "lon": -5.9845
+            },
+            {
+                "name": "Zaragoza",
+                "lat": 41.6488,
+                "lon": -0.8891
+            }
+        ]
+    },
+    "EGY": {
+        "name": "Egypt",
+        "iso2": "EG",
+        "capital": "Cairo",
+        "lat": 30.0444,
+        "lon": 31.2357,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#E6C88A",
+        "majorCities": [
+            {
+                "name": "Alexandria",
+                "lat": 31.2001,
+                "lon": 29.9187
+            },
+            {
+                "name": "Giza",
+                "lat": 30.0131,
+                "lon": 31.2089
+            },
+            {
+                "name": "Shubra El-Kheima",
+                "lat": 30.1261,
+                "lon": 31.2739
+            },
+            {
+                "name": "Port Said",
+                "lat": 31.2653,
+                "lon": 32.3019
+            }
+        ]
+    },
+    "UKR": {
+        "name": "Ukraine",
+        "iso2": "UA",
+        "capital": "Kyiv",
+        "lat": 50.4501,
+        "lon": 30.5234,
+        "faction": [],
+        "powerTier": 3,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "dormant",
+        "defaultColor": "#FFD700",
+        "majorCities": [
+            {
+                "name": "Kharkiv",
+                "lat": 49.9935,
+                "lon": 36.2304
+            },
+            {
+                "name": "Odesa",
+                "lat": 46.4825,
+                "lon": 30.7233
+            },
+            {
+                "name": "Dnipro",
+                "lat": 48.4647,
+                "lon": 35.0462
+            },
+            {
+                "name": "Lviv",
+                "lat": 49.8397,
+                "lon": 24.0297
+            }
+        ]
+    },
+    "POL": {
+        "name": "Poland",
+        "iso2": "PL",
+        "capital": "Warsaw",
+        "lat": 52.2297,
+        "lon": 21.0122,
+        "faction": ["NATO"],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#DC143C",
+        "majorCities": [
+            {
+                "name": "Kraków",
+                "lat": 50.0647,
+                "lon": 19.945
+            },
+            {
+                "name": "Łódź",
+                "lat": 51.7592,
+                "lon": 19.455
+            },
+            {
+                "name": "Wrocław",
+                "lat": 51.1079,
+                "lon": 17.0385
+            },
+            {
+                "name": "Poznań",
+                "lat": 52.4064,
+                "lon": 16.9252
+            }
         ]
     },
     "TWN": {
@@ -402,7 +804,7 @@
         "lat": 25.033,
         "lon": 121.5654,
         "faction": [],
-        "powerTier": 3,
+        "powerTier": 2,
         "weapons": {
             "icbm": 0,
             "slbm": 0,
@@ -411,10 +813,140 @@
         "doctrine": "threshold",
         "defaultColor": "#000097",
         "majorCities": [
-            { "name": "Kaohsiung", "lat": 22.6273, "lon": 120.3014 },
-            { "name": "Taichung", "lat": 24.1477, "lon": 120.6736 },
-            { "name": "Hsinchu", "lat": 24.8138, "lon": 120.9675 },
-            { "name": "Tainan", "lat": 23.0, "lon": 120.227 }
+            {
+                "name": "Kaohsiung",
+                "lat": 22.6273,
+                "lon": 120.3014
+            },
+            {
+                "name": "Taichung",
+                "lat": 24.1477,
+                "lon": 120.6736
+            },
+            {
+                "name": "Hsinchu",
+                "lat": 24.8138,
+                "lon": 120.9675
+            },
+            {
+                "name": "Tainan",
+                "lat": 23,
+                "lon": 120.227
+            }
+        ]
+    },
+    "VNM": {
+        "name": "Vietnam",
+        "iso2": "VN",
+        "capital": "Hanoi",
+        "lat": 21.0278,
+        "lon": 105.8342,
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "dormant",
+        "defaultColor": "#DA251D",
+        "majorCities": [
+            {
+                "name": "Ho Chi Minh City",
+                "lat": 10.8231,
+                "lon": 106.6297
+            },
+            {
+                "name": "Da Nang",
+                "lat": 16.0544,
+                "lon": 108.2022
+            },
+            {
+                "name": "Hai Phong",
+                "lat": 20.8449,
+                "lon": 106.6881
+            },
+            {
+                "name": "Can Tho",
+                "lat": 10.0452,
+                "lon": 105.7469
+            }
+        ]
+    },
+    "THA": {
+        "name": "Thailand",
+        "iso2": "TH",
+        "capital": "Bangkok",
+        "lat": 13.7563,
+        "lon": 100.5018,
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#1E90FF",
+        "majorCities": [
+            {
+                "name": "Nonthaburi",
+                "lat": 13.7634,
+                "lon": 100.504
+            },
+            {
+                "name": "Chiang Mai",
+                "lat": 18.7061,
+                "lon": 98.9817
+            },
+            {
+                "name": "Hat Yai",
+                "lat": 7.008,
+                "lon": 100.4765
+            },
+            {
+                "name": "Nakhon Ratchasima",
+                "lat": 14.9799,
+                "lon": 102.0977
+            }
+        ]
+    },
+    "SAU": {
+        "name": "Saudi Arabia",
+        "iso2": "SA",
+        "capital": "Riyadh",
+        "lat": 24.7136,
+        "lon": 46.6753,
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "threshold",
+        "defaultColor": "#006C35",
+        "majorCities": [
+            {
+                "name": "Jeddah",
+                "lat": 21.2854,
+                "lon": 39.2376
+            },
+            {
+                "name": "Dammam",
+                "lat": 26.3927,
+                "lon": 49.9777
+            },
+            {
+                "name": "Mecca",
+                "lat": 21.3891,
+                "lon": 39.8579
+            },
+            {
+                "name": "Medina",
+                "lat": 24.5247,
+                "lon": 39.5692
+            }
         ]
     },
     "SWE": {
@@ -433,18 +965,184 @@
         "doctrine": "latent",
         "defaultColor": "#006AA7",
         "majorCities": [
-            { "name": "Gothenburg", "lat": 57.7089, "lon": 11.9746 },
-            { "name": "Malmö", "lat": 55.605, "lon": 13.0038 },
-            { "name": "Uppsala", "lat": 59.8586, "lon": 17.6389 },
-            { "name": "Västerås", "lat": 59.6099, "lon": 16.5448 }
+            {
+                "name": "Gothenburg",
+                "lat": 57.7089,
+                "lon": 11.9746
+            },
+            {
+                "name": "Malmö",
+                "lat": 55.605,
+                "lon": 13.0038
+            },
+            {
+                "name": "Uppsala",
+                "lat": 59.8586,
+                "lon": 17.6389
+            },
+            {
+                "name": "Västerås",
+                "lat": 59.6099,
+                "lon": 16.5448
+            }
         ]
     },
-    "ZAF": {
-        "name": "South Africa",
-        "iso2": "ZA",
-        "capital": "Pretoria",
-        "lat": -25.7479,
-        "lon": 28.2293,
+    "DZA": {
+        "name": "Algeria",
+        "iso2": "DZ",
+        "capital": "Algiers",
+        "lat": 36.7538,
+        "lon": 3.0588,
+        "faction": [],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#006600",
+        "majorCities": [
+            {
+                "name": "Oran",
+                "lat": 35.6911,
+                "lon": -0.6417
+            },
+            {
+                "name": "Constantine",
+                "lat": 36.365,
+                "lon": 6.6147
+            },
+            {
+                "name": "Annaba",
+                "lat": 36.9,
+                "lon": 7.7667
+            },
+            {
+                "name": "Blida",
+                "lat": 36.4725,
+                "lon": 2.8297
+            }
+        ]
+    },
+    "CAN": {
+        "name": "Canada",
+        "iso2": "CA",
+        "capital": "Ottawa",
+        "lat": 45.4215,
+        "lon": -75.6972,
+        "faction": ["NATO"],
+        "powerTier": 2,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#D80621",
+        "majorCities": [
+            {
+                "name": "Toronto",
+                "lat": 43.65107,
+                "lon": -79.347015
+            },
+            {
+                "name": "Montreal",
+                "lat": 45.5017,
+                "lon": -73.5673
+            },
+            {
+                "name": "Vancouver",
+                "lat": 49.2827,
+                "lon": -123.1207
+            },
+            {
+                "name": "Calgary",
+                "lat": 51.0447,
+                "lon": -114.0719
+            }
+        ]
+    },
+    "SGP": {
+        "name": "Singapore",
+        "iso2": "SG",
+        "capital": "Singapore",
+        "lat": 1.3521,
+        "lon": 103.8198,
+        "faction": [],
+        "powerTier": 2,
+        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
+        "doctrine": "latent",
+        "defaultColor": "#FFCC00",
+        "majorCities": [
+            { "name": "Jurong", "lat": 1.3347, "lon": 103.7448 },
+            { "name": "Woodlands", "lat": 1.4360, "lon": 103.7868 },
+            { "name": "Tampines", "lat": 1.3541, "lon": 103.94 },
+            { "name": "Geylang", "lat": 1.3160, "lon": 103.8850 }
+        ]
+    },
+    "GRC": {
+        "name": "Greece",
+        "iso2": "GR",
+        "capital": "Athens",
+        "lat": 37.9838,
+        "lon": 23.7275,
+        "faction": ["NATO"],
+        "powerTier": 2,
+        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
+        "doctrine": "latent",
+        "defaultColor": "#0B7F3F",
+        "majorCities": [
+            { "name": "Thessaloniki", "lat": 40.6401, "lon": 22.9444 },
+            { "name": "Patras", "lat": 38.2466, "lon": 21.7346 },
+            { "name": "Heraklion", "lat": 35.3387, "lon": 25.1442 },
+            { "name": "Larissa", "lat": 39.6390, "lon": 22.4194 }
+        ]
+    },
+    "PRK": {
+        "name": "North Korea",
+        "iso2": "KP",
+        "capital": "Pyongyang",
+        "lat": 39.0392,
+        "lon": 125.7625,
+        "faction": [],
+        "powerTier": 1,
+        "weapons": {
+            "icbm": 25,
+            "slbm": 0,
+            "airLaunch": 25
+        },
+        "doctrine": "first-use",
+        "defaultColor": "#ED1C27",
+        "majorCities": [
+            {
+                "name": "Hamhung",
+                "lat": 39.9236,
+                "lon": 127.5456
+            },
+            {
+                "name": "Chongjin",
+                "lat": 41.8061,
+                "lon": 129.7795
+            },
+            {
+                "name": "Sinuiju",
+                "lat": 40.0984,
+                "lon": 124.3984
+            },
+            {
+                "name": "Pyongsong",
+                "lat": 39.71,
+                "lon": 125.75
+            }
+        ]
+    },
+    "ARG": {
+        "name": "Argentina",
+        "iso2": "AR",
+        "capital": "Buenos Aires",
+        "lat": -34.6037,
+        "lon": -58.3816,
         "faction": [],
         "powerTier": 1,
         "weapons": {
@@ -453,12 +1151,66 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#007749",
+        "defaultColor": "#74ACDF",
         "majorCities": [
-            { "name": "Johannesburg", "lat": -26.2041, "lon": 28.0473 },
-            { "name": "Cape Town", "lat": -33.9249, "lon": 18.4241 },
-            { "name": "Durban", "lat": -29.8587, "lon": 31.0218 },
-            { "name": "Port Elizabeth", "lat": -33.9618, "lon": 25.6022 }
+            {
+                "name": "Córdoba",
+                "lat": -31.4201,
+                "lon": -64.1888
+            },
+            {
+                "name": "Rosario",
+                "lat": -32.9468,
+                "lon": -60.6393
+            },
+            {
+                "name": "Mendoza",
+                "lat": -32.8895,
+                "lon": -68.8458
+            },
+            {
+                "name": "Mar del Plata",
+                "lat": -38.0055,
+                "lon": -57.5426
+            }
+        ]
+    },
+    "NGA": {
+        "name": "Nigeria",
+        "iso2": "NG",
+        "capital": "Abuja",
+        "lat": 9.0765,
+        "lon": 7.3986,
+        "faction": [],
+        "powerTier": 1,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#008751",
+        "majorCities": [
+            {
+                "name": "Lagos",
+                "lat": 6.5244,
+                "lon": 3.3792
+            },
+            {
+                "name": "Kano",
+                "lat": 12.0022,
+                "lon": 8.5919
+            },
+            {
+                "name": "Ibadan",
+                "lat": 7.3775,
+                "lon": 3.947
+            },
+            {
+                "name": "Port Harcourt",
+                "lat": 4.8156,
+                "lon": 7.0498
+            }
         ]
     },
     "NLD": {
@@ -477,118 +1229,254 @@
         "doctrine": "latent",
         "defaultColor": "#F36C21",
         "majorCities": [
-            { "name": "Rotterdam", "lat": 51.9244, "lon": 4.4777 },
-            { "name": "The Hague", "lat": 52.0705, "lon": 4.3007 },
-            { "name": "Utrecht", "lat": 52.0907, "lon": 5.1214 },
-            { "name": "Eindhoven", "lat": 51.4416, "lon": 5.4697 }
+            {
+                "name": "Rotterdam",
+                "lat": 51.9244,
+                "lon": 4.4777
+            },
+            {
+                "name": "The Hague",
+                "lat": 52.0705,
+                "lon": 4.3007
+            },
+            {
+                "name": "Utrecht",
+                "lat": 52.0907,
+                "lon": 5.1214
+            },
+            {
+                "name": "Eindhoven",
+                "lat": 51.4416,
+                "lon": 5.4697
+            }
         ]
     },
-    "AUS": {
-        "name": "Australia",
-        "iso2": "AU",
-        "capital": "Canberra",
-        "lat": -35.2809,
-        "lon": 149.13,
-        "faction": [],
-        "powerTier": 2,
-        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "dormant",
-        "defaultColor": "#FFB300",
-        "majorCities": [
-            { "name": "Sydney", "lat": -33.8688, "lon": 151.2093 },
-            { "name": "Melbourne", "lat": -37.8136, "lon": 144.9631 },
-            { "name": "Brisbane", "lat": -27.4698, "lon": 153.0251 },
-            { "name": "Perth", "lat": -31.9505, "lon": 115.8605 }
-        ]
-    },
-    "EGY": {
-        "name": "Egypt",
-        "iso2": "EG",
-        "capital": "Cairo",
-        "lat": 30.0444,
-        "lon": 31.2357,
-        "faction": [],
-        "powerTier": 2,
-        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "latent",
-        "defaultColor": "#E6C88A",
-        "majorCities": [
-            { "name": "Alexandria", "lat": 31.2001, "lon": 29.9187 },
-            { "name": "Giza", "lat": 30.0131, "lon": 31.2089 },
-            { "name": "Shubra El-Kheima", "lat": 30.1261, "lon": 31.2739 },
-            { "name": "Port Said", "lat": 31.2653, "lon": 32.3019 }
-        ]
-    },
-    "POL": {
-        "name": "Poland",
-        "iso2": "PL",
-        "capital": "Warsaw",
-        "lat": 52.2297,
-        "lon": 21.0122,
-        "faction": ["NATO"],
-        "powerTier": 2,
-        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "latent",
-        "defaultColor": "#DC143C",
-        "majorCities": [
-            { "name": "Kraków", "lat": 50.0647, "lon": 19.945 },
-            { "name": "Łódź", "lat": 51.7592, "lon": 19.455 },
-            { "name": "Wrocław", "lat": 51.1079, "lon": 17.0385 },
-            { "name": "Poznań", "lat": 52.4064, "lon": 16.9252 }
-        ]
-    },
-    "ITA": {
-        "name": "Italy",
-        "iso2": "IT",
-        "capital": "Rome",
-        "lat": 41.9028,
-        "lon": 12.4964,
-        "faction": ["NATO"],
-        "powerTier": 2,
-        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "dormant",
-        "defaultColor": "#008C45",
-        "majorCities": [
-            { "name": "Milan", "lat": 45.4642, "lon": 9.19 },
-            { "name": "Naples", "lat": 40.8518, "lon": 14.2681 },
-            { "name": "Turin", "lat": 45.0703, "lon": 7.6869 },
-            { "name": "Palermo", "lat": 38.1157, "lon": 13.3615 }
-        ]
-    },
-    "BLR": {
-        "name": "Belarus",
-        "iso2": "BY",
-        "capital": "Minsk",
-        "lat": 53.909,
-        "lon": 27.5667,
+    "MMR": {
+        "name": "Myanmar",
+        "iso2": "MM",
+        "capital": "Naypyidaw",
+        "lat": 19.7633,
+        "lon": 96.0785,
         "faction": [],
         "powerTier": 1,
-        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
         "doctrine": "dormant",
-        "defaultColor": "#D22730",
+        "defaultColor": "#8E4585",
         "majorCities": [
-            { "name": "Gomel", "lat": 52.4412, "lon": 30.9868 },
-            { "name": "Brest", "lat": 52.0976, "lon": 23.7341 },
-            { "name": "Vitebsk", "lat": 55.1904, "lon": 30.2049 },
-            { "name": "Grodno", "lat": 53.6884, "lon": 23.8258 }
+            {
+                "name": "Yangon",
+                "lat": 16.8409,
+                "lon": 96.1735
+            },
+            {
+                "name": "Mandalay",
+                "lat": 21.958,
+                "lon": 96.0891
+            },
+            {
+                "name": "Mawlamyine",
+                "lat": 16.4897,
+                "lon": 97.6286
+            },
+            {
+                "name": "Taunggyi",
+                "lat": 20.7885,
+                "lon": 97.037
+            }
         ]
     },
-    "UKR": {
-        "name": "Ukraine",
-        "iso2": "UA",
-        "capital": "Kyiv",
-        "lat": 50.4501,
-        "lon": 30.5234,
+    "MEX": {
+        "name": "Mexico",
+        "iso2": "MX",
+        "capital": "Mexico City",
+        "lat": 19.4326,
+        "lon": -99.1332,
         "faction": [],
         "powerTier": 1,
-        "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "dormant",
-        "defaultColor": "#FFD700",
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#006341",
         "majorCities": [
-            { "name": "Kharkiv", "lat": 49.9935, "lon": 36.2304 },
-            { "name": "Odesa", "lat": 46.4825, "lon": 30.7233 },
-            { "name": "Dnipro", "lat": 48.4647, "lon": 35.0462 },
-            { "name": "Lviv", "lat": 49.8397, "lon": 24.0297 }
+            {
+                "name": "Guadalajara",
+                "lat": 20.6597,
+                "lon": -103.3496
+            },
+            {
+                "name": "Monterrey",
+                "lat": 25.6866,
+                "lon": -100.3161
+            },
+            {
+                "name": "Puebla",
+                "lat": 19.0413,
+                "lon": -98.2062
+            },
+            {
+                "name": "Tijuana",
+                "lat": 32.5149,
+                "lon": -117.0382
+            }
+        ]
+    },
+    "BGD": {
+        "name": "Bangladesh",
+        "iso2": "BD",
+        "capital": "Dhaka",
+        "lat": 23.8103,
+        "lon": 90.4125,
+        "faction": [],
+        "powerTier": 1,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#006A4E",
+        "majorCities": [
+            {
+                "name": "Chittagong",
+                "lat": 22.3569,
+                "lon": 91.7832
+            },
+            {
+                "name": "Khulna",
+                "lat": 22.8456,
+                "lon": 89.5403
+            },
+            {
+                "name": "Rajshahi",
+                "lat": 24.3636,
+                "lon": 88.6241
+            },
+            {
+                "name": "Sylhet",
+                "lat": 24.8949,
+                "lon": 91.8687
+            }
+        ]
+    },
+    "PRT": {
+        "name": "Portugal",
+        "iso2": "PT",
+        "capital": "Lisbon",
+        "lat": 38.7223,
+        "lon": -9.1393,
+        "faction": ["NATO"],
+        "powerTier": 1,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#0066CC",
+        "majorCities": [
+            {
+                "name": "Porto",
+                "lat": 41.1579,
+                "lon": -8.6291
+            },
+            {
+                "name": "Braga",
+                "lat": 41.5454,
+                "lon": -8.4265
+            },
+            {
+                "name": "Coimbra",
+                "lat": 40.2033,
+                "lon": -8.4103
+            },
+            {
+                "name": "Faro",
+                "lat": 37.0194,
+                "lon": -7.9308
+            }
+        ]
+    },
+    "NOR": {
+        "name": "Norway",
+        "iso2": "NO",
+        "capital": "Oslo",
+        "lat": 59.9139,
+        "lon": 10.7522,
+        "faction": ["NATO"],
+        "powerTier": 1,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "retaliatory",
+        "defaultColor": "#00205B",
+        "majorCities": [
+            {
+                "name": "Bergen",
+                "lat": 60.3913,
+                "lon": 5.3221
+            },
+            {
+                "name": "Trondheim",
+                "lat": 63.4305,
+                "lon": 10.3951
+            },
+            {
+                "name": "Stavanger",
+                "lat": 58.97,
+                "lon": 5.7331
+            },
+            {
+                "name": "Tromsø",
+                "lat": 69.6492,
+                "lon": 18.9553
+            }
+        ]
+    },
+    "ZAF": {
+        "name": "South Africa",
+        "iso2": "ZA",
+        "capital": "Pretoria",
+        "lat": -25.7479,
+        "lon": 28.2293,
+        "faction": [],
+        "powerTier": 1,
+        "weapons": {
+            "icbm": 0,
+            "slbm": 0,
+            "airLaunch": 0
+        },
+        "doctrine": "latent",
+        "defaultColor": "#007749",
+        "majorCities": [
+            {
+                "name": "Johannesburg",
+                "lat": -26.2041,
+                "lon": 28.0473
+            },
+            {
+                "name": "Cape Town",
+                "lat": -33.9249,
+                "lon": 18.4241
+            },
+            {
+                "name": "Durban",
+                "lat": -29.8587,
+                "lon": 31.0218
+            },
+            {
+                "name": "Port Elizabeth",
+                "lat": -33.9618,
+                "lon": 25.6022
+            }
         ]
     }
 }

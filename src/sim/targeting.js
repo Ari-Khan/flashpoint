@@ -23,30 +23,6 @@ function selectWeightedCity(nation, decay = 0.6) {
     return cities[0];
 }
 
-function computeCandidateWeight({ attacker, code, N, bilateral, state, lastStriker, docMap, globalChaos }) {
-    const rel = bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
-
-    let weight = N.powerTier * 5 + globalChaos;
-
-    if (code === lastStriker) weight *= (docMap || {})[N.doctrine] ?? 10;
-
-    const nukesFromTarget = state.events.filter(
-        (e) => e.from === code && e.to === attacker
-    ).length;
-    if (nukesFromTarget > 0) weight += 500 + nukesFromTarget * 50;
-
-    const isEnemyAlly = state.events.some(
-        (e) =>
-            e.to === attacker &&
-            N.faction &&
-            nations[e.from]?.faction?.some((f) => N.faction?.includes(f))
-    );
-    // Note: keep this check conservative if nations reference isn't available
-    if (isEnemyAlly) weight += 300;
-
-    return { weight, nukesFromTarget };
-}
-
 function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     const { nations, bilateral } = world;
     const attackerData = nations[attacker];
@@ -66,12 +42,12 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
 
     const docMap = {
         "no-first-use": 20,
-        "retaliatory": 15,
-        "threshold": 15,
-        "latent": 10,
+        retaliatory: 15,
+        threshold: 15,
+        latent: 10,
         "first-use": 5,
-        "dormant": 5,
-        "ambiguous": 3,
+        dormant: 5,
+        ambiguous: 3,
     };
 
     let focusOnLastStriker = docMap[doctrine] ?? 10;
