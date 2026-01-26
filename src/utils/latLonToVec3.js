@@ -7,6 +7,6 @@ export function latLonToVec3(lat, lon, radius = 1) {
     return new THREE.Vector3(
         -radius * Math.sin(phi) * Math.cos(theta),
         radius * Math.cos(phi),
-        radius * Math.sin(phi) * Math.sin(theta),
+        radius * Math.sin(phi) * Math.sin(theta)
     );
 }

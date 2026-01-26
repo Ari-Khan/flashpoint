@@ -12,17 +12,21 @@ export function useCountriesGeo(activeCountryIds = []) {
         }
 
         let cancelled = false;
-        const worker = new Worker(new URL('geoHandler.js', import.meta.url), { type: 'module' });
+        const worker = new Worker(new URL("geoHandler.js", import.meta.url), {
+            type: "module",
+        });
 
         async function initLoad() {
             try {
-                const shardMap = import.meta.glob('../data/shards/*.geo.json');
-                const loaders = Object.values(shardMap).map(loader => loader());
+                const shardMap = import.meta.glob("../data/shards/*.geo.json");
+                const loaders = Object.values(shardMap).map((loader) =>
+                    loader()
+                );
                 const modules = await Promise.all(loaders);
-                
+
                 if (cancelled) return;
 
-                const shardData = modules.map(m => m.default ?? m);
+                const shardData = modules.map((m) => m.default ?? m);
 
                 worker.postMessage({ shardData, activeCountryIds });
 

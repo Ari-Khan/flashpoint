@@ -29,7 +29,8 @@ export default function CountryBorders() {
             };
 
             if (type === "Polygon") processPolygon(coordinates);
-            else if (type === "MultiPolygon") coordinates.forEach(processPolygon);
+            else if (type === "MultiPolygon")
+                coordinates.forEach(processPolygon);
         });
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);

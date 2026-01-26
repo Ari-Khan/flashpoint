@@ -8,7 +8,11 @@ function selectWeapon(stock) {
 
 function selectWeightedCity(nation, decay = 0.6) {
     if (!nation) return null;
-    const capital = { name: nation.capital ?? nation.name, lat: nation.lat, lon: nation.lon };
+    const capital = {
+        name: nation.capital ?? nation.name,
+        lat: nation.lat,
+        lon: nation.lon,
+    };
     const cities = [capital].concat(nation.majorCities || []);
     if (!cities || cities.length === 0) return null;
     if (cities.length === 1) return cities[0];
@@ -35,7 +39,6 @@ function launchStrike({ from, to, state, maxPerStrike = 1, world }) {
     stock[weapon] -= actualCount;
     if (stock[weapon] < 0) stock[weapon] = 0;
 
-    
     const nations = world?.nations || {};
     const fromNation = nations[from] || {};
     const toNation = nations[to] || {};
@@ -74,17 +77,20 @@ function joinAllies({ victim, attacker, world, state }) {
     for (const [code, C] of Object.entries(nations)) {
         if (state.involved.has(code)) continue;
 
-        const isFactionMember = Array.isArray(C.faction) && 
-                                Array.isArray(V.faction) && 
-                                C.faction.some(f => V.faction.includes(f));
+        const isFactionMember =
+            Array.isArray(C.faction) &&
+            Array.isArray(V.faction) &&
+            C.faction.some((f) => V.faction.includes(f));
 
-        const relWithVictim = bilateral?.[code]?.[victim] ?? bilateral?.[victim]?.[code] ?? 0;
-        const relWithAttacker = bilateral?.[code]?.[attacker] ?? bilateral?.[attacker]?.[code] ?? 0;
+        const relWithVictim =
+            bilateral?.[code]?.[victim] ?? bilateral?.[victim]?.[code] ?? 0;
+        const relWithAttacker =
+            bilateral?.[code]?.[attacker] ?? bilateral?.[attacker]?.[code] ?? 0;
 
-        const joinThreshold = 6; 
-        
+        const joinThreshold = 6;
+
         let desireToJoin = relWithVictim + C.powerTier;
-        
+
         const timeBonus = (state.time || 0) * 0.5;
         desireToJoin += timeBonus;
 
@@ -93,7 +99,6 @@ function joinAllies({ victim, attacker, world, state }) {
         }
 
         if (isFactionMember || desireToJoin > joinThreshold) {
-            
             let doctrineModifier = 1.0;
             if (C.doctrine === "latent") doctrineModifier = 0.6;
             else if (C.doctrine === "dormant") doctrineModifier = 0.3;
@@ -104,13 +109,13 @@ function joinAllies({ victim, attacker, world, state }) {
             if (Math.random() < 0.4 + reactionSpeed) {
                 state.involved.add(code);
                 joined.push(code);
-                
+
                 state.events.push({
                     t: state.time,
                     type: isFactionMember ? "faction-join" : "ally-join",
                     country: code,
                     reason: victim,
-                    intensity: effectiveIntensity
+                    intensity: effectiveIntensity,
                 });
             }
         }
@@ -137,23 +142,25 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     const attackerFactions = attackerData.faction || [];
     const doctrine = attackerData.doctrine;
 
-    const candidates = Object.keys(nations).filter(code => 
-        code !== attacker && (canLaunch(code, state) || state.involved.has(code))
+    const candidates = Object.keys(nations).filter(
+        (code) =>
+            code !== attacker &&
+            (canLaunch(code, state) || state.involved.has(code))
     );
 
     if (!candidates.length) return { code: lastStriker, isBetrayal: false };
 
-    const nukeCount = state.events.filter(e => e.type === 'launch').length;
+    const nukeCount = state.events.filter((e) => e.type === "launch").length;
     const globalChaos = nukeCount * 0.75;
 
     const docMap = {
         "no-first-use": 20,
-        "retaliatory": 15,
-        "threshold": 15,
-        "latent": 10,
+        retaliatory: 15,
+        threshold: 15,
+        latent: 10,
         "first-use": 5,
-        "dormant": 5,
-        "ambiguous": 3
+        dormant: 5,
+        ambiguous: 3,
     };
 
     let focusOnLastStriker = docMap[doctrine] ?? 10;
@@ -161,32 +168,40 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
     let totalWeight = 0;
     const weighted = candidates.map((code) => {
         const N = nations[code];
-        const rel = bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
-        
-        let weight = (N.powerTier * 5) + globalChaos;
+        const rel =
+            bilateral?.[attacker]?.[code] ?? bilateral?.[code]?.[attacker] ?? 0;
 
-        if (code === lastStriker) weight *= focusOnLastStriker; 
+        let weight = N.powerTier * 5 + globalChaos;
 
-        const nukesFromTarget = state.events.filter(e => e.from === code && e.to === attacker).length;
-        if (nukesFromTarget > 0) weight += (500 + nukesFromTarget * 50);
+        if (code === lastStriker) weight *= focusOnLastStriker;
 
-        const isEnemyAlly = state.events.some(e => e.to === attacker && nations[e.from]?.faction?.some(f => N.faction?.includes(f)));
+        const nukesFromTarget = state.events.filter(
+            (e) => e.from === code && e.to === attacker
+        ).length;
+        if (nukesFromTarget > 0) weight += 500 + nukesFromTarget * 50;
+
+        const isEnemyAlly = state.events.some(
+            (e) =>
+                e.to === attacker &&
+                nations[e.from]?.faction?.some((f) => N.faction?.includes(f))
+        );
         if (isEnemyAlly) weight += 300;
 
-        const isAlly = attackerFactions.some(f => N.faction?.includes(f));
+        const isAlly = attackerFactions.some((f) => N.faction?.includes(f));
         let canBetray = false;
         if (isAlly) {
-            const betrayalChance = 0.05 + (globalChaos * 0.01); 
+            const betrayalChance = 0.05 + globalChaos * 0.01;
             if (Math.random() < betrayalChance) {
                 canBetray = true;
-                weight = 100 + globalChaos; 
+                weight = 100 + globalChaos;
             } else {
                 weight = 0;
             }
         }
 
-        const safetyThreshold = Math.max(0, 8 - (globalChaos * 0.2));
-        if (rel > safetyThreshold && nukesFromTarget === 0 && !canBetray) weight *= 0.1;
+        const safetyThreshold = Math.max(0, 8 - globalChaos * 0.2);
+        if (rel > safetyThreshold && nukesFromTarget === 0 && !canBetray)
+            weight *= 0.1;
 
         totalWeight += weight;
         return { code, weight, isBetrayal: canBetray };
@@ -194,7 +209,8 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
 
     let r = Math.random() * totalWeight;
     for (const w of weighted) {
-        if ((r -= w.weight) <= 0) return { code: w.code, isBetrayal: w.isBetrayal };
+        if ((r -= w.weight) <= 0)
+            return { code: w.code, isBetrayal: w.isBetrayal };
     }
     return { code: lastStriker || candidates[0], isBetrayal: false };
 }
@@ -205,22 +221,37 @@ function processGlobalDevelopment(state, world) {
     for (const [code, N] of Object.entries(nations)) {
         if (!state.remaining[code]) continue;
         const stock = state.remaining[code];
-        const isNuclear = (stock.icbm + stock.slbm + stock.air) > 0;
+        const isNuclear = stock.icbm + stock.slbm + stock.air > 0;
         if (isNuclear) {
             const rate = (N.powerTier || 1) * 0.005;
             stock.icbm += rate;
             if (stock.air > 0) stock.air += rate * 0.5;
             if (stock.slbm > 0) stock.slbm += rate * 0.3;
-            continue; 
+            continue;
         }
-        if (N.doctrine === "threshold" || N.doctrine === "latent" || N.doctrine === "dormant") {
-            if (state.devProgress[code] === undefined) state.devProgress[code] = 0;
-            if (state.devProgress[code] === -1) continue; 
-            const base = N.doctrine === "threshold" ? 2.0 : N.doctrine === "latent" ? 1.0 : 0.5;
-            const required = N.doctrine === "threshold" ? 50 : N.doctrine === "latent" ? 100 : 150;
-            const swing = 0.2 + (Math.random() * 1.6);
+        if (
+            N.doctrine === "threshold" ||
+            N.doctrine === "latent" ||
+            N.doctrine === "dormant"
+        ) {
+            if (state.devProgress[code] === undefined)
+                state.devProgress[code] = 0;
+            if (state.devProgress[code] === -1) continue;
+            const base =
+                N.doctrine === "threshold"
+                    ? 2.0
+                    : N.doctrine === "latent"
+                      ? 1.0
+                      : 0.5;
+            const required =
+                N.doctrine === "threshold"
+                    ? 50
+                    : N.doctrine === "latent"
+                      ? 100
+                      : 150;
+            const swing = 0.2 + Math.random() * 1.6;
             const floor = (N.powerTier || 1) * 0.1;
-            state.devProgress[code] += (base * swing) + floor;
+            state.devProgress[code] += base * swing + floor;
             if (state.devProgress[code] >= required) {
                 const tier = N.powerTier || 1;
                 stock.icbm = tier * 3;
@@ -243,5 +274,5 @@ export {
     joinAllies,
     canLaunch,
     pickWeightedTarget,
-    processGlobalDevelopment
+    processGlobalDevelopment,
 };

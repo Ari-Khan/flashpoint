@@ -1,15 +1,22 @@
-function computeSalvoCount({ time, powerTier, remaining, initialStock = 100, ramp = 8 }) {
-    const maxByTier = { 
+function computeSalvoCount({
+    time,
+    powerTier,
+    remaining,
+    initialStock = 100,
+    ramp = 8,
+}) {
+    const maxByTier = {
         5: 25,
         4: 15,
         3: 8,
         2: 4,
-        1: 2
+        1: 2,
     };
     const salvoCeiling = maxByTier[powerTier] ?? 2;
-    const totalRemaining = Math.floor(remaining.icbm) + 
-                           Math.floor(remaining.slbm) + 
-                           Math.floor(remaining.air);
+    const totalRemaining =
+        Math.floor(remaining.icbm) +
+        Math.floor(remaining.slbm) +
+        Math.floor(remaining.air);
     if (totalRemaining <= 0) return 0;
     const timeProgress = 1 - Math.exp(-time / ramp);
     const basePotential = 1 + (salvoCeiling - 1) * timeProgress;

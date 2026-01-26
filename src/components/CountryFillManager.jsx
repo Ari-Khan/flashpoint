@@ -9,18 +9,14 @@ export default function CountryFillManager({ activeIsos = [], nations = {} }) {
     const geoMap = useMemo(() => {
         if (!geo?.features) return null;
         const map = new Map();
-        
-        geo.features.forEach(f => {
+
+        geo.features.forEach((f) => {
             const p = f.properties || {};
-            const keys = [
-                p.adm0_a3,
-                p.iso_a3_eh,
-                p.gu_a3
-            ];
+            const keys = [p.adm0_a3, p.iso_a3_eh, p.gu_a3];
 
             const seen = new Set();
-            keys.forEach(key => {
-                if (key && typeof key === 'string' && key !== "-99") {
+            keys.forEach((key) => {
+                if (key && typeof key === "string" && key !== "-99") {
                     const normalized = key.toUpperCase();
                     if (!seen.has(normalized)) {
                         if (!map.has(normalized)) map.set(normalized, []);
@@ -35,8 +31,10 @@ export default function CountryFillManager({ activeIsos = [], nations = {} }) {
 
     const activeGroups = useMemo(() => {
         if (!geoMap || !activeIsos.length) return [];
-        
-        const uniqueIsos = Array.from(new Set(activeIsos.map(i => i.toUpperCase())));
+
+        const uniqueIsos = Array.from(
+            new Set(activeIsos.map((i) => i.toUpperCase()))
+        );
         const groups = [];
 
         for (const iso of uniqueIsos) {
@@ -45,7 +43,7 @@ export default function CountryFillManager({ activeIsos = [], nations = {} }) {
                 groups.push({
                     iso,
                     matchingFeatures,
-                    color: getColorByIso(iso, nations)
+                    color: getColorByIso(iso, nations),
                 });
             }
         }

@@ -39,9 +39,9 @@ export default function SettingsPanel({
     tickStep,
     onTickStepChange,
     performanceSettings = {},
-    onPerformanceChange = () => { },
+    onPerformanceChange = () => {},
     texture,
-    onTextureChange = () => { },
+    onTextureChange = () => {},
 }) {
     const fps = useFPS();
     const [open, setOpen] = useState(false);
@@ -50,12 +50,19 @@ export default function SettingsPanel({
     const padIfLong = (s) => s + (s.length >= 10 ? "\u00A0\u00A0" : "");
 
     const textureOptions = useMemo(() => {
-        const files = ["specular.avif", "topography.avif", "terrain.avif", "bathymetry.avif", "physical.avif", "night.avif"];
-        return files.map(file => {
-            const name = file.split('.')[0];
+        const files = [
+            "specular.avif",
+            "topography.avif",
+            "terrain.avif",
+            "bathymetry.avif",
+            "physical.avif",
+            "night.avif",
+        ];
+        return files.map((file) => {
+            const name = file.split(".")[0];
             return {
                 label: name.charAt(0).toUpperCase() + name.slice(1),
-                value: file
+                value: file,
             };
         });
     }, []);
@@ -84,31 +91,59 @@ export default function SettingsPanel({
 
                 {open && (
                     <div className="settings-body dropup">
-                        <SettingRow label="Tick" tip="How frequently the simulation advances (or Smooth for interpolation)." onMouse={handleMouse}>
+                        <SettingRow
+                            label="Tick"
+                            tip="How frequently the simulation advances (or Smooth for interpolation)."
+                            onMouse={handleMouse}
+                        >
                             <select
                                 value={tickStep}
-                                onChange={(e) => onTickStepChange(Number(e.target.value))}
+                                onChange={(e) =>
+                                    onTickStepChange(Number(e.target.value))
+                                }
                             >
                                 {TICK_OPTIONS.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>{padIfLong(opt.label)}</option>
+                                    <option key={opt.value} value={opt.value}>
+                                        {padIfLong(opt.label)}
+                                    </option>
                                 ))}
                             </select>
                         </SettingRow>
 
-                        <SettingRow label="AA" tip="Smooths edges with multi-sample AA; uses more GPU." onMouse={handleMouse}>
+                        <SettingRow
+                            label="AA"
+                            tip="Smooths edges with multi-sample AA; uses more GPU."
+                            onMouse={handleMouse}
+                        >
                             <select
-                                value={performanceSettings.antialias ? "on" : "off"}
-                                onChange={(e) => onPerformanceChange({ ...performanceSettings, antialias: e.target.value === "on" })}
+                                value={
+                                    performanceSettings.antialias ? "on" : "off"
+                                }
+                                onChange={(e) =>
+                                    onPerformanceChange({
+                                        ...performanceSettings,
+                                        antialias: e.target.value === "on",
+                                    })
+                                }
                             >
                                 <option value="on">On</option>
                                 <option value="off">Off</option>
                             </select>
                         </SettingRow>
 
-                        <SettingRow label="DPR Cap" tip="Caps rendering DPR to reduce GPU workload." onMouse={handleMouse}>
+                        <SettingRow
+                            label="DPR Cap"
+                            tip="Caps rendering DPR to reduce GPU workload."
+                            onMouse={handleMouse}
+                        >
                             <select
                                 value={performanceSettings.pixelRatioLimit ?? 2}
-                                onChange={(e) => onPerformanceChange({ ...performanceSettings, pixelRatioLimit: Number(e.target.value) })}
+                                onChange={(e) =>
+                                    onPerformanceChange({
+                                        ...performanceSettings,
+                                        pixelRatioLimit: Number(e.target.value),
+                                    })
+                                }
                             >
                                 <option value={1}>1</option>
                                 <option value={1.5}>1.5</option>
@@ -117,34 +152,70 @@ export default function SettingsPanel({
                             </select>
                         </SettingRow>
 
-                        <SettingRow label="Power" tip="Browser hint to prefer discrete GPU when available." onMouse={handleMouse}>
+                        <SettingRow
+                            label="Power"
+                            tip="Browser hint to prefer discrete GPU when available."
+                            onMouse={handleMouse}
+                        >
                             <select
-                                value={performanceSettings.powerPreference ?? "default"}
-                                onChange={(e) => onPerformanceChange({ ...performanceSettings, powerPreference: e.target.value })}
+                                value={
+                                    performanceSettings.powerPreference ??
+                                    "default"
+                                }
+                                onChange={(e) =>
+                                    onPerformanceChange({
+                                        ...performanceSettings,
+                                        powerPreference: e.target.value,
+                                    })
+                                }
                             >
                                 <option value="default">Default</option>
-                                <option value="high-performance">{padIfLong("High Performance")}</option>
+                                <option value="high-performance">
+                                    {padIfLong("High Performance")}
+                                </option>
                                 <option value="low-power">Low Power</option>
                             </select>
                         </SettingRow>
 
-                        <SettingRow label="Buffer" tip="Retains framebuffer after draw; useful for screenshots." onMouse={handleMouse}>
+                        <SettingRow
+                            label="Buffer"
+                            tip="Retains framebuffer after draw; useful for screenshots."
+                            onMouse={handleMouse}
+                        >
                             <select
-                                value={performanceSettings.preserveDrawingBuffer ? "on" : "off"}
-                                onChange={(e) => onPerformanceChange({ ...performanceSettings, preserveDrawingBuffer: e.target.value === "on" })}
+                                value={
+                                    performanceSettings.preserveDrawingBuffer
+                                        ? "on"
+                                        : "off"
+                                }
+                                onChange={(e) =>
+                                    onPerformanceChange({
+                                        ...performanceSettings,
+                                        preserveDrawingBuffer:
+                                            e.target.value === "on",
+                                    })
+                                }
                             >
                                 <option value="off">Off</option>
                                 <option value="on">On</option>
                             </select>
                         </SettingRow>
 
-                        <SettingRow label="Texture" tip="Choose a different Earth texture (night, terrain, etc.)" onMouse={handleMouse}>
+                        <SettingRow
+                            label="Texture"
+                            tip="Choose a different Earth texture (night, terrain, etc.)"
+                            onMouse={handleMouse}
+                        >
                             <select
                                 value={texture}
-                                onChange={(e) => onTextureChange(e.target.value)}
+                                onChange={(e) =>
+                                    onTextureChange(e.target.value)
+                                }
                             >
                                 {textureOptions.map((opt) => (
-                                    <option key={opt.value} value={opt.value}>{padIfLong(opt.label)}</option>
+                                    <option key={opt.value} value={opt.value}>
+                                        {padIfLong(opt.label)}
+                                    </option>
                                 ))}
                             </select>
                         </SettingRow>

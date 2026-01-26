@@ -5,7 +5,7 @@ import * as THREE from "three";
 export default function Globe({ textureName }) {
     const texName = textureName || "specular.avif";
     const earthTexture = useTexture(`/textures/${texName}`);
-    
+
     const geometry = useMemo(() => new THREE.SphereGeometry(1, 48, 48), []);
 
     return (

@@ -11,7 +11,7 @@ export default function Skybox() {
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        texture.generateMipmaps = true; 
+        texture.generateMipmaps = true;
         texture.anisotropy = 16;
         texture.needsUpdate = true;
     }, [texture]);
@@ -32,7 +32,7 @@ export default function Skybox() {
                 uniforms={{
                     uTexture: { value: texture },
                     uBrightness: { value: 2.25 },
-                    uContrast: { value: 0.35 }
+                    uContrast: { value: 0.35 },
                 }}
                 vertexShader={`
                     varying vec2 vUv;

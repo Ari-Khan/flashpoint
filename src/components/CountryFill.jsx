@@ -6,14 +6,20 @@ import { latLonToVec3 } from "../utils/latLonToVec3.js";
 
 const GEOMETRY_CACHE = new Map();
 
-export default function CountryFill({ features, countryCode, color, opacity = 1 }) {
+export default function CountryFill({
+    features,
+    countryCode,
+    color,
+    opacity = 1,
+}) {
     const materialRefs = useRef([]);
     const countryColor = useMemo(() => new THREE.Color(color), [color]);
     const [isInitialized, setIsInitialized] = useState(false);
 
     const meshes = useMemo(() => {
         if (!features?.length || !countryCode) return [];
-        if (GEOMETRY_CACHE.has(countryCode)) return GEOMETRY_CACHE.get(countryCode);
+        if (GEOMETRY_CACHE.has(countryCode))
+            return GEOMETRY_CACHE.get(countryCode);
 
         const internalGeometries = [];
 
@@ -23,15 +29,17 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
 
             function buildMesh(rings) {
                 if (!rings?.length) return;
-                
+
                 const vertices2D = [];
                 const holeIndices = [];
                 const outerRing = rings[0];
-                
+
                 if (outerRing.length < 3) return;
 
                 let centerLon = 0;
-                outerRing.forEach(([lon]) => { centerLon += lon; });
+                outerRing.forEach(([lon]) => {
+                    centerLon += lon;
+                });
                 centerLon /= outerRing.length;
 
                 rings.forEach((ring, index) => {
@@ -47,25 +55,40 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
                 const rawIndices = earcut(vertices2D, holeIndices);
                 if (!rawIndices.length) return;
 
-                const isHuge = feature.properties?.iso_a3 === "RUS" || feature.properties?.ISO_A3 === "RUS";
+                const isHuge =
+                    feature.properties?.iso_a3 === "RUS" ||
+                    feature.properties?.ISO_A3 === "RUS";
                 const maxDist = isHuge ? 170 : 120;
                 const cleanIndices = [];
                 for (let i = 0; i < rawIndices.length; i += 3) {
-                    const a = rawIndices[i], b = rawIndices[i + 1], c = rawIndices[i + 2];
-                    if (Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
-                        Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > maxDist ||
-                        Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist) continue;
+                    const a = rawIndices[i],
+                        b = rawIndices[i + 1],
+                        c = rawIndices[i + 2];
+                    if (
+                        Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) >
+                            maxDist ||
+                        Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) >
+                            maxDist ||
+                        Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) >
+                            maxDist
+                    )
+                        continue;
                     cleanIndices.push(a, b, c);
                 }
 
                 let geometry = new THREE.BufferGeometry();
-                const flatPositions = new Float32Array((vertices2D.length / 2) * 3);
+                const flatPositions = new Float32Array(
+                    (vertices2D.length / 2) * 3
+                );
                 for (let i = 0, j = 0; i < vertices2D.length; i += 2, j += 3) {
                     flatPositions[j] = vertices2D[i];
                     flatPositions[j + 1] = vertices2D[i + 1];
                     flatPositions[j + 2] = 0;
                 }
-                geometry.setAttribute("position", new THREE.BufferAttribute(flatPositions, 3));
+                geometry.setAttribute(
+                    "position",
+                    new THREE.BufferAttribute(flatPositions, 3)
+                );
                 geometry.setIndex(cleanIndices);
 
                 try {
@@ -73,7 +96,9 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
                     geometry = new TessellateModifier(0.15, 8).modify(geometry);
                 } catch {
                     try {
-                        geometry = new TessellateModifier(0.5, 4).modify(geometry);
+                        geometry = new TessellateModifier(0.5, 4).modify(
+                            geometry
+                        );
                     } catch (e) {}
                 }
 
@@ -94,7 +119,9 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
             if (geom.type === "Polygon") {
                 buildMesh(geom.coordinates);
             } else if (geom.type === "MultiPolygon") {
-                geom.coordinates.forEach(polygonRings => buildMesh(polygonRings));
+                geom.coordinates.forEach((polygonRings) =>
+                    buildMesh(polygonRings)
+                );
             }
         });
 
@@ -113,8 +140,8 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
                 const elapsed = now - startTime;
                 const t = Math.min(1, elapsed / duration);
                 const eased = t * t * (3 - 2 * t);
-                
-                materialRefs.current.forEach(m => {
+
+                materialRefs.current.forEach((m) => {
                     if (m) {
                         m.opacity = opacity * eased;
                         m.color.copy(countryColor);
@@ -143,7 +170,11 @@ export default function CountryFill({ features, countryCode, color, opacity = 1 
     return (
         <group visible={isInitialized}>
             {meshes.map((geometry, i) => (
-                <mesh key={`${countryCode}-${i}`} geometry={geometry} renderOrder={10}>
+                <mesh
+                    key={`${countryCode}-${i}`}
+                    geometry={geometry}
+                    renderOrder={10}
+                >
                     <meshBasicMaterial
                         ref={(el) => (materialRefs.current[i] = el)}
                         color={countryColor}

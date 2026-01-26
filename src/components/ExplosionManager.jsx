@@ -7,21 +7,32 @@ const FADE_WINDOW = 6;
 const SHARED_GEOM = new THREE.SphereGeometry(1, 16, 16);
 const dummy = new THREE.Object3D();
 
-export default function ExplosionManager({ events = [], nations, currentTime, smooth = true }) {
+export default function ExplosionManager({
+    events = [],
+    nations,
+    currentTime,
+    smooth = true,
+}) {
     const meshRef = useRef();
     const displayTimeRef = useRef(currentTime);
 
-    const mat = useMemo(() => new THREE.MeshBasicMaterial({
-        color: "#ffcc55",
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
-    }), []);
+    const mat = useMemo(
+        () =>
+            new THREE.MeshBasicMaterial({
+                color: "#ffcc55",
+                transparent: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+            }),
+        []
+    );
 
     const processedEvents = useMemo(() => {
         return (events ?? [])
-            .filter(e => e.type === "launch" && nations[e.from] && nations[e.to])
-            .map(e => {
+            .filter(
+                (e) => e.type === "launch" && nations[e.from] && nations[e.to]
+            )
+            .map((e) => {
                 const from = nations[e.from];
                 const to = nations[e.to];
                 const traj = computeTrajectory({
@@ -30,29 +41,30 @@ export default function ExplosionManager({ events = [], nations, currentTime, sm
                     toLat: e.toLat ?? to.lat,
                     toLon: e.toLon ?? to.lon,
                     startTime: e.t,
-                    weapon: e.weapon
+                    weapon: e.weapon,
                 });
 
                 const count = Math.max(1, Number(e.count) || 1);
-                const seed = Number(e.t) * 13.37 + (count * 7.77);
+                const seed = Number(e.t) * 13.37 + count * 7.77;
                 const rand = Math.abs(Math.sin(seed * 12.9898));
-                
-                const baseSize = 0.08; 
-                const countImpact = Math.pow(count, 0.65) * 0.35; 
+
+                const baseSize = 0.08;
+                const countImpact = Math.pow(count, 0.65) * 0.35;
                 const sizeMult = (baseSize + countImpact) * (0.8 + rand * 0.4);
 
                 return {
                     id: `${e.from}-${e.to}-${e.t}`,
                     impactTick: e.t + traj.duration,
                     position: traj.end,
-                    sizeMult
+                    sizeMult,
                 };
             });
     }, [events, nations]);
 
     useFrame(() => {
         if (smooth) {
-            displayTimeRef.current += (currentTime - displayTimeRef.current) * 0.1;
+            displayTimeRef.current +=
+                (currentTime - displayTimeRef.current) * 0.1;
         } else {
             displayTimeRef.current = currentTime;
         }
@@ -74,20 +86,24 @@ export default function ExplosionManager({ events = [], nations, currentTime, sm
                 dummy.updateMatrix();
 
                 meshRef.current.setMatrixAt(activeCount, dummy.matrix);
-                meshRef.current.setColorAt(activeCount, new THREE.Color("#ffcc55").multiplyScalar(opacity));
+                meshRef.current.setColorAt(
+                    activeCount,
+                    new THREE.Color("#ffcc55").multiplyScalar(opacity)
+                );
                 activeCount++;
             }
         });
 
         meshRef.current.count = activeCount;
         meshRef.current.instanceMatrix.needsUpdate = true;
-        if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+        if (meshRef.current.instanceColor)
+            meshRef.current.instanceColor.needsUpdate = true;
     });
 
     return (
-        <instancedMesh 
-            ref={meshRef} 
-            args={[SHARED_GEOM, mat, processedEvents.length]} 
+        <instancedMesh
+            ref={meshRef}
+            args={[SHARED_GEOM, mat, processedEvents.length]}
             frustumCulled={false}
         />
     );

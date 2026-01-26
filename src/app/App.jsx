@@ -26,175 +26,220 @@ const world = loadWorld();
 const BASE_TICK_MS = 1000;
 
 const TEXTURES = [
-  "specular.avif",
-  "topography.avif",
-  "terrain.avif",
-  "bathymetry.avif",
-  "physical.avif",
-  "night.avif",
+    "specular.avif",
+    "topography.avif",
+    "terrain.avif",
+    "bathymetry.avif",
+    "physical.avif",
+    "night.avif",
 ];
 
 const CAM_CONFIG = {
-  position: [0, 1.2, 1.8],
-  fov: 60,
-  near: 0.01,
-  far: 1000
+    position: [0, 1.2, 1.8],
+    fov: 60,
+    near: 0.01,
+    far: 1000,
 };
 
 export default function App() {
-  const [events, setEvents] = useState(null);
-  const [tickStep, setTickStep] = useState(settings.tickStep);
-  const [smoothMode, setSmoothMode] = useState("off");
-  const [isPaused, setIsPaused] = useState(false);
-  const [showGeo, setShowGeo] = useState(false);
-  const [uiHidden, setUiHidden] = useState(false);
-  const controlsRef = useRef();
+    const [events, setEvents] = useState(null);
+    const [tickStep, setTickStep] = useState(settings.tickStep);
+    const [smoothMode, setSmoothMode] = useState("off");
+    const [isPaused, setIsPaused] = useState(false);
+    const [showGeo, setShowGeo] = useState(false);
+    const [uiHidden, setUiHidden] = useState(false);
+    const controlsRef = useRef();
 
-  useEffect(() => {
-    const id = setTimeout(() => setShowGeo(true), 300);
-    return () => clearTimeout(id);
-  }, []);
+    useEffect(() => {
+        const id = setTimeout(() => setShowGeo(true), 300);
+        return () => clearTimeout(id);
+    }, []);
 
-  const timePerStep = BASE_TICK_MS * tickStep;
+    const timePerStep = BASE_TICK_MS * tickStep;
 
-  const [performanceSettings, setPerformanceSettings] = useState(() => ({
-    antialias: settings.antialias,
-    pixelRatioLimit: settings.pixelRatioLimit,
-    powerPreference: settings.powerPreference,
-    preserveDrawingBuffer: settings.preserveDrawingBuffer,
-  }));
+    const [performanceSettings, setPerformanceSettings] = useState(() => ({
+        antialias: settings.antialias,
+        pixelRatioLimit: settings.pixelRatioLimit,
+        powerPreference: settings.powerPreference,
+        preserveDrawingBuffer: settings.preserveDrawingBuffer,
+    }));
 
-  const [earthTexture, setEarthTexture] = useState(settings.texture || TEXTURES[0]);
+    const [earthTexture, setEarthTexture] = useState(
+        settings.texture || TEXTURES[0]
+    );
 
-  const { visible, currentTick } = useEventTimeline(events, timePerStep, tickStep, isPaused);
-  const displayTick = useSimulationClock(currentTick, tickStep, timePerStep, smoothMode);
+    const { visible, currentTick } = useEventTimeline(
+        events,
+        timePerStep,
+        tickStep,
+        isPaused
+    );
+    const displayTick = useSimulationClock(
+        currentTick,
+        tickStep,
+        timePerStep,
+        smoothMode
+    );
 
-  const affectedIsos = useMemo(() => {
-    const isoSet = new Set();
-    for (let i = 0; i < visible.length; i++) {
-      const e = visible[i];
-      const ids = [e.from, e.to, e.attacker, e.target];
-      for (let j = 0; j < ids.length; j++) {
-        if (ids[j]) isoSet.add(ids[j].toUpperCase());
-      }
+    const affectedIsos = useMemo(() => {
+        const isoSet = new Set();
+        for (let i = 0; i < visible.length; i++) {
+            const e = visible[i];
+            const ids = [e.from, e.to, e.attacker, e.target];
+            for (let j = 0; j < ids.length; j++) {
+                if (ids[j]) isoSet.add(ids[j].toUpperCase());
+            }
+        }
+        return Array.from(isoSet);
+    }, [visible]);
+
+    const visibleForLog = useMemo(() => {
+        return visible
+            .slice()
+            .reverse()
+            .map((e) => {
+                const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
+                if (typeof logFriendly.intensity === "number") {
+                    logFriendly.intensity =
+                        Math.round(logFriendly.intensity * 10) / 10;
+                }
+                return logFriendly;
+            });
+    }, [visible]);
+
+    function run(actor, target) {
+        setEvents(
+            simulateEscalation({
+                initiator: actor,
+                firstTarget: target,
+                world,
+            })
+        );
     }
-    return Array.from(isoSet);
-  }, [visible]);
 
-  const visibleForLog = useMemo(() => {
-    return visible.slice().reverse().map(e => {
-      const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
-      if (typeof logFriendly.intensity === "number") {
-        logFriendly.intensity = Math.round(logFriendly.intensity * 10) / 10;
-      }
-      return logFriendly;
-    });
-  }, [visible]);
+    function resetCamera() {
+        const controls = controlsRef.current;
+        if (!controls) return;
+        if (window.__resetZoomVelocity) window.__resetZoomVelocity();
 
-  function run(actor, target) {
-    setEvents(simulateEscalation({ initiator: actor, firstTarget: target, world }));
-  }
+        controls.object.position.set(...CAM_CONFIG.position);
+        controls.target.set(0, 0, 0);
+        controls.update();
+    }
 
-  function resetCamera() {
-    const controls = controlsRef.current;
-    if (!controls) return;
-    if (window.__resetZoomVelocity) window.__resetZoomVelocity();
-    
-    controls.object.position.set(...CAM_CONFIG.position);
-    controls.target.set(0, 0, 0);
-    controls.update();
-  }
+    return (
+        <div className="app-container">
+            {!uiHidden && (
+                <>
+                    <ControlPanel nations={world.nations} onRun={run} />
+                    <SettingsPanel
+                        tickStep={tickStep}
+                        onTickStepChange={setTickStep}
+                        smoothMode={smoothMode}
+                        onSmoothModeChange={setSmoothMode}
+                        performanceSettings={performanceSettings}
+                        onPerformanceChange={setPerformanceSettings}
+                        texture={earthTexture}
+                        onTextureChange={setEarthTexture}
+                    />
+                </>
+            )}
 
-  return (
-    <div className="app-container">
-      {!uiHidden && (
-        <>
-          <ControlPanel nations={world.nations} onRun={run} />
-          <SettingsPanel
-            tickStep={tickStep}
-            onTickStepChange={setTickStep}
-            smoothMode={smoothMode}
-            onSmoothModeChange={setSmoothMode}
-            performanceSettings={performanceSettings}
-            onPerformanceChange={setPerformanceSettings}
-            texture={earthTexture}
-            onTextureChange={setEarthTexture}
-          />
-        </>
-      )}
+            <div className="time-controls">
+                <div className="time-display">T+{Math.floor(displayTick)}</div>
+                <button
+                    className="hide-ui-button"
+                    onClick={() => setUiHidden((v) => !v)}
+                >
+                    {uiHidden ? "Show UI" : "Hide UI"}
+                </button>
+                {!uiHidden && (
+                    <>
+                        <button
+                            className="pause-button"
+                            onClick={() => setIsPaused(!isPaused)}
+                        >
+                            {isPaused ? "Resume" : "Pause"}
+                        </button>
+                        <button
+                            className="pause-button reset-button"
+                            onClick={resetCamera}
+                        >
+                            Reset Cam
+                        </button>
+                    </>
+                )}
+            </div>
 
-      <div className="time-controls">
-        <div className="time-display">T+{Math.floor(displayTick)}</div>
-        <button className="hide-ui-button" onClick={() => setUiHidden((v) => !v)}>
-          {uiHidden ? "Show UI" : "Hide UI"}
-        </button>
-        {!uiHidden && (
-          <>
-            <button className="pause-button" onClick={() => setIsPaused(!isPaused)}>
-              {isPaused ? "Resume" : "Pause"}
-            </button>
-            <button className="pause-button reset-button" onClick={resetCamera}>
-              Reset Cam
-            </button>
-          </>
-        )}
-      </div>
+            {!uiHidden && (
+                <pre className="event-log">
+                    {visible.length
+                        ? JSON.stringify(visibleForLog, null, 2)
+                        : "SYSTEM READY"}
+                </pre>
+            )}
 
-      {!uiHidden && (
-        <pre className="event-log">
-          {visible.length ? JSON.stringify(visibleForLog, null, 2) : "SYSTEM READY"}
-        </pre>
-      )}
+            <Canvas
+                key={`${performanceSettings.antialias}-${performanceSettings.pixelRatioLimit}`}
+                className="canvas-3d"
+                dpr={[1, performanceSettings.pixelRatioLimit]}
+                gl={{
+                    antialias: performanceSettings.antialias,
+                    powerPreference: performanceSettings.powerPreference,
+                    preserveDrawingBuffer:
+                        performanceSettings.preserveDrawingBuffer,
+                    logarithmicDepthBuffer: true,
+                }}
+                camera={CAM_CONFIG}
+            >
+                <Skybox />
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[5, 5, 5]} intensity={1.0} />
 
-      <Canvas
-        key={`${performanceSettings.antialias}-${performanceSettings.pixelRatioLimit}`}
-        className="canvas-3d"
-        dpr={[1, performanceSettings.pixelRatioLimit]}
-        gl={{
-          antialias: performanceSettings.antialias,
-          powerPreference: performanceSettings.powerPreference,
-          preserveDrawingBuffer: performanceSettings.preserveDrawingBuffer,
-          logarithmicDepthBuffer: true,
-        }}
-        camera={CAM_CONFIG}
-      >
-        <Skybox />
-        <ambientLight intensity={0.5} /> 
-        <directionalLight position={[5, 5, 5]} intensity={1.0} />
+                <Suspense fallback={null}>
+                    <ArcManager
+                        events={visible}
+                        nations={world.nations}
+                        currentTime={displayTick}
+                    />
+                    <ExplosionManager
+                        events={visible}
+                        nations={world.nations}
+                        currentTime={displayTick}
+                    />
+                    {showGeo && (
+                        <>
+                            <CountryBorders />
+                            <Cities nations={world.nations} />
+                            <CountryFillManager
+                                activeIsos={affectedIsos}
+                                nations={world.nations}
+                            />
+                        </>
+                    )}
+                </Suspense>
 
-        <Suspense fallback={null}>
-          <ArcManager events={visible} nations={world.nations} currentTime={displayTick} />
-          <ExplosionManager events={visible} nations={world.nations} currentTime={displayTick} />
-          {showGeo && (
-            <>
-              <CountryBorders />
-              <Cities nations={world.nations} />
-              <CountryFillManager activeIsos={affectedIsos} nations={world.nations} />
-            </>
-          )}
-        </Suspense>
+                <Globe textureName={earthTexture} />
+                <Atmosphere />
 
-        <Globe textureName={earthTexture} />
-        <Atmosphere />
+                <OrbitControls
+                    ref={controlsRef}
+                    enableZoom={false}
+                    enableDamping={true}
+                    dampingFactor={0.04}
+                    minDistance={1.125}
+                    maxDistance={32}
+                />
 
-        <OrbitControls 
-          ref={controlsRef} 
-          enableZoom={false}
-          enableDamping={true}
-          dampingFactor={0.04}
-          minDistance={1.125}
-          maxDistance={32}
-        />
-
-        <SmoothZoom 
-          controlsRef={controlsRef} 
-          sensitivity={0.0001} 
-          decay={0.925} 
-          minDistance={1.125}
-          maxDistance={32}
-          enabled={true}
-        />
-      </Canvas>
-    </div>
-  );
+                <SmoothZoom
+                    controlsRef={controlsRef}
+                    sensitivity={0.0001}
+                    decay={0.925}
+                    minDistance={1.125}
+                    maxDistance={32}
+                    enabled={true}
+                />
+            </Canvas>
+        </div>
+    );
 }

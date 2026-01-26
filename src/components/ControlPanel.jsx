@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 
 export default function ControlPanel({ nations, onRun }) {
     const allCodes = useMemo(() => Object.keys(nations), [nations]);
-    
+
     const aggressorCodes = useMemo(() => {
         return allCodes.filter((code) => {
             const w = nations[code]?.weapons;
@@ -21,13 +21,16 @@ export default function ControlPanel({ nations, onRun }) {
 
     useEffect(() => {
         if (allCodes.length > 0 && !target) {
-            const defaultTarget = allCodes.find((c) => c !== (actor || aggressorCodes[0]));
+            const defaultTarget = allCodes.find(
+                (c) => c !== (actor || aggressorCodes[0])
+            );
             setTarget(defaultTarget ?? allCodes[0]);
         }
     }, [allCodes, actor, target, aggressorCodes]);
 
     const error = useMemo(() => {
-        if (aggressorCodes.length === 0) return "No aggressors available (no nations have nukes).";
+        if (aggressorCodes.length === 0)
+            return "No aggressors available (no nations have nukes).";
         if (!actor || !target) return "Select valid countries.";
         if (actor === target) return "A country can't nuke itself.";
         return null;
@@ -71,7 +74,11 @@ export default function ControlPanel({ nations, onRun }) {
                 className={error ? "dull" : ""}
                 title={error || "Run Simulation"}
             >
-                {error ? <span className="button-message">{error}</span> : "Run Simulation"}
+                {error ? (
+                    <span className="button-message">{error}</span>
+                ) : (
+                    "Run Simulation"
+                )}
             </button>
         </div>
     );

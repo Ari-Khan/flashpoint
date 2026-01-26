@@ -1,127 +1,127 @@
 [
-  {
-    "key": "africa.eastern-africa",
-    "file": "countries.africa.eastern-africa.geo.json",
-    "count": 17
-  },
-  {
-    "key": "africa.middle-africa",
-    "file": "countries.africa.middle-africa.geo.json",
-    "count": 9
-  },
-  {
-    "key": "africa.northern-africa",
-    "file": "countries.africa.northern-africa.geo.json",
-    "count": 7
-  },
-  {
-    "key": "africa.southern-africa",
-    "file": "countries.africa.southern-africa.geo.json",
-    "count": 5
-  },
-  {
-    "key": "africa.western-africa",
-    "file": "countries.africa.western-africa.geo.json",
-    "count": 16
-  },
-  {
-    "key": "antarctica",
-    "file": "countries.antarctica.geo.json",
-    "count": 1
-  },
-  {
-    "key": "asia.central-asia",
-    "file": "countries.asia.central-asia.geo.json",
-    "count": 5
-  },
-  {
-    "key": "asia.eastern-asia",
-    "file": "countries.asia.eastern-asia.geo.json",
-    "count": 8
-  },
-  {
-    "key": "asia.seven-seas-(open-ocean)",
-    "file": "countries.asia.seven-seas-(open-ocean).geo.json",
-    "count": 1
-  },
-  {
-    "key": "asia.south-eastern-asia",
-    "file": "countries.asia.south-eastern-asia.geo.json",
-    "count": 11
-  },
-  {
-    "key": "asia.southern-asia",
-    "file": "countries.asia.southern-asia.geo.json",
-    "count": 9
-  },
-  {
-    "key": "asia.western-asia",
-    "file": "countries.asia.western-asia.geo.json",
-    "count": 19
-  },
-  {
-    "key": "europe.eastern-europe",
-    "file": "countries.europe.eastern-europe.geo.json",
-    "count": 10
-  },
-  {
-    "key": "europe.northern-europe",
-    "file": "countries.europe.northern-europe.geo.json",
-    "count": 15
-  },
-  {
-    "key": "europe.southern-europe",
-    "file": "countries.europe.southern-europe.geo.json",
-    "count": 16
-  },
-  {
-    "key": "europe.western-europe",
-    "file": "countries.europe.western-europe.geo.json",
-    "count": 9
-  },
-  {
-    "key": "oceania",
-    "file": "countries.oceania.geo.json",
-    "count": 25
-  },
-  {
-    "key": "seven-seas-(open-ocean)",
-    "file": "countries.seven-seas-(open-ocean).geo.json",
-    "count": 8
-  },
-  {
-    "key": "north-america.central-america",
-    "file": "countries.north-america.central-america.geo.json",
-    "count": 8
-  },
-  {
-    "key": "north-america.caribbean",
-    "file": "countries.north-america.caribbean.geo.json",
-    "count": 25
-  },
-  {
-    "key": "north-america.northern-america.usa",
-    "file": "countries.north-america.northern-america.usa.geo.json",
-    "count": 1
-  },
-  {
-    "key": "north-america.northern-america.can",
-    "file": "countries.north-america.northern-america.can.geo.json",
-    "count": 1
-  },
-  {
-    "key": "north-america.northern-america.grl",
-    "file": "countries.north-america.northern-america.grl.geo.json",
-    "count": 1
-  },
-  {
-    "key": "north-america.northern-america.others",
-    "file": "countries.north-america.northern-america.others.geo.json",
-    "count": 2
-  },
-  {
-    "key": "south-america",
-    "file": "countries.south-america.geo.json",
-    "count": 13
-  }
+    {
+        "key": "africa.eastern-africa",
+        "file": "countries.africa.eastern-africa.geo.json",
+        "count": 17
+    },
+    {
+        "key": "africa.middle-africa",
+        "file": "countries.africa.middle-africa.geo.json",
+        "count": 9
+    },
+    {
+        "key": "africa.northern-africa",
+        "file": "countries.africa.northern-africa.geo.json",
+        "count": 7
+    },
+    {
+        "key": "africa.southern-africa",
+        "file": "countries.africa.southern-africa.geo.json",
+        "count": 5
+    },
+    {
+        "key": "africa.western-africa",
+        "file": "countries.africa.western-africa.geo.json",
+        "count": 16
+    },
+    {
+        "key": "antarctica",
+        "file": "countries.antarctica.geo.json",
+        "count": 1
+    },
+    {
+        "key": "asia.central-asia",
+        "file": "countries.asia.central-asia.geo.json",
+        "count": 5
+    },
+    {
+        "key": "asia.eastern-asia",
+        "file": "countries.asia.eastern-asia.geo.json",
+        "count": 8
+    },
+    {
+        "key": "asia.seven-seas-(open-ocean)",
+        "file": "countries.asia.seven-seas-(open-ocean).geo.json",
+        "count": 1
+    },
+    {
+        "key": "asia.south-eastern-asia",
+        "file": "countries.asia.south-eastern-asia.geo.json",
+        "count": 11
+    },
+    {
+        "key": "asia.southern-asia",
+        "file": "countries.asia.southern-asia.geo.json",
+        "count": 9
+    },
+    {
+        "key": "asia.western-asia",
+        "file": "countries.asia.western-asia.geo.json",
+        "count": 19
+    },
+    {
+        "key": "europe.eastern-europe",
+        "file": "countries.europe.eastern-europe.geo.json",
+        "count": 10
+    },
+    {
+        "key": "europe.northern-europe",
+        "file": "countries.europe.northern-europe.geo.json",
+        "count": 15
+    },
+    {
+        "key": "europe.southern-europe",
+        "file": "countries.europe.southern-europe.geo.json",
+        "count": 16
+    },
+    {
+        "key": "europe.western-europe",
+        "file": "countries.europe.western-europe.geo.json",
+        "count": 9
+    },
+    {
+        "key": "oceania",
+        "file": "countries.oceania.geo.json",
+        "count": 25
+    },
+    {
+        "key": "seven-seas-(open-ocean)",
+        "file": "countries.seven-seas-(open-ocean).geo.json",
+        "count": 8
+    },
+    {
+        "key": "north-america.central-america",
+        "file": "countries.north-america.central-america.geo.json",
+        "count": 8
+    },
+    {
+        "key": "north-america.caribbean",
+        "file": "countries.north-america.caribbean.geo.json",
+        "count": 25
+    },
+    {
+        "key": "north-america.northern-america.usa",
+        "file": "countries.north-america.northern-america.usa.geo.json",
+        "count": 1
+    },
+    {
+        "key": "north-america.northern-america.can",
+        "file": "countries.north-america.northern-america.can.geo.json",
+        "count": 1
+    },
+    {
+        "key": "north-america.northern-america.grl",
+        "file": "countries.north-america.northern-america.grl.geo.json",
+        "count": 1
+    },
+    {
+        "key": "north-america.northern-america.others",
+        "file": "countries.north-america.northern-america.others.geo.json",
+        "count": 2
+    },
+    {
+        "key": "south-america",
+        "file": "countries.south-america.geo.json",
+        "count": 13
+    }
 ]
