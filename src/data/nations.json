@@ -354,7 +354,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "dormant",
+        "doctrine": "latent",
         "defaultColor": "#008C45",
         "majorCities": [
             {
@@ -620,7 +620,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "dormant",
+        "doctrine": "latent",
         "defaultColor": "#FFB300",
         "majorCities": [
             {
@@ -734,7 +734,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "dormant",
+        "doctrine": "latent",
         "defaultColor": "#FFD700",
         "majorCities": [
             {
@@ -849,7 +849,7 @@
             "airLaunch": 0
         },
         "doctrine": "dormant",
-        "defaultColor": "#DA251D",
+        "defaultColor": "#FFD700",
         "majorCities": [
             {
                 "name": "Ho Chi Minh City",
@@ -1072,14 +1072,9 @@
         "faction": [],
         "powerTier": 2,
         "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "latent",
+        "doctrine": "dormant",
         "defaultColor": "#FFCC00",
-        "majorCities": [
-            { "name": "Jurong", "lat": 1.3347, "lon": 103.7448 },
-            { "name": "Woodlands", "lat": 1.4360, "lon": 103.7868 },
-            { "name": "Tampines", "lat": 1.3541, "lon": 103.94 },
-            { "name": "Geylang", "lat": 1.3160, "lon": 103.8850 }
-        ]
+        "majorCities": []
     },
     "GRC": {
         "name": "Greece",
@@ -1090,8 +1085,8 @@
         "faction": ["NATO"],
         "powerTier": 2,
         "weapons": { "icbm": 0, "slbm": 0, "airLaunch": 0 },
-        "doctrine": "latent",
-        "defaultColor": "#0B7F3F",
+        "doctrine": "dormant",
+        "defaultColor": "#0D5EAF",
         "majorCities": [
             { "name": "Thessaloniki", "lat": 40.6401, "lon": 22.9444 },
             { "name": "Patras", "lat": 38.2466, "lon": 21.7346 },
@@ -1188,7 +1183,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "latent",
+        "doctrine": "dormant",
         "defaultColor": "#008751",
         "majorCities": [
             {
@@ -1264,7 +1259,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "dormant",
+        "doctrine": "latent",
         "defaultColor": "#8E4585",
         "majorCities": [
             {
@@ -1378,7 +1373,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "latent",
+        "doctrine": "dormant",
         "defaultColor": "#0066CC",
         "majorCities": [
             {
@@ -1416,7 +1411,7 @@
             "slbm": 0,
             "airLaunch": 0
         },
-        "doctrine": "retaliatory",
+        "doctrine": "dormant",
         "defaultColor": "#00205B",
         "majorCities": [
             {
