@@ -99,10 +99,6 @@ export default function App() {
             .reverse()
             .map((e) => {
                 const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
-                if (typeof logFriendly.intensity === "number") {
-                    logFriendly.intensity =
-                        Math.round(logFriendly.intensity * 10) / 10;
-                }
                 return logFriendly;
             });
     }, [visible]);

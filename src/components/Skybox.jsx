@@ -1,20 +1,29 @@
 import { useTexture } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useRef, useLayoutEffect } from "react";
 
 export default function Skybox() {
     const skyRef = useRef();
     const texture = useTexture("/textures/starmap.png");
+    const { gl, scene } = useThree();
 
     useLayoutEffect(() => {
         texture.colorSpace = THREE.SRGBColorSpace;
-        texture.minFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.generateMipmaps = true;
-        texture.anisotropy = 16;
+        texture.anisotropy = (gl.capabilities && gl.capabilities.getMaxAnisotropy && gl.capabilities.getMaxAnisotropy()) || 16;
+        texture.mapping = THREE.EquirectangularReflectionMapping;
         texture.needsUpdate = true;
-    }, [texture]);
+
+        // Set as scene background for stable sampling
+        if (scene) scene.background = texture;
+
+        return () => {
+            if (scene && scene.background === texture) scene.background = null;
+        };
+    }, [texture, gl, scene]);
 
     useFrame((state) => {
         if (skyRef.current) {
@@ -24,10 +33,11 @@ export default function Skybox() {
 
     return (
         <mesh ref={skyRef} frustumCulled={false} renderOrder={-1}>
-            <sphereGeometry args={[64, 64, 64]} />
+            <sphereGeometry args={[500, 64, 64]} />
             <shaderMaterial
                 side={THREE.BackSide}
                 depthWrite={false}
+                depthTest={false}
                 toneMapped={false}
                 uniforms={{
                     uTexture: { value: texture },

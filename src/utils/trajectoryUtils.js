@@ -13,7 +13,7 @@ function getJitteredVec3(lat, lon, amount = 2, seed = 0) {
     const jLat = nLat + Math.sin(finalSeed) * amount;
     const jLon = nLon + Math.cos(finalSeed) * amount;
 
-    return latLonToVec3(jLat, jLon, 1.001);
+    return latLonToVec3(jLat, jLon, 1.002);
 }
 
 export function computeStartEndDistance({
@@ -23,11 +23,11 @@ export function computeStartEndDistance({
     toLon,
     startTime,
 }) {
-    const start = latLonToVec3(fromLat, fromLon, 1.001);
+    const start = latLonToVec3(fromLat, fromLon, 1.002);
     const end = getJitteredVec3(
         Number(toLat),
         Number(toLon),
-        1.001,
+        1.002,
         Number(startTime)
     );
     const distance = start.distanceTo(end);
@@ -59,11 +59,11 @@ export function buildCubicCurveAndGeometry({ start, end, startTime }) {
     const ctrl1 = new THREE.Vector3()
         .lerpVectors(startDir, mid, 0.5)
         .normalize()
-        .multiplyScalar(1.001 + h);
+        .multiplyScalar(1.002 + h);
     const ctrl2 = new THREE.Vector3()
         .lerpVectors(endDir, mid, 0.5)
         .normalize()
-        .multiplyScalar(1.001 + h);
+        .multiplyScalar(1.002 + h);
 
     const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
 

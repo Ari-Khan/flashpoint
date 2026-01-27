@@ -18,7 +18,7 @@ export default function CountryBorders() {
                 polygon.forEach((ring) => {
                     for (let i = 0; i < ring.length; i++) {
                         const [lon, lat] = ring[i];
-                        const vec = latLonToVec3(lat, lon, 1.001);
+                        const vec = latLonToVec3(lat, lon, 1.002);
                         points.push(vec);
 
                         if (i > 0 && i < ring.length - 1) {

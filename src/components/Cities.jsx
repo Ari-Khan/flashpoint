@@ -13,7 +13,7 @@ export default function Cities({ nations = {} }) {
 
             if (N.lat !== undefined && N.lon !== undefined) {
                 out.push({
-                    pos: latLonToVec3(N.lat, N.lon, 1.001),
+                    pos: latLonToVec3(N.lat, N.lon, 1.002),
                     color: new THREE.Color(N.defaultColor ?? "#ffffff"),
                     size: N.size ?? 0.003,
                 });
@@ -22,7 +22,7 @@ export default function Cities({ nations = {} }) {
             (N.majorCities || []).forEach((c) => {
                 if (c?.lat !== undefined && c?.lon !== undefined) {
                     out.push({
-                        pos: latLonToVec3(c.lat, c.lon, 1.001),
+                        pos: latLonToVec3(c.lat, c.lon, 1.002),
                         color: new THREE.Color(N.defaultColor ?? "#ffffff"),
                         size: c.size ?? 0.002,
                     });

@@ -34,6 +34,7 @@ export default function SmoothZoom({
             if (!enabled || !controlsRef.current) return;
             e.preventDefault();
             zoomVelocity.current += e.deltaY * sensitivity;
+            zoomVelocity.current = Math.max(-0.05, Math.min(0.05, zoomVelocity.current));
         };
 
         const getDist = (t0, t1) =>
@@ -51,6 +52,7 @@ export default function SmoothZoom({
                 const dist = getDist(e.touches[0], e.touches[1]);
                 const delta = lastPinchDistance.current - dist;
                 zoomVelocity.current += delta * sensitivity * 2;
+                zoomVelocity.current = Math.max(-0.05, Math.min(0.05, zoomVelocity.current));
                 lastPinchDistance.current = dist;
                 if (e.cancelable) e.preventDefault();
             }
@@ -83,7 +85,8 @@ export default function SmoothZoom({
         }
 
         const frameDelta = Math.min(delta * 60, 2);
-        const zoomFactor = 1 + zoomVelocity.current * frameDelta;
+        const rawZoomFactor = 1 + zoomVelocity.current * frameDelta;
+        const zoomFactor = Math.max(0.5, Math.min(1.5, rawZoomFactor));
 
         _offset.copy(camera.position).sub(controls.target);
 

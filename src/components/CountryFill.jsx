@@ -108,7 +108,7 @@ export default function CountryFill({
                     const lat = posAttr.getY(i);
                     if (lon > 180) lon -= 360;
                     if (lon < -180) lon += 360;
-                    const v = latLonToVec3(lat, lon, 1.001);
+                    const v = latLonToVec3(lat, lon, 1.002);
                     posAttr.setXYZ(i, v.x, v.y, v.z);
                 }
 

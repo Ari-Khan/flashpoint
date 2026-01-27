@@ -1,9 +1,14 @@
 function selectWeapon(stock) {
     if (!stock) return null;
-    if (stock.icbm > 0) return "icbm";
-    if (stock.slbm > 0) return "slbm";
-    if (stock.air > 0) return "air";
-    return null;
+
+    if (stock.icbm > 0 || stock.slbm > 0) {
+        const useIcbm = Math.random() < 0.8;
+        if (useIcbm && stock.icbm > 0) return "icbm";
+        if (stock.slbm > 0) return "slbm";
+        return "icbm";
+    }
+
+    return stock.air > 0 ? "air" : null;
 }
 
 function canLaunch(country, state) {

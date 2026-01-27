@@ -1,43 +1,38 @@
+const DOCTRINE_MULT = { threshold: 0.8, latent: 0.6, dormant: 0.4 };
+
 function joinAllies({ victim, attacker, world, state }) {
     const { nations, bilateral } = world;
     const V = nations[victim];
+    if (!V) return [];
+
     const joined = [];
+    const vFactions = V.faction || [];
 
-    if (!V) return joined;
+    for (const code in nations) {
+        if (state.involved.has(code) || code === victim) continue;
 
-    for (const [code, C] of Object.entries(nations)) {
-        if (state.involved.has(code)) continue;
-
-        const isFactionMember =
-            Array.isArray(C.faction) &&
-            Array.isArray(V.faction) &&
-            C.faction.some((f) => V.faction.includes(f));
-
-        const relWithVictim =
+        const C = nations[code];
+        const relV =
             bilateral?.[code]?.[victim] ?? bilateral?.[victim]?.[code] ?? 0;
-        const relWithAttacker =
+        const relA =
             bilateral?.[code]?.[attacker] ?? bilateral?.[attacker]?.[code] ?? 0;
 
-        const joinThreshold = 6;
+        const timeBonus = (state.time || 0) * 0.1;
+        const attackerBias = -0.5 * relA;
+        const desire = relV + (C.powerTier ?? 1) + timeBonus + attackerBias;
 
-        let desireToJoin = relWithVictim + C.powerTier;
+        const isFactionMember = (C.faction || []).some((f) =>
+            vFactions.includes(f)
+        );
 
-        const timeBonus = (state.time || 0) * 0.5;
-        desireToJoin += timeBonus;
+        if (isFactionMember || desire > 10) {
+            const mod = DOCTRINE_MULT[C.doctrine] ?? 1.0;
 
-        if (relWithAttacker < 0) {
-            desireToJoin += Math.abs(relWithAttacker) * 0.3;
-        }
+            const baseChance = isFactionMember ? 0.3 : 0.1;
+            const powerBonus = C.powerTier * 0.1 * mod;
+            const finalChance = baseChance + powerBonus;
 
-        if (isFactionMember || desireToJoin > joinThreshold) {
-            let doctrineModifier = 1.0;
-            if (C.doctrine === "latent") doctrineModifier = 0.6;
-            else if (C.doctrine === "dormant") doctrineModifier = 0.3;
-
-            const reactionSpeed = C.powerTier * 0.2 * doctrineModifier;
-            const effectiveIntensity = desireToJoin * doctrineModifier;
-
-            if (Math.random() < 0.4 + reactionSpeed) {
+            if (Math.random() < finalChance) {
                 state.involved.add(code);
                 joined.push(code);
 
@@ -46,12 +41,11 @@ function joinAllies({ victim, attacker, world, state }) {
                     type: isFactionMember ? "faction-join" : "ally-join",
                     country: code,
                     reason: victim,
-                    intensity: effectiveIntensity,
+                    intensity: Number(desire.toFixed(2)),
                 });
             }
         }
     }
-
     return joined;
 }
 

@@ -60,7 +60,7 @@ export default function CountryFillManager({ activeIsos = [], nations = {} }) {
                     features={matchingFeatures}
                     countryCode={iso}
                     color={color}
-                    opacity={0.35}
+                    opacity={0.4}
                 />
             ))}
         </group>

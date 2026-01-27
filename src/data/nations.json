@@ -317,7 +317,7 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#E30A17",
+        "defaultColor": "#E53935",
         "majorCities": [
             {
                 "name": "Istanbul",
@@ -621,7 +621,7 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#FFB300",
+        "defaultColor": "#F08B2A",
         "majorCities": [
             {
                 "name": "Sydney",
@@ -773,7 +773,7 @@
             "airLaunch": 0
         },
         "doctrine": "latent",
-        "defaultColor": "#DC143C",
+        "defaultColor": "#FF4C7A",
         "majorCities": [
             {
                 "name": "Kraków",
@@ -1091,7 +1091,7 @@
             { "name": "Thessaloniki", "lat": 40.6401, "lon": 22.9444 },
             { "name": "Patras", "lat": 38.2466, "lon": 21.7346 },
             { "name": "Heraklion", "lat": 35.3387, "lon": 25.1442 },
-            { "name": "Larissa", "lat": 39.6390, "lon": 22.4194 }
+            { "name": "Larissa", "lat": 39.639, "lon": 22.4194 }
         ]
     },
     "PRK": {
