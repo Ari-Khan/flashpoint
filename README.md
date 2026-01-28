@@ -1,16 +1,61 @@
-# React + Vite
+# Prompt‑Kritikal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Prompt‑Kritikal** is an interactive, data‑driven 3D nuclear conflict visualizer and simulation toolkit built with React, Vite and three.js. It simulates nation-level escalation, launches animated strike arcs, models diplomatic responses, and provides rich UI controls for investigation and experimentation.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Highlights
+- Real-time 3D globe rendered with three.js and react-three/fiber and high-quality textures
+- Pluggable, modular simulation engine in `src/sim` (weapons, targeting, strikes, diplomacy, salvo management)
+- Data-driven nations and relations: `src/data/nations.json` and `src/data/bilateral-relations.json`
+- Animated arcs, per-event launches, and visual explosion effects
+- UI for running scenarios, adjusting simulation speed, performance presets, and textures
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Features
+- Interactive globe with country fills, borders, and city markers
+- Escalation simulation with:
+  - Weapon selection (ICBM / SLBM / air launches)
+  - Per-strike target weighting and faction logic
+  - Nuclear development modelling
+- Visual effects:
+  - Animated arc trajectories using cubic curves and per-event seeding
+  - Cone head projectiles and explosions to show impacts
+  - Skybox with shaders and mipmaps for stability
+- Controls & UX:
+  - Run simulations from the control panel or programmatically
+  - Settings panel for performance, textures and tick step control
+  - Smooth camera movement and reset options
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Getting started (Development)
+Requirements: Node 18+ recommended.
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Run the dev server
+
+```bash
+npm run dev
+```
+Open http://localhost:5173/ (Vite default) to explore the app.
+
+3. Build / Preview
+
+```bash
+npm run build
+npm run preview
+```
+
+---
+
+## Data & Extensibility
+- Add or tweak nations in `src/data/nations.json` (colors, doctrine, powerTier, weapons, majorCities)
+- Edit pairwise affinities in `src/data/bilateral-relations.json` to influence targeting & diplomacy
+- Simulation favors modular changes: change selection logic in `src/sim/targeting.js` or strike behavior in `src/sim/strikes.js`

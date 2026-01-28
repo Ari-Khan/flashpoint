@@ -6,8 +6,8 @@ function decrementStock(stock, weapon, count) {
     if (stock[weapon] < 0) stock[weapon] = 0;
 }
 
-function makeLaunchEvent({ t, from, to, weapon, count, fromCity, toCity }) {
-    return {
+function makeLaunchEvent({ id, t, from, to, weapon, count, fromCity, toCity }) {
+    const ev = {
         t,
         type: "launch",
         from,
@@ -21,6 +21,14 @@ function makeLaunchEvent({ t, from, to, weapon, count, fromCity, toCity }) {
         toLon: toCity?.lon,
         toCity: toCity?.name,
     };
+
+    Object.defineProperty(ev, "id", {
+        value: id,
+        enumerable: false,
+        configurable: true,
+    });
+
+    return ev;
 }
 
 function launchStrike({ from, to, state, maxPerStrike = 1, world }) {
@@ -39,8 +47,11 @@ function launchStrike({ from, to, state, maxPerStrike = 1, world }) {
     const fromCity = selectWeightedCity(fromNation);
     const toCity = selectWeightedCity(toNation);
 
+    const id = `${from}-${to}-${state.time}-${state.nextEventId++}`;
+
     state.events.push(
         makeLaunchEvent({
+            id,
             t: state.time,
             from,
             to,

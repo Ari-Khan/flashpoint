@@ -48,7 +48,7 @@ export default function ExplosionManager({
                 const seed = Number(e.t) * 13.37 + count * 7.77;
                 const rand = Math.abs(Math.sin(seed * 12.9898));
 
-                const baseSize = 0.08;
+                const baseSize = 0.1;
                 const countImpact = Math.pow(count, 0.65) * 0.35;
                 const sizeMult = (baseSize + countImpact) * (0.8 + rand * 0.4);
 

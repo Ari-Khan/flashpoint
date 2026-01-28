@@ -44,7 +44,12 @@ export default function Arc({
                 geometry: geom,
                 arcLengths: arcs,
                 pointsCount: count,
-            } = buildCubicCurveAndGeometry({ start, end, startTime });
+            } = buildCubicCurveAndGeometry({
+                start,
+                end,
+                startTime,
+                seed: Number(startTime) + (typeof id === 'string' ? Number(id.split('-').pop() || 0) : 0),
+            });
 
             return {
                 geometry: geom,
@@ -54,7 +59,7 @@ export default function Arc({
                 pointsCount: count,
                 arcLengths: arcs,
             };
-        }, [fromLat, fromLon, toLat, toLon, startTime, weapon]);
+        }, [fromLat, fromLon, toLat, toLon, startTime, weapon, id]);
 
     useEffect(() => {
         return () => {

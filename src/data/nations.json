@@ -8,9 +8,9 @@
         "faction": ["NATO"],
         "powerTier": 5,
         "weapons": {
-            "icbm": 400,
-            "slbm": 1000,
-            "airLaunch": 300
+            "icbm": 800,
+            "slbm": 1920,
+            "airLaunch": 850
         },
         "doctrine": "retaliatory",
         "defaultColor": "#002868",
@@ -46,9 +46,9 @@
         "faction": [],
         "powerTier": 5,
         "weapons": {
-            "icbm": 800,
-            "slbm": 700,
-            "airLaunch": 200
+            "icbm": 1254,
+            "slbm": 992,
+            "airLaunch": 586
         },
         "doctrine": "first-use",
         "defaultColor": "#D62718",
@@ -84,9 +84,9 @@
         "faction": [],
         "powerTier": 5,
         "weapons": {
-            "icbm": 350,
-            "slbm": 150,
-            "airLaunch": 100
+            "icbm": 400,
+            "slbm": 72,
+            "airLaunch": 20
         },
         "doctrine": "no-first-use",
         "defaultColor": "#EE1C25",
@@ -122,9 +122,9 @@
         "faction": [],
         "powerTier": 4,
         "weapons": {
-            "icbm": 80,
-            "slbm": 20,
-            "airLaunch": 80
+            "icbm": 70,
+            "slbm": 48,
+            "airLaunch": 50
         },
         "doctrine": "no-first-use",
         "defaultColor": "#FF9933",
@@ -199,7 +199,7 @@
         "powerTier": 4,
         "weapons": {
             "icbm": 0,
-            "slbm": 240,
+            "slbm": 250,
             "airLaunch": 50
         },
         "doctrine": "retaliatory",
@@ -275,7 +275,7 @@
         "powerTier": 4,
         "weapons": {
             "icbm": 0,
-            "slbm": 120,
+            "slbm": 225,
             "airLaunch": 0
         },
         "doctrine": "retaliatory",
@@ -502,9 +502,9 @@
         "faction": [],
         "powerTier": 3,
         "weapons": {
-            "icbm": 100,
-            "slbm": 0,
-            "airLaunch": 70
+            "icbm": 106,
+            "slbm": 15,
+            "airLaunch": 36
         },
         "doctrine": "first-use",
         "defaultColor": "#01411C",
@@ -540,9 +540,9 @@
         "faction": [],
         "powerTier": 3,
         "weapons": {
-            "icbm": 30,
+            "icbm": 50,
             "slbm": 20,
-            "airLaunch": 40
+            "airLaunch": 30
         },
         "doctrine": "ambiguous",
         "defaultColor": "#0038B8",
@@ -1103,9 +1103,9 @@
         "faction": [],
         "powerTier": 1,
         "weapons": {
-            "icbm": 25,
-            "slbm": 0,
-            "airLaunch": 25
+            "icbm": 70,
+            "slbm": 10,
+            "airLaunch": 5
         },
         "doctrine": "first-use",
         "defaultColor": "#ED1C27",

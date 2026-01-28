@@ -17,7 +17,6 @@ export default function Skybox() {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         texture.needsUpdate = true;
 
-        // Set as scene background for stable sampling
         if (scene) scene.background = texture;
 
         return () => {

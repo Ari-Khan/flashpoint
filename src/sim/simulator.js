@@ -48,95 +48,118 @@ export function simulateEscalation({
                 country: code,
             });
         }
+
         if (queue.length === 0) {
             state.time++;
             ticks++;
             continue;
         }
+
         const event = queue.shift();
         if (!event) {
             state.time++;
             continue;
         }
+
         const { from, to, isBetrayal } = event;
-        if (!canLaunch(from, state)) {
-            ticks++;
-            continue;
-        }
-        const count = computeSalvoCount({
-            time: state.time,
-            powerTier: nations[from].powerTier,
-            remaining: state.remaining[from],
-        });
-        const used = launchStrike({
-            from,
-            to,
-            state,
-            maxPerStrike: count,
-            isBetrayal: isBetrayal || false,
-            world,
-        });
-        if (!used) {
-            ticks++;
-            continue;
-        }
-        state.time++;
-        if (Math.random() < 0.35) {
+        
+        let strikeActive = true;
+        let strikesInTick = 0;
+        let lastVictim = to;
+
+        while (strikeActive && canLaunch(from, state)) {
+            const count = computeSalvoCount({
+                time: state.time,
+                powerTier: nations[from].powerTier,
+                remaining: state.remaining[from],
+            });
+
             const decision = pickWeightedTarget({
                 attacker: from,
-                lastStriker: to,
-                world,
+                lastStriker: lastVictim,
+                world: worldClone,
                 state,
             });
-            if (decision?.code && decision.code !== from) {
-                queue.push({
-                    type: "strike",
-                    from,
-                    to: decision.code,
-                    isBetrayal: decision.isBetrayal,
-                    reason: decision.isBetrayal
-                        ? "betrayal"
-                        : "continued-escalation",
-                });
+            const thisTarget = decision?.code ?? lastVictim ?? to;
+
+            const used = launchStrike({
+                from,
+                to: thisTarget,
+                state,
+                maxPerStrike: count,
+                isBetrayal: decision?.isBetrayal || isBetrayal || false,
+                world: worldClone,
+            });
+
+            if (!used) break;
+
+            strikesInTick++;
+            lastVictim = thisTarget;
+
+            if (Math.random() > 0.5) {
+                strikeActive = false;
             }
         }
 
-        if (canLaunch(to, state)) {
-            const decision = pickWeightedTarget({
-                attacker: to,
-                lastStriker: from,
-                world,
-                state,
-            });
-            if (decision?.code && decision.code !== to) {
-                queue.push({
-                    type: "strike",
-                    from: to,
-                    to: decision.code,
-                    isBetrayal: decision.isBetrayal,
-                    reason: decision.isBetrayal
-                        ? "betrayal-retaliation"
-                        : "retaliation",
+        if (strikesInTick > 0) {
+            state.time++;
+
+            const victim = lastVictim;
+
+            if (Math.random() < 0.35) {
+                const decision = pickWeightedTarget({
+                    attacker: from,
+                    lastStriker: victim,
+                    world: worldClone,
+                    state,
                 });
+                if (decision?.code && decision.code !== from) {
+                    queue.push({
+                        type: "strike",
+                        from,
+                        to: decision.code,
+                        isBetrayal: decision.isBetrayal,
+                        reason: decision.isBetrayal ? "betrayal" : "continued-escalation",
+                    });
+                }
             }
-        }
-        const allies = joinAllies({ victim: to, attacker: from, world, state });
-        for (const ally of allies) {
-            const decision = pickWeightedTarget({
-                attacker: ally,
-                lastStriker: from,
-                world,
-                state,
-            });
-            queue.push({
-                type: "strike",
-                from: ally,
-                to: decision.code,
-                isBetrayal: decision.isBetrayal,
-                reason: decision.isBetrayal
-                    ? "betrayal-ally"
-                    : "ally-weighted-response",
-            });
+
+            if (canLaunch(victim, state)) {
+                const decision = pickWeightedTarget({
+                    attacker: victim,
+                    lastStriker: from,
+                    world: worldClone,
+                    state,
+                });
+                if (decision?.code && decision.code !== victim) {
+                    queue.push({
+                        type: "strike",
+                        from: victim,
+                        to: decision.code,
+                        isBetrayal: decision.isBetrayal,
+                        reason: decision.isBetrayal ? "betrayal-retaliation" : "retaliation",
+                    });
+                }
+            }
+
+            const allies = joinAllies({ victim, attacker: from, world: worldClone, state });
+            for (const ally of allies) {
+                const decision = pickWeightedTarget({
+                    attacker: ally,
+                    lastStriker: from,
+                    world: worldClone,
+                    state,
+                });
+                if (decision?.code) {
+                    queue.push({
+                        type: "strike",
+                        from: ally,
+                        to: decision.code,
+                        isBetrayal: decision.isBetrayal,
+                        reason: decision.isBetrayal ? "betrayal-ally" : "ally-weighted-response",
+                    });
+                }
+            }
         }
 
         ticks++;

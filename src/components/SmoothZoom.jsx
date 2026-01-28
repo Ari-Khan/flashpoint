@@ -34,7 +34,7 @@ export default function SmoothZoom({
             if (!enabled || !controlsRef.current) return;
             e.preventDefault();
             zoomVelocity.current += e.deltaY * sensitivity;
-            zoomVelocity.current = Math.max(-0.05, Math.min(0.05, zoomVelocity.current));
+            zoomVelocity.current = Math.max(-0.04, Math.min(0.04, zoomVelocity.current));
         };
 
         const getDist = (t0, t1) =>

@@ -24,7 +24,7 @@ export default function ArcManager({ events, nations, currentTime }) {
             const e = events[i];
             if (e.type !== "launch") continue;
 
-            const id = `${e.from}-${e.to}-${e.t}`;
+            const id = e.id ?? `${e.from}-${e.to}-${e.t}`;
             if (currentTime >= e.t && !processedEvents.current.has(id)) {
                 newBatch.add(id);
                 processedEvents.current.add(id);
@@ -36,6 +36,7 @@ export default function ArcManager({ events, nations, currentTime }) {
             setLiveLaunchIds(newBatch);
         }
     }, [currentTime, events]);
+
 
     const handleComplete = (id) => {
         setLiveLaunchIds((prev) => {
@@ -49,7 +50,7 @@ export default function ArcManager({ events, nations, currentTime }) {
     const activeEvents = useMemo(() => {
         if (!events) return [];
         return events.filter((e) =>
-            liveLaunchIds.has(`${e.from}-${e.to}-${e.t}`)
+            liveLaunchIds.has(e.id ?? `${e.from}-${e.to}-${e.t}`)
         );
     }, [events, liveLaunchIds]);
 
@@ -58,7 +59,7 @@ export default function ArcManager({ events, nations, currentTime }) {
             {activeEvents.map((e) => {
                 const from = nations[e.from];
                 const to = nations[e.to];
-                const id = `${e.from}-${e.to}-${e.t}`;
+                const id = e.id ?? `${e.from}-${e.to}-${e.t}`;
                 if (!from || !to) return null;
 
                 return (

@@ -39,9 +39,9 @@ export function computeDuration(distance, weapon) {
     return Math.max(5, (distance * speed) / TERMINAL_MULTIPLIER);
 }
 
-export function buildCubicCurveAndGeometry({ start, end, startTime }) {
-    const seed = Number(startTime);
-    const variance = Math.sin(seed * 12.9898) * 0.03;
+export function buildCubicCurveAndGeometry({ start, end, startTime, seed }) {
+    const seedVal = seed != null ? Number(seed) : Number(startTime);
+    const variance = Math.sin(seedVal * 12.9898) * 0.03;
     const d = start.distanceTo(end);
     const h = Math.max(0.1, -0.4 + d * 0.7) + variance;
 

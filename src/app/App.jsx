@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef, useEffect, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
 
 import Globe from "../components/Globe.jsx";
 import CountryBorders from "../components/CountryBorders.jsx";
@@ -49,6 +50,7 @@ export default function App() {
     const [showGeo, setShowGeo] = useState(false);
     const [uiHidden, setUiHidden] = useState(false);
     const controlsRef = useRef();
+    const resetAnimRef = useRef(null);
 
     useEffect(() => {
         const id = setTimeout(() => setShowGeo(true), 300);
@@ -118,10 +120,48 @@ export default function App() {
         if (!controls) return;
         if (window.__resetZoomVelocity) window.__resetZoomVelocity();
 
-        controls.object.position.set(...CAM_CONFIG.position);
-        controls.target.set(0, 0, 0);
-        controls.update();
+        if (resetAnimRef.current) {
+            cancelAnimationFrame(resetAnimRef.current);
+            resetAnimRef.current = null;
+        }
+
+        const startPos = controls.object.position.clone();
+        const startTarget = controls.target.clone();
+        const endPos = new THREE.Vector3(...CAM_CONFIG.position);
+        const endTarget = new THREE.Vector3(0, 0, 0);
+        const duration = 800; // ms
+        const startTime = performance.now();
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function tick(now) {
+            const elapsed = Math.min(1, (now - startTime) / duration);
+            const eased = easeInOutCubic(elapsed);
+
+            controls.object.position.lerpVectors(startPos, endPos, eased);
+            controls.target.lerpVectors(startTarget, endTarget, eased);
+            controls.update();
+
+            if (elapsed < 1) {
+                resetAnimRef.current = requestAnimationFrame(tick);
+            } else {
+                controls.object.position.set(...CAM_CONFIG.position);
+                controls.target.set(0, 0, 0);
+                controls.update();
+                resetAnimRef.current = null;
+            }
+        }
+
+        resetAnimRef.current = requestAnimationFrame(tick);
     }
+
+    useEffect(() => {
+        return () => {
+            if (resetAnimRef.current) cancelAnimationFrame(resetAnimRef.current);
+        };
+    }, []);
 
     return (
         <div className="app-container">

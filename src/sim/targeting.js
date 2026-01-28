@@ -90,6 +90,13 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
         if (rel > safetyThreshold && nukesFromTarget === 0 && !canBetray)
             weight *= 0.1;
 
+        const recentStrikesByAttacker = state.events.filter(
+            (e) => e.t === state.time && e.from === attacker && e.to === code
+        ).length;
+        if (recentStrikesByAttacker > 0) {
+            weight *= Math.pow(0.1, recentStrikesByAttacker);
+        }
+
         totalWeight += weight;
         return { code, weight, isBetrayal: canBetray };
     });
