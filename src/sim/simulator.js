@@ -62,7 +62,7 @@ export function simulateEscalation({
         }
 
         const { from, to, isBetrayal } = event;
-        
+
         let strikeActive = true;
         let strikesInTick = 0;
         let lastVictim = to;
@@ -119,7 +119,9 @@ export function simulateEscalation({
                         from,
                         to: decision.code,
                         isBetrayal: decision.isBetrayal,
-                        reason: decision.isBetrayal ? "betrayal" : "continued-escalation",
+                        reason: decision.isBetrayal
+                            ? "betrayal"
+                            : "continued-escalation",
                     });
                 }
             }
@@ -137,12 +139,19 @@ export function simulateEscalation({
                         from: victim,
                         to: decision.code,
                         isBetrayal: decision.isBetrayal,
-                        reason: decision.isBetrayal ? "betrayal-retaliation" : "retaliation",
+                        reason: decision.isBetrayal
+                            ? "betrayal-retaliation"
+                            : "retaliation",
                     });
                 }
             }
 
-            const allies = joinAllies({ victim, attacker: from, world: worldClone, state });
+            const allies = joinAllies({
+                victim,
+                attacker: from,
+                world: worldClone,
+                state,
+            });
             for (const ally of allies) {
                 const decision = pickWeightedTarget({
                     attacker: ally,
@@ -156,7 +165,9 @@ export function simulateEscalation({
                         from: ally,
                         to: decision.code,
                         isBetrayal: decision.isBetrayal,
-                        reason: decision.isBetrayal ? "betrayal-ally" : "ally-weighted-response",
+                        reason: decision.isBetrayal
+                            ? "betrayal-ally"
+                            : "ally-weighted-response",
                     });
                 }
             }

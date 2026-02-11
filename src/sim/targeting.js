@@ -1,6 +1,6 @@
 import { canLaunch } from "./weapons.js";
 
-function selectWeightedCity(nation, decay = 0.6) {
+function selectWeightedCity(nation, decay = 0.75) {
     if (!nation) return null;
     const capital = {
         name: nation.capital ?? nation.name,

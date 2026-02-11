@@ -8,7 +8,7 @@ export default function Cities({ nations = {} }) {
 
     const spots = useMemo(() => {
         const out = [];
-        for (const [code, N] of Object.entries(nations)) {
+        for (const N of Object.values(nations)) {
             if (!N) continue;
 
             if (N.lat !== undefined && N.lon !== undefined) {

@@ -6,23 +6,15 @@ import { useRef, useLayoutEffect } from "react";
 export default function Skybox() {
     const skyRef = useRef();
     const texture = useTexture("/textures/starmap.png");
-    const { gl, scene } = useThree();
+    const { gl } = useThree();
 
     useLayoutEffect(() => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.minFilter = THREE.LinearMipmapLinearFilter;
-        texture.magFilter = THREE.LinearFilter;
-        texture.generateMipmaps = true;
-        texture.anisotropy = (gl.capabilities && gl.capabilities.getMaxAnisotropy && gl.capabilities.getMaxAnisotropy()) || 16;
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        texture.needsUpdate = true;
-
-        if (scene) scene.background = texture;
-
-        return () => {
-            if (scene && scene.background === texture) scene.background = null;
-        };
-    }, [texture, gl, scene]);
+        texture.anisotropy =
+            (gl.capabilities &&
+                gl.capabilities.getMaxAnisotropy &&
+                gl.capabilities.getMaxAnisotropy()) ||
+            16;
+    }, [texture, gl]);
 
     useFrame((state) => {
         if (skyRef.current) {
@@ -40,8 +32,8 @@ export default function Skybox() {
                 toneMapped={false}
                 uniforms={{
                     uTexture: { value: texture },
-                    uBrightness: { value: 2.25 },
-                    uContrast: { value: 0.35 },
+                    uBrightness: { value: 1.75 },
+                    uContrast: { value: 0.6 },
                 }}
                 vertexShader={`
                     varying vec2 vUv;

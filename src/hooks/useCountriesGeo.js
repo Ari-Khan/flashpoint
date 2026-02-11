@@ -56,7 +56,7 @@ export function useCountriesGeo(activeCountryIds = []) {
             cancelled = true;
             worker.terminate();
         };
-    }, [activeCountryIds.length]);
+    }, [activeCountryIds]);
 
     return data;
 }

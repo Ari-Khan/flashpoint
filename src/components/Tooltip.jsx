@@ -1,14 +1,14 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 export default function Tooltip({ text, x, y, fadeDuration = 300 }) {
     const [renderText, setRenderText] = useState(null);
     const [active, setActive] = useState(false);
-    const lastPos = useRef({ x: 0, y: 0 });
+    const [pos, setPos] = useState({ x: 0, y: 0 });
 
-    if (text) {
-        lastPos.current = { x, y };
-    }
+    useEffect(() => {
+        if (text) setPos({ x, y });
+    }, [text, x, y]);
 
     useEffect(() => {
         let timeout;
@@ -32,7 +32,7 @@ export default function Tooltip({ text, x, y, fadeDuration = 300 }) {
                 position: "fixed",
                 left: 0,
                 top: 0,
-                transform: `translate3d(${lastPos.current.x}px, ${lastPos.current.y}px, 0)`,
+                transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
                 opacity: active ? 1 : 0,
                 transition: `opacity ${fadeDuration}ms ease-in-out`,
                 pointerEvents: "none",

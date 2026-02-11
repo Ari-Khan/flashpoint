@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -7,8 +7,9 @@ import {
 } from "../utils/trajectoryUtils.js";
 
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
+const FADE_BUFFER = 0.25;
 
-export default function Arc({
+function ArcItem({
     id,
     fromLat,
     fromLon,
@@ -24,139 +25,143 @@ export default function Arc({
     const isDoneRef = useRef(false);
     const tempVec = useRef(new THREE.Vector3()).current;
 
-    const { geometry, curve, duration, impactTime, pointsCount, arcLengths } =
-        useMemo(() => {
-            const {
-                start,
-                end,
-                duration: dur,
-                impactTick,
-            } = computeTrajectory({
-                fromLat,
-                fromLon,
-                toLat,
-                toLon,
-                startTime,
-                weapon,
-            });
-            const {
-                curve: cubicCurve,
-                geometry: geom,
-                arcLengths: arcs,
-                pointsCount: count,
-            } = buildCubicCurveAndGeometry({
-                start,
-                end,
-                startTime,
-                seed: Number(startTime) + (typeof id === 'string' ? Number(id.split('-').pop() || 0) : 0),
-            });
+    const data = useMemo(() => {
+        const traj = computeTrajectory({
+            fromLat, fromLon, toLat, toLon, startTime, weapon,
+        });
+        
+        const seed = Number(startTime) + (typeof id === "string" ? Number(id.split("-").pop() || 0) : 0);
+        
+        const curveData = buildCubicCurveAndGeometry({ 
+            start: traj.start, 
+            end: traj.end, 
+            startTime, 
+            seed 
+        });
 
-            return {
-                geometry: geom,
-                curve: cubicCurve,
-                duration: dur,
-                impactTime: impactTick,
-                pointsCount: count,
-                arcLengths: arcs,
-            };
-        }, [fromLat, fromLon, toLat, toLon, startTime, weapon, id]);
+        return { ...traj, ...curveData };
+    }, [fromLat, fromLon, toLat, toLon, startTime, weapon, id]);
 
-    useEffect(() => {
-        return () => {
-            geometry.dispose();
-            if (lineRef.current) {
-                lineRef.current.material.dispose();
-            }
-            if (coneRef.current) {
-                coneRef.current.geometry.dispose();
-                coneRef.current.material.dispose();
-            }
-        };
-    }, [geometry]);
+    useEffect(() => () => {
+        data.geometry.dispose();
+        if (lineRef.current) lineRef.current.material.dispose();
+        if (coneRef.current) {
+            coneRef.current.geometry.dispose();
+            coneRef.current.material.dispose();
+        }
+    }, [data.geometry]);
 
     useFrame(() => {
-        if (!lineRef.current || !coneRef.current || isDoneRef.current) return;
+        if (isDoneRef.current || !lineRef.current || !coneRef.current) return;
 
-        const t = THREE.MathUtils.clamp(
-            (currentTime - startTime) / duration,
-            0,
-            1
-        );
-
-        let progress = t;
-        if (t < 0.2) {
-            const local = t / 0.2;
-            progress = 0.2 * (local * local);
-        }
+        const t = THREE.MathUtils.clamp((currentTime - startTime) / data.duration, 0, 1);
+        
+        let progress = t < 0.2 ? 0.2 * ((t / 0.2) ** 2) : t;
 
         let u = progress;
-        if (arcLengths?.length > 1) {
-            if (progress <= 0) u = 0;
-            else if (progress >= 1) u = 1;
-            else {
-                let low = 0,
-                    high = arcLengths.length - 1;
-                while (low < high) {
-                    const mid = (low + high) >> 1;
-                    if (arcLengths[mid] < progress) low = mid + 1;
-                    else high = mid;
-                }
-                const i = Math.max(0, low - 1);
-                const startArc = arcLengths[i];
-                const endArc = arcLengths[i + 1];
-                const local = (progress - startArc) / (endArc - startArc || 1);
-                u = (i + local) / (arcLengths.length - 1);
+        const arcs = data.arcLengths;
+        if (arcs?.length > 1) {
+            let low = 0, high = arcs.length - 1;
+            while (low < high) {
+                const mid = (low + high) >>> 1;
+                if (arcs[mid] < progress) low = mid + 1;
+                else high = mid;
             }
+            const i = Math.max(0, low - 1);
+            const lowArc = arcs[i];
+            const range = arcs[i + 1] - lowArc;
+            u = (i + (progress - lowArc) / (range || 1)) / (arcs.length - 1);
         }
 
-        const drawCount = Math.ceil(u * (pointsCount - 1));
-        lineRef.current.geometry.setDrawRange(0, drawCount);
+        lineRef.current.geometry.setDrawRange(0, Math.ceil(u * (data.pointsCount - 1)));
 
         if (progress < 1) {
-            curve.getPoint(u, coneRef.current.position);
-            curve.getTangent(u, tempVec);
-            coneRef.current.quaternion.setFromUnitVectors(
-                UP_AXIS,
-                tempVec.normalize()
-            );
-            if (!coneRef.current.visible) coneRef.current.visible = true;
+            data.curve.getPoint(u, coneRef.current.position);
+            data.curve.getTangent(u, tempVec);
+            coneRef.current.quaternion.setFromUnitVectors(UP_AXIS, tempVec.normalize());
+            coneRef.current.visible = true;
         } else {
             coneRef.current.visible = false;
         }
 
-        if (currentTime >= impactTime) {
-            const opacity = Math.max(0, 1 - (currentTime - impactTime) * 5);
+        if (currentTime >= data.impactTick) {
+            const opacity = Math.max(0, 1 - (currentTime - data.impactTick) * 4);
             lineRef.current.material.opacity = opacity;
             coneRef.current.material.opacity = opacity;
 
             if (opacity <= 0) {
                 isDoneRef.current = true;
-                onComplete(id);
+                onComplete?.(id);
             }
         }
     });
 
     return (
         <group>
-            <line ref={lineRef} geometry={geometry}>
-                <lineBasicMaterial
-                    color="#ff5533"
-                    transparent
-                    opacity={1}
-                    depthWrite={false}
-                    blending={THREE.AdditiveBlending}
+            <line ref={lineRef} geometry={data.geometry}>
+                <lineBasicMaterial 
+                    color="#ff4d00" 
+                    transparent 
+                    depthWrite={false} 
+                    blending={THREE.AdditiveBlending} 
                 />
             </line>
             <mesh ref={coneRef} visible={false}>
                 <coneGeometry args={[0.003, 0.01, 8]} />
-                <meshBasicMaterial
-                    color="#ff5533"
-                    transparent
-                    opacity={1}
-                    depthWrite={false}
-                    blending={THREE.AdditiveBlending}
+                <meshBasicMaterial 
+                    color="#ff5533" 
+                    transparent 
+                    depthWrite={false} 
+                    blending={THREE.AdditiveBlending} 
                 />
             </mesh>
+        </group>
+    );
+}
+
+export default function ArcManager({ events, nations, currentTime }) {
+    const activeEvents = useMemo(() => {
+        if (!events || !nations) return [];
+        
+        return events.filter(e => {
+            if (e.type !== "launch") return false;
+            
+            const from = nations[e.from];
+            const to = nations[e.to];
+            if (!from || !to) return false;
+
+            const { impactTick } = computeTrajectory({
+                fromLat: e.fromLat ?? from.lat,
+                fromLon: e.fromLon ?? from.lon,
+                toLat: e.toLat ?? to.lat,
+                toLon: e.toLon ?? to.lon,
+                startTime: e.t,
+                weapon: e.weapon,
+            });
+
+            return currentTime >= e.t && currentTime <= impactTick + FADE_BUFFER;
+        });
+    }, [events, nations, currentTime]);
+
+    return (
+        <group>
+            {activeEvents.map((e) => {
+                const from = nations[e.from];
+                const to = nations[e.to];
+                return (
+                    <ArcItem
+                        key={e.id ?? `${e.from}-${e.to}-${e.t}`}
+                        id={e.id ?? `${e.from}-${e.to}-${e.t}`}
+                        fromLat={e.fromLat ?? from.lat}
+                        fromLon={e.fromLon ?? from.lon}
+                        toLat={e.toLat ?? to.lat}
+                        toLon={e.toLon ?? to.lon}
+                        weapon={e.weapon}
+                        startTime={e.t}
+                        currentTime={currentTime}
+                    />
+                );
+            })}
         </group>
     );
 }

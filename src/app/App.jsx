@@ -6,19 +6,19 @@ import * as THREE from "three";
 import Globe from "../components/Globe.jsx";
 import CountryBorders from "../components/CountryBorders.jsx";
 import ControlPanel from "../components/ControlPanel.jsx";
-import CountryFillManager from "../components/CountryFillManager.jsx";
+import CountryFill from "../components/CountryFill.jsx";
 import Skybox from "../components/Skybox.jsx";
 import Atmosphere from "../components/Atmosphere.jsx";
-import ExplosionManager from "../components/ExplosionManager.jsx";
-import ArcManager from "../components/ArcManager.jsx";
+import ExplosionManager from "../components/Explosion.jsx";
+import ArcManager from "../components/Arc.jsx";
 import Cities from "../components/Cities.jsx";
 import SettingsPanel from "../components/SettingsPanel.jsx";
 import SmoothZoom from "../components/SmoothZoom.jsx";
+import Audio from "../components/Audio.jsx";
 
 import { useEventTimeline } from "../hooks/useEventTimeline.js";
 import { useSimulationClock } from "../hooks/useSimulationClock.js";
 import { loadWorld } from "../utils/loadData.js";
-import { simulateEscalation } from "../sim/simulator.js";
 
 import "../index.css";
 import settings from "../config/settings.json";
@@ -45,12 +45,90 @@ const CAM_CONFIG = {
 export default function App() {
     const [events, setEvents] = useState(null);
     const [tickStep, setTickStep] = useState(settings.tickStep);
-    const [smoothMode, setSmoothMode] = useState("off");
     const [isPaused, setIsPaused] = useState(false);
     const [showGeo, setShowGeo] = useState(false);
     const [uiHidden, setUiHidden] = useState(false);
     const controlsRef = useRef();
     const resetAnimRef = useRef(null);
+
+    const idleRef = useRef({ lastActivity: performance.now(), accelerating: false, raf: null, speed: 0 });
+    const AUTO_ROTATE_DELAY = 5000;
+    const AUTO_ROTATE_TARGET = -0.5;
+    const AUTO_ROTATE_ACCEL = 0.01;
+
+    function resetIdleActivity() {
+        idleRef.current.lastActivity = performance.now();
+        if (controlsRef.current) {
+            controlsRef.current.autoRotate = false;
+            controlsRef.current.autoRotateSpeed = 0;
+        }
+        if (idleRef.current.raf) {
+            cancelAnimationFrame(idleRef.current.raf);
+            idleRef.current.raf = null;
+        }
+        idleRef.current.accelerating = false;
+        idleRef.current.speed = 0;
+    }
+
+    useEffect(() => {
+        const onKey = () => resetIdleActivity();
+        window.addEventListener("keydown", onKey);
+        return () => {
+            window.removeEventListener("keydown", onKey);
+        };
+    }, []);
+
+    useEffect(() => {
+        const controls = controlsRef.current;
+        if (!controls) return;
+        const onStart = () => resetIdleActivity();
+        controls.addEventListener("start", onStart);
+        return () => {
+            controls.removeEventListener("start", onStart);
+        };
+    }, [controlsRef.current]);
+
+    useEffect(() => {
+        const check = () => {
+            const now = performance.now();
+            if (now - idleRef.current.lastActivity < AUTO_ROTATE_DELAY) return;
+            const controls = controlsRef.current;
+            if (!controls) return;
+
+            const camPos = controls.object.position;
+            const defaultPos = new THREE.Vector3(...CAM_CONFIG.position);
+            const dist = camPos.distanceTo(defaultPos);
+            const targetDist = controls.target.distanceTo(new THREE.Vector3(0, 0, 0));
+            if (dist > 0.08 || targetDist > 0.05) return;
+
+            if (!idleRef.current.accelerating) {
+                idleRef.current.accelerating = true;
+                idleRef.current.speed = 0;
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0;
+
+                function step() {
+                    if (!idleRef.current.accelerating) return;
+                    if (AUTO_ROTATE_TARGET < 0) {
+                        idleRef.current.speed = Math.max(AUTO_ROTATE_TARGET, idleRef.current.speed - AUTO_ROTATE_ACCEL);
+                    } else {
+                        idleRef.current.speed = Math.min(AUTO_ROTATE_TARGET, idleRef.current.speed + AUTO_ROTATE_ACCEL);
+                    }
+                    if (controls) controls.autoRotateSpeed = idleRef.current.speed;
+                    idleRef.current.raf = requestAnimationFrame(step);
+                }
+
+                idleRef.current.raf = requestAnimationFrame(step);
+            }
+        };
+
+        const interval = setInterval(check, 500);
+        return () => clearInterval(interval);
+    }, []);
+
+
+    const workerRef = useRef(null);
+    const [isRunning, setIsRunning] = useState(false);
 
     useEffect(() => {
         const id = setTimeout(() => setShowGeo(true), 300);
@@ -70,6 +148,12 @@ export default function App() {
         settings.texture || TEXTURES[0]
     );
 
+    const [soundEnabled, setSoundEnabled] = useState(
+        settings.audioEnabled === undefined
+            ? true
+            : Boolean(settings.audioEnabled)
+    );
+
     const { visible, currentTick } = useEventTimeline(
         events,
         timePerStep,
@@ -80,7 +164,6 @@ export default function App() {
         currentTick,
         tickStep,
         timePerStep,
-        smoothMode
     );
 
     const affectedIsos = useMemo(() => {
@@ -100,19 +183,43 @@ export default function App() {
             .slice()
             .reverse()
             .map((e) => {
-                const { fromLat, fromLon, toLat, toLon, ...logFriendly } = e;
+                const {
+                    fromLat: _fromLat,
+                    fromLon: _fromLon,
+                    toLat: _toLat,
+                    toLon: _toLon,
+                    ...logFriendly
+                } = e;
                 return logFriendly;
             });
     }, [visible]);
 
     function run(actor, target) {
-        setEvents(
-            simulateEscalation({
-                initiator: actor,
-                firstTarget: target,
-                world,
-            })
-        );
+        setIsRunning(true);
+
+        if (!workerRef.current) {
+            workerRef.current = new Worker(
+                new URL("../workers/simulatorWorker.js", import.meta.url),
+                { type: "module" }
+            );
+
+            workerRef.current.onmessage = (e) => {
+                if (e.data?.error) {
+                    console.error("Simulation worker error:", e.data.error);
+                    setIsRunning(false);
+                    return;
+                }
+                setEvents(e.data.events || []);
+                setIsRunning(false);
+            };
+
+            workerRef.current.onerror = (err) => {
+                console.error("Worker failed:", err);
+                setIsRunning(false);
+            };
+        }
+
+        workerRef.current.postMessage({ actor, target });
     }
 
     function resetCamera() {
@@ -129,7 +236,7 @@ export default function App() {
         const startTarget = controls.target.clone();
         const endPos = new THREE.Vector3(...CAM_CONFIG.position);
         const endTarget = new THREE.Vector3(0, 0, 0);
-        const duration = 800; // ms
+        const duration = 800;
         const startTime = performance.now();
 
         function easeInOutCubic(t) {
@@ -159,7 +266,17 @@ export default function App() {
 
     useEffect(() => {
         return () => {
-            if (resetAnimRef.current) cancelAnimationFrame(resetAnimRef.current);
+            if (resetAnimRef.current)
+                cancelAnimationFrame(resetAnimRef.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            if (workerRef.current) {
+                workerRef.current.terminate();
+                workerRef.current = null;
+            }
         };
     }, []);
 
@@ -167,16 +284,20 @@ export default function App() {
         <div className="app-container">
             {!uiHidden && (
                 <>
-                    <ControlPanel nations={world.nations} onRun={run} />
+                    <ControlPanel
+                        nations={world.nations}
+                        onRun={run}
+                        isRunning={isRunning}
+                    />
                     <SettingsPanel
                         tickStep={tickStep}
                         onTickStepChange={setTickStep}
-                        smoothMode={smoothMode}
-                        onSmoothModeChange={setSmoothMode}
                         performanceSettings={performanceSettings}
                         onPerformanceChange={setPerformanceSettings}
                         texture={earthTexture}
                         onTextureChange={setEarthTexture}
+                        soundEnabled={soundEnabled}
+                        onSoundChange={setSoundEnabled}
                     />
                 </>
             )}
@@ -229,6 +350,7 @@ export default function App() {
                 camera={CAM_CONFIG}
             >
                 <Skybox />
+                <Audio enabled={soundEnabled} />
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[5, 5, 5]} intensity={1.0} />
 
@@ -247,7 +369,7 @@ export default function App() {
                         <>
                             <CountryBorders />
                             <Cities nations={world.nations} />
-                            <CountryFillManager
+                            <CountryFill
                                 activeIsos={affectedIsos}
                                 nations={world.nations}
                             />

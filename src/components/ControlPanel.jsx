@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 
-export default function ControlPanel({ nations, onRun }) {
+export default function ControlPanel({ nations, onRun, isRunning = false }) {
     const allCodes = useMemo(() => Object.keys(nations), [nations]);
 
     const aggressorCodes = useMemo(() => {
@@ -37,7 +37,7 @@ export default function ControlPanel({ nations, onRun }) {
     }, [actor, target, aggressorCodes]);
 
     return (
-        <div className="control-panel">
+        <div className={`control-panel ${isRunning ? "running-fade" : ""}`}>
             <div>
                 <label>Aggressor </label>
                 <select
@@ -68,14 +68,16 @@ export default function ControlPanel({ nations, onRun }) {
 
             <button
                 onClick={() => {
-                    if (!error) onRun(actor, target);
+                    if (!error && !isRunning) onRun(actor, target);
                 }}
-                disabled={!!error}
-                className={error ? "dull" : ""}
-                title={error || "Run Simulation"}
+                disabled={!!error || isRunning}
+                className={`${error ? "dull" : ""} ${isRunning ? "running" : ""}`}
+                title={error || (isRunning ? "Running…" : "Run Simulation")}
             >
                 {error ? (
                     <span className="button-message">{error}</span>
+                ) : isRunning ? (
+                    "Running…"
                 ) : (
                     "Run Simulation"
                 )}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3.js";
 import { useCountriesGeo } from "../hooks/useCountriesGeo.js";

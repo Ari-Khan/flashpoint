@@ -4,9 +4,10 @@ import Tooltip from "./Tooltip.jsx";
 function useFPS() {
     const [fps, setFps] = useState(0);
     const frames = useRef(0);
-    const lastFpsUpdate = useRef(performance.now());
+    const lastFpsUpdate = useRef(0);
 
     useEffect(() => {
+        lastFpsUpdate.current = performance.now();
         let frameId;
         const loop = () => {
             frames.current++;
@@ -42,6 +43,8 @@ export default function SettingsPanel({
     onPerformanceChange = () => {},
     texture,
     onTextureChange = () => {},
+    soundEnabled = true,
+    onSoundChange = () => {},
 }) {
     const fps = useFPS();
     const [open, setOpen] = useState(false);
@@ -198,6 +201,22 @@ export default function SettingsPanel({
                             >
                                 <option value="off">Off</option>
                                 <option value="on">On</option>
+                            </select>
+                        </SettingRow>
+
+                        <SettingRow
+                            label="Audio"
+                            tip="Enable or disable audio."
+                            onMouse={handleMouse}
+                        >
+                            <select
+                                value={soundEnabled ? "on" : "off"}
+                                onChange={(e) =>
+                                    onSoundChange(e.target.value === "on")
+                                }
+                            >
+                                <option value="on">Enabled</option>
+                                <option value="off">Disabled</option>
                             </select>
                         </SettingRow>
 

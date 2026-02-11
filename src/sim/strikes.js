@@ -22,11 +22,7 @@ function makeLaunchEvent({ id, t, from, to, weapon, count, fromCity, toCity }) {
         toCity: toCity?.name,
     };
 
-    Object.defineProperty(ev, "id", {
-        value: id,
-        enumerable: false,
-        configurable: true,
-    });
+    ev.id = id;
 
     return ev;
 }
@@ -49,18 +45,19 @@ function launchStrike({ from, to, state, maxPerStrike = 1, world }) {
 
     const id = `${from}-${to}-${state.time}-${state.nextEventId++}`;
 
-    state.events.push(
-        makeLaunchEvent({
-            id,
-            t: state.time,
-            from,
-            to,
-            weapon,
-            count: actualCount,
-            fromCity,
-            toCity,
-        })
-    );
+    const ev = makeLaunchEvent({
+        id,
+        t: state.time,
+        from,
+        to,
+        weapon,
+        count: actualCount,
+        fromCity,
+        toCity,
+    });
+    ev.id = id;
+
+    state.events.push(ev);
 
     state.involved.add(from);
     state.involved.add(to);

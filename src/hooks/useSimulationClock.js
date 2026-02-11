@@ -3,22 +3,16 @@ import { useState, useEffect, useRef } from "react";
 export function useSimulationClock(
     currentTick,
     tickStep,
-    timePerStep,
-    smoothMode
+    timePerStep
 ) {
     const [displayTick, setDisplayTick] = useState(currentTick);
-    const lastTickTimeRef = useRef(performance.now());
+    const lastTickTimeRef = useRef(0);
 
     useEffect(() => {
         lastTickTimeRef.current = performance.now();
-        if (smoothMode === "off") {
-            setDisplayTick(currentTick);
-        }
-    }, [currentTick, smoothMode]);
+    }, [currentTick]);
 
     useEffect(() => {
-        if (smoothMode === "off") return;
-
         let rafId;
         const update = () => {
             const elapsed = performance.now() - lastTickTimeRef.current;
@@ -30,7 +24,7 @@ export function useSimulationClock(
 
         rafId = requestAnimationFrame(update);
         return () => cancelAnimationFrame(rafId);
-    }, [smoothMode, currentTick, tickStep, timePerStep]);
+    }, [currentTick, tickStep, timePerStep]);
 
     return displayTick;
 }

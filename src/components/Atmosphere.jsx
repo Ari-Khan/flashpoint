@@ -28,9 +28,12 @@ const fragmentShader = `
 `;
 
 export default function Atmosphere({ radius = 1 }) {
-    const uniforms = useMemo(() => ({
-        color: { value: new THREE.Color("#88ccff") }
-    }), []);
+    const uniforms = useMemo(
+        () => ({
+            color: { value: new THREE.Color("#88ccff") },
+        }),
+        []
+    );
 
     return (
         <mesh scale={1.2}>
