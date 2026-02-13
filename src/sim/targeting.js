@@ -42,12 +42,12 @@ function pickWeightedTarget({ attacker, lastStriker, world, state }) {
 
     const docMap = {
         "no-first-use": 20,
-        "retaliatory": 15,
-        "threshold": 15,
-        "latent": 10,
+        retaliatory: 15,
+        threshold: 15,
+        latent: 10,
         "first-use": 5,
-        "dormant": 5,
-        "ambiguous": 3,
+        dormant: 5,
+        ambiguous: 3,
     };
 
     let focusOnLastStriker = docMap[doctrine] ?? 10;

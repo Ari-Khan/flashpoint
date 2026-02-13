@@ -1,15 +1,22 @@
 import { useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { useRef, useLayoutEffect } from "react";
+import { useRef, useLayoutEffect, useEffect } from "react";
 
-export default function Skybox() {
+const BASE_BRIGHTNESS = 1.75;
+const BASE_CONTRAST = 0.6;
+
+export default function Skybox({ postEffectsEnabled = false }) {
     const skyRef = useRef();
+    const materialRef = useRef();
     const texture = useTexture("/textures/starmap.png");
     const { gl } = useThree();
+    const brightness = postEffectsEnabled ? BASE_BRIGHTNESS * 1.8 : BASE_BRIGHTNESS;
+    const contrast = postEffectsEnabled ? BASE_CONTRAST * 1.8 : BASE_CONTRAST;
 
     useLayoutEffect(() => {
-        texture.anisotropy =
+        const tex = texture;
+        tex.anisotropy =
             (gl.capabilities &&
                 gl.capabilities.getMaxAnisotropy &&
                 gl.capabilities.getMaxAnisotropy()) ||
@@ -22,18 +29,27 @@ export default function Skybox() {
         }
     });
 
+    useEffect(() => {
+        if (!materialRef.current) return;
+        materialRef.current.uniforms.uBrightness.value = brightness;
+        materialRef.current.uniforms.uContrast.value = contrast;
+        materialRef.current.uniformsNeedUpdate = true;
+    }, [brightness, contrast]);
+
     return (
         <mesh ref={skyRef} frustumCulled={false} renderOrder={-1}>
             <sphereGeometry args={[500, 64, 64]} />
             <shaderMaterial
+                key={postEffectsEnabled ? "fx-on" : "fx-off"}
+                ref={materialRef}
                 side={THREE.BackSide}
                 depthWrite={false}
                 depthTest={false}
                 toneMapped={false}
                 uniforms={{
                     uTexture: { value: texture },
-                    uBrightness: { value: 1.75 },
-                    uContrast: { value: 0.6 },
+                    uBrightness: { value: brightness },
+                    uContrast: { value: contrast },
                 }}
                 vertexShader={`
                     varying vec2 vUv;

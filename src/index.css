@@ -133,11 +133,11 @@ body {
 }
 .settings-body {
     position: absolute;
-    bottom: calc(100% + 12px);
+    bottom: calc(100% + 10px);
     left: 0;
     width: 100%;
     display: grid;
-    gap: 10px;
+    gap: 8px;
     background: linear-gradient(
         135deg,
         rgba(20, 20, 30, 0.95),
@@ -151,7 +151,7 @@ body {
     padding: 10px;
     border-radius: 4px;
     z-index: 1100;
-    font-size: 12px;
+    font-size: 11px;
 }
 .settings-row {
     display: flex;
@@ -159,7 +159,7 @@ body {
     align-items: center;
     color: #0f0;
     font-family: monospace;
-    font-size: 12px;
+    font-size: 11px;
     position: relative;
 }
 .settings-row span {
@@ -205,7 +205,7 @@ body {
     padding: 3px 6px;
     font-family: monospace;
     width: 78px;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1;
 }
 .checkbox-row {
@@ -270,29 +270,32 @@ body {
 }
 .control-panel button {
     padding: 12px 15px;
-    /* pure bright red */
+
     background-color: #ff0000;
     color: #fff;
-    border: 1px solid rgba(255,0,0,0.18);
+    border: 1px solid rgba(255, 0, 0, 0.18);
     border-radius: 3px;
     font-size: 14px;
     font-weight: 900;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     cursor: pointer;
-    /* background color transition is 3x slower (180ms) to make the dulling feel gradual */
-    transition: box-shadow 60ms ease, background-color 180ms ease, opacity 60ms linear;
+
+    transition:
+        box-shadow 60ms ease,
+        background-color 180ms ease,
+        opacity 60ms linear;
     width: 100%;
     text-align: center;
-    /* no metallic inset (flat, bold) */
-    box-shadow: 0 6px 18px rgba(0,0,0,0.36);
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.36);
     height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
     overflow: hidden;
-}    
+}
 
 .control-panel button.dull,
 .control-panel button:disabled {
@@ -300,9 +303,9 @@ body {
     filter: brightness(0.8);
     cursor: not-allowed;
     box-shadow: none;
-    border: 1px solid rgba(0,0,0,0.25);
+    border: 1px solid rgba(0, 0, 0, 0.25);
     background-color: #4f1616;
-}   
+}
 .control-panel .button-message {
     font-size: 12px;
     text-transform: none;
@@ -317,27 +320,32 @@ body {
     max-width: 100%;
 }
 .control-panel button:hover {
-    /* larger glow that grows gradually (controlled by transition) */
-    box-shadow: 0 14px 30px rgba(255,0,0,0.28), 0 0 18px rgba(255,0,0,0.22);
-    border-color: rgba(255,0,0,0.36);
-}    
+    box-shadow:
+        0 14px 30px rgba(255, 0, 0, 0.28),
+        0 0 18px rgba(255, 0, 0, 0.22);
+    border-color: rgba(255, 0, 0, 0.36);
+}
 .control-panel button:active {
-    box-shadow: inset 0 1px 0 rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.45);
+    box-shadow:
+        inset 0 1px 0 rgba(0, 0, 0, 0.12),
+        0 6px 16px rgba(0, 0, 0, 0.45);
     background-color: #cc0000;
-}     
+}
 
-/* duplicate long transition removed to keep hover responsive */
 .control-panel button.running {
-    /* slightly deeper for running state but still bright */
     background-color: #e60000;
-    border-color: rgba(255,0,0,0.18);
-    /* add a small base glow for running state */
-    box-shadow: 0 10px 28px rgba(0,0,0,0.36), 0 0 10px rgba(255,0,0,0.08);
+    border-color: rgba(255, 0, 0, 0.18);
+
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.36),
+        0 0 10px rgba(255, 0, 0, 0.08);
     color: #fff;
 }
 .control-panel button.running:hover {
-    box-shadow: 0 16px 40px rgba(255,0,0,0.3), 0 0 22px rgba(255,0,0,0.22);
-    border-color: rgba(255,0,0,0.36);
+    box-shadow:
+        0 16px 40px rgba(255, 0, 0, 0.3),
+        0 0 22px rgba(255, 0, 0, 0.22);
+    border-color: rgba(255, 0, 0, 0.36);
 }
 
 .control-panel.running-fade select,

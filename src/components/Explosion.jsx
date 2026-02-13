@@ -10,11 +10,11 @@ const dummy = new THREE.Object3D();
 export default function ExplosionManager({
     events = [],
     nations,
-    currentTime,
-    smooth = true,
+    displayTime,
+    simTime,
 }) {
     const meshRef = useRef();
-    const displayTimeRef = useRef(currentTime);
+    const displayTimeRef = useRef(displayTime);
 
     const mat = useMemo(
         () =>
@@ -62,12 +62,7 @@ export default function ExplosionManager({
     }, [events, nations]);
 
     useFrame(() => {
-        if (smooth) {
-            displayTimeRef.current +=
-                (currentTime - displayTimeRef.current) * 0.1;
-        } else {
-            displayTimeRef.current = currentTime;
-        }
+        displayTimeRef.current += (displayTime - displayTimeRef.current) * 0.1;
 
         if (!meshRef.current) return;
 
@@ -75,11 +70,12 @@ export default function ExplosionManager({
         let activeCount = 0;
 
         processedEvents.forEach((e) => {
-            const progress = (time - e.impactTick) / FADE_WINDOW;
-
-            if (progress >= 0 && progress <= 1) {
-                const scale = (0.001 + 0.02 * progress) * e.sizeMult;
-                const opacity = Math.pow(1 - progress, 2.2);
+            const physProgress = (simTime - e.impactTick) / FADE_WINDOW;
+            if (physProgress >= 0 && physProgress <= 1) {
+                const progress = (time - e.impactTick) / FADE_WINDOW;
+                const scale =
+                    (0.001 + 0.02 * Math.max(0, progress)) * e.sizeMult;
+                const opacity = Math.pow(Math.max(0, 1 - progress), 2.2);
 
                 dummy.position.copy(e.position);
                 dummy.scale.setScalar(Math.max(0.00001, scale));

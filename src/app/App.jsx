@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, Suspense } from "react";
+import { useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback, Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -15,6 +15,7 @@ import Cities from "../components/Cities.jsx";
 import SettingsPanel from "../components/SettingsPanel.jsx";
 import SmoothZoom from "../components/SmoothZoom.jsx";
 import Audio from "../components/Audio.jsx";
+import PostEffects from "../components/PostEffects.jsx";
 
 import { useEventTimeline } from "../hooks/useEventTimeline.js";
 import { useSimulationClock } from "../hooks/useSimulationClock.js";
@@ -24,7 +25,6 @@ import "../index.css";
 import settings from "../config/settings.json";
 
 const world = loadWorld();
-const BASE_TICK_MS = 1000;
 
 const TEXTURES = [
     "specular.avif",
@@ -42,6 +42,10 @@ const CAM_CONFIG = {
     far: 1000,
 };
 
+const AUTO_ROTATE_DELAY = 5000;
+const AUTO_ROTATE_TARGET = -0.5;
+const AUTO_ROTATE_ACCEL = 0.01;
+
 export default function App() {
     const [events, setEvents] = useState(null);
     const [tickStep, setTickStep] = useState(settings.tickStep);
@@ -51,12 +55,18 @@ export default function App() {
     const controlsRef = useRef();
     const resetAnimRef = useRef(null);
 
-    const idleRef = useRef({ lastActivity: performance.now(), accelerating: false, raf: null, speed: 0 });
-    const AUTO_ROTATE_DELAY = 5000;
-    const AUTO_ROTATE_TARGET = -0.5;
-    const AUTO_ROTATE_ACCEL = 0.01;
+    const idleRef = useRef({
+        lastActivity: 0,
+        accelerating: false,
+        raf: null,
+        speed: 0,
+    });
 
-    function resetIdleActivity() {
+    useLayoutEffect(() => {
+        idleRef.current.lastActivity = performance.now();
+    }, []);
+
+    const resetIdleActivity = useCallback(() => {
         idleRef.current.lastActivity = performance.now();
         if (controlsRef.current) {
             controlsRef.current.autoRotate = false;
@@ -68,15 +78,22 @@ export default function App() {
         }
         idleRef.current.accelerating = false;
         idleRef.current.speed = 0;
-    }
+    }, []);
 
     useEffect(() => {
-        const onKey = () => resetIdleActivity();
-        window.addEventListener("keydown", onKey);
+        const onActivity = () => resetIdleActivity();
+        window.addEventListener("keydown", onActivity);
+        window.addEventListener("mousedown", onActivity);
+        window.addEventListener("wheel", onActivity, { passive: true });
+        window.addEventListener("touchstart", onActivity, { passive: true });
+
         return () => {
-            window.removeEventListener("keydown", onKey);
+            window.removeEventListener("keydown", onActivity);
+            window.removeEventListener("mousedown", onActivity);
+            window.removeEventListener("wheel", onActivity);
+            window.removeEventListener("touchstart", onActivity);
         };
-    }, []);
+    }, [resetIdleActivity]);
 
     useEffect(() => {
         const controls = controlsRef.current;
@@ -86,20 +103,31 @@ export default function App() {
         return () => {
             controls.removeEventListener("start", onStart);
         };
-    }, [controlsRef.current]);
+    }, [resetIdleActivity]);
 
     useEffect(() => {
         const check = () => {
-            const now = performance.now();
-            if (now - idleRef.current.lastActivity < AUTO_ROTATE_DELAY) return;
             const controls = controlsRef.current;
             if (!controls) return;
 
             const camPos = controls.object.position;
             const defaultPos = new THREE.Vector3(...CAM_CONFIG.position);
             const dist = camPos.distanceTo(defaultPos);
-            const targetDist = controls.target.distanceTo(new THREE.Vector3(0, 0, 0));
-            if (dist > 0.08 || targetDist > 0.05) return;
+            const targetDist = controls.target.distanceTo(
+                new THREE.Vector3(0, 0, 0)
+            );
+
+            const isNearSpawn = dist < 0.15 && targetDist < 0.1;
+
+            if (!isNearSpawn) {
+                if (idleRef.current.accelerating) {
+                    resetIdleActivity();
+                }
+                return;
+            }
+
+            const now = performance.now();
+            if (now - idleRef.current.lastActivity < AUTO_ROTATE_DELAY) return;
 
             if (!idleRef.current.accelerating) {
                 idleRef.current.accelerating = true;
@@ -110,11 +138,18 @@ export default function App() {
                 function step() {
                     if (!idleRef.current.accelerating) return;
                     if (AUTO_ROTATE_TARGET < 0) {
-                        idleRef.current.speed = Math.max(AUTO_ROTATE_TARGET, idleRef.current.speed - AUTO_ROTATE_ACCEL);
+                        idleRef.current.speed = Math.max(
+                            AUTO_ROTATE_TARGET,
+                            idleRef.current.speed - AUTO_ROTATE_ACCEL
+                        );
                     } else {
-                        idleRef.current.speed = Math.min(AUTO_ROTATE_TARGET, idleRef.current.speed + AUTO_ROTATE_ACCEL);
+                        idleRef.current.speed = Math.min(
+                            AUTO_ROTATE_TARGET,
+                            idleRef.current.speed + AUTO_ROTATE_ACCEL
+                        );
                     }
-                    if (controls) controls.autoRotateSpeed = idleRef.current.speed;
+                    if (controls)
+                        controls.autoRotateSpeed = idleRef.current.speed;
                     idleRef.current.raf = requestAnimationFrame(step);
                 }
 
@@ -124,8 +159,7 @@ export default function App() {
 
         const interval = setInterval(check, 500);
         return () => clearInterval(interval);
-    }, []);
-
+    }, [resetIdleActivity]);
 
     const workerRef = useRef(null);
     const [isRunning, setIsRunning] = useState(false);
@@ -135,7 +169,9 @@ export default function App() {
         return () => clearTimeout(id);
     }, []);
 
-    const timePerStep = BASE_TICK_MS * tickStep;
+    const ticksPerSecond = 1;
+    const timePerUpdate = 1000 * tickStep;
+    const simulationTicksPerUpdate = ticksPerSecond * tickStep;
 
     const [performanceSettings, setPerformanceSettings] = useState(() => ({
         antialias: settings.antialias,
@@ -148,23 +184,34 @@ export default function App() {
         settings.texture || TEXTURES[0]
     );
 
-    const [soundEnabled, setSoundEnabled] = useState(
-        settings.audioEnabled === undefined
+    const [soundEnabled, setSoundEnabled] = useState(Boolean(settings.audioEnabled));
+
+    const [postEffectsEnabled, setPostEffectsEnabled] = useState(
+        settings.postEffectsEnabled === undefined
             ? true
-            : Boolean(settings.audioEnabled)
+            : Boolean(settings.postEffectsEnabled)
     );
 
     const { visible, currentTick } = useEventTimeline(
         events,
-        timePerStep,
-        tickStep,
+        timePerUpdate,
+        simulationTicksPerUpdate,
         isPaused
     );
-    const displayTick = useSimulationClock(
+    const interpolatedTick = useSimulationClock(
         currentTick,
-        tickStep,
-        timePerStep,
+        simulationTicksPerUpdate,
+        timePerUpdate,
+        isPaused
     );
+
+    const isContinuous = tickStep <= 0.0625;
+    const displayTick = isContinuous ? interpolatedTick : currentTick;
+
+    const postDataRef = useRef({ events: [], currentTime: 0 });
+    useEffect(() => {
+        postDataRef.current = { events: visible, currentTime: displayTick };
+    }, [visible, displayTick]);
 
     const affectedIsos = useMemo(() => {
         const isoSet = new Set();
@@ -179,6 +226,11 @@ export default function App() {
     }, [visible]);
 
     const visibleForLog = useMemo(() => {
+        const nameFor = (code) =>
+            typeof code === "string"
+                ? world.nations?.[code]?.name || code
+                : code;
+
         return visible
             .slice()
             .reverse()
@@ -190,6 +242,32 @@ export default function App() {
                     toLon: _toLon,
                     ...logFriendly
                 } = e;
+
+                if (e.type === "launch" && "id" in logFriendly) {
+                    delete logFriendly.id;
+                }
+
+                if (
+                    (e.type === "ally-join" || e.type === "faction-join") &&
+                    "intensity" in logFriendly
+                ) {
+                    delete logFriendly.intensity;
+                }
+
+                const codeFields = [
+                    "from",
+                    "to",
+                    "attacker",
+                    "target",
+                    "country",
+                    "reason",
+                ];
+                for (const f of codeFields) {
+                    if (logFriendly[f] && typeof logFriendly[f] === "string") {
+                        logFriendly[f] = nameFor(logFriendly[f]);
+                    }
+                }
+
                 return logFriendly;
             });
     }, [visible]);
@@ -298,6 +376,8 @@ export default function App() {
                         onTextureChange={setEarthTexture}
                         soundEnabled={soundEnabled}
                         onSoundChange={setSoundEnabled}
+                        postEffectsEnabled={postEffectsEnabled}
+                        onPostEffectsChange={setPostEffectsEnabled}
                     />
                 </>
             )}
@@ -349,7 +429,7 @@ export default function App() {
                 }}
                 camera={CAM_CONFIG}
             >
-                <Skybox />
+                <Skybox postEffectsEnabled={postEffectsEnabled} />
                 <Audio enabled={soundEnabled} />
                 <ambientLight intensity={0.5} />
                 <directionalLight position={[5, 5, 5]} intensity={1.0} />
@@ -358,12 +438,21 @@ export default function App() {
                     <ArcManager
                         events={visible}
                         nations={world.nations}
-                        currentTime={displayTick}
+                        displayTime={displayTick}
+                        simTime={currentTick}
                     />
                     <ExplosionManager
                         events={visible}
                         nations={world.nations}
-                        currentTime={displayTick}
+                        displayTime={displayTick}
+                        simTime={currentTick}
+                    />
+
+                    <PostEffects
+                        dataRef={postDataRef}
+                        meanIntervalSeconds={20}
+                        enabled={postEffectsEnabled}
+                        multisampling={performanceSettings.antialias ? 4 : 0}
                     />
                     {showGeo && (
                         <>

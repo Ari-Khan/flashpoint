@@ -4,5 +4,7 @@
     "pixelRatioLimit": 3,
     "powerPreference": "high-performance",
     "preserveDrawingBuffer": false,
-    "texture": "specular.avif"
+    "texture": "specular.avif",
+    "audioEnabled": true,
+    "postEffectsEnabled": true
 }

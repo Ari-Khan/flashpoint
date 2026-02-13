@@ -59,14 +59,12 @@ export default function AmbientAudio({ enabled = true }) {
             const p2 = ground.play();
 
             if (p1 !== undefined) {
-                p1
-                    .then(() => {
-                        if (!loadedOnceRef.current.space) {
-                            startInitialFade("space");
-                            loadedOnceRef.current.space = true;
-                        }
-                    })
-                    .catch(() => scheduleResumeFor(space, "space"));
+                p1.then(() => {
+                    if (!loadedOnceRef.current.space) {
+                        startInitialFade("space");
+                        loadedOnceRef.current.space = true;
+                    }
+                }).catch(() => scheduleResumeFor(space, "space"));
             } else {
                 if (!loadedOnceRef.current.space) {
                     startInitialFade("space");
@@ -75,14 +73,12 @@ export default function AmbientAudio({ enabled = true }) {
             }
 
             if (p2 !== undefined) {
-                p2
-                    .then(() => {
-                        if (!loadedOnceRef.current.ground) {
-                            startInitialFade("ground");
-                            loadedOnceRef.current.ground = true;
-                        }
-                    })
-                    .catch(() => scheduleResumeFor(ground, "ground"));
+                p2.then(() => {
+                    if (!loadedOnceRef.current.ground) {
+                        startInitialFade("ground");
+                        loadedOnceRef.current.ground = true;
+                    }
+                }).catch(() => scheduleResumeFor(ground, "ground"));
             } else {
                 if (!loadedOnceRef.current.ground) {
                     startInitialFade("ground");
@@ -99,7 +95,19 @@ export default function AmbientAudio({ enabled = true }) {
             space.src = "";
             ground.src = "";
         };
+        // We only want to initialize audio once.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (!enabled) {
+            spaceRef.current?.pause();
+            groundRef.current?.pause();
+        } else {
+            spaceRef.current?.play().catch(() => {});
+            groundRef.current?.play().catch(() => {});
+        }
+    }, [enabled]);
 
     useFrame(() => {
         const space = spaceRef.current;
@@ -142,7 +150,8 @@ export default function AmbientAudio({ enabled = true }) {
                 if (t >= 1) initialFadeRef.current[kind] = null;
             } else {
                 currentVolumesRef.current[kind] +=
-                    (targetVolumesRef.current[kind] - currentVolumesRef.current[kind]) *
+                    (targetVolumesRef.current[kind] -
+                        currentVolumesRef.current[kind]) *
                     smoothing;
                 currentVolumesRef.current[kind] = Math.max(
                     0,

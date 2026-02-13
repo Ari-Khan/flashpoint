@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import settings from "../config/settings.json";
 
 export function useEventTimeline(
     events,
@@ -8,10 +7,7 @@ export function useEventTimeline(
     isPaused = false
 ) {
     const [currentTick, setCurrentTick] = useState(0);
-    const step =
-        typeof tickStep === "number" && tickStep > 0
-            ? tickStep
-            : (settings.tickStep ?? 1);
+    const step = typeof tickStep === "number" && tickStep > 0 ? tickStep : 1;
 
     const { minT, maxT } = useMemo(() => {
         if (!events?.length) return { minT: 0, maxT: 0 };
@@ -29,7 +25,7 @@ export function useEventTimeline(
     }, [events, minT]);
 
     useEffect(() => {
-        if (!events?.length || isPaused || currentTick >= maxT) return;
+        if (!events?.length || isPaused) return;
 
         const interval = setInterval(() => {
             setCurrentTick((prev) => {
@@ -39,7 +35,7 @@ export function useEventTimeline(
         }, timePerStep);
 
         return () => clearInterval(interval);
-    }, [events, isPaused, maxT, timePerStep, step, currentTick]);
+    }, [events, isPaused, maxT, timePerStep, step]);
 
     return { visible, currentTick };
 }

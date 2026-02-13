@@ -45,6 +45,8 @@ export default function SettingsPanel({
     onTextureChange = () => {},
     soundEnabled = true,
     onSoundChange = () => {},
+    postEffectsEnabled = true,
+    onPostEffectsChange = () => {},
 }) {
     const fps = useFPS();
     const [open, setOpen] = useState(false);
@@ -217,6 +219,22 @@ export default function SettingsPanel({
                             >
                                 <option value="on">Enabled</option>
                                 <option value="off">Disabled</option>
+                            </select>
+                        </SettingRow>
+
+                        <SettingRow
+                            label="SFX"
+                            tip="Enable or disable all post-processing effects (frazzle, scanlines, glitch on resume)."
+                            onMouse={handleMouse}
+                        >
+                            <select
+                                value={postEffectsEnabled ? "on" : "off"}
+                                onChange={(e) =>
+                                    onPostEffectsChange(e.target.value === "on")
+                                }
+                            >
+                                <option value="on">On</option>
+                                <option value="off">Off</option>
                             </select>
                         </SettingRow>
 
