@@ -1,46 +1,48 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 
-export default function Tooltip({ text, x, y, fadeDuration = 300 }) {
-    const [renderText, setRenderText] = useState(null);
-    const [active, setActive] = useState(false);
-    const [pos, setPos] = useState({ x: 0, y: 0 });
+export default function Tooltip({ text, x, y, fadeDuration = 200 }) {
+    const [visible, setVisible] = useState(false);
+    const [content, setContent] = useState(null);
+    const [pos, setPos] = useState({ x, y });
 
-    useEffect(() => {
-        if (text) setPos({ x, y });
+    useLayoutEffect(() => {
+        if (text) {
+            setPos({ x, y });
+        }
     }, [text, x, y]);
 
     useEffect(() => {
-        let timeout;
         if (text) {
-            setRenderText(text);
-            const raf = requestAnimationFrame(() => setActive(true));
+            setContent(text);
+            const raf = requestAnimationFrame(() => setVisible(true));
             return () => cancelAnimationFrame(raf);
         } else {
-            setActive(false);
-            timeout = setTimeout(() => setRenderText(null), fadeDuration);
+            setVisible(false);
+            const timer = setTimeout(() => setContent(null), fadeDuration);
+            return () => clearTimeout(timer);
         }
-        return () => clearTimeout(timeout);
     }, [text, fadeDuration]);
 
-    if (!renderText) return null;
+    if (!content) return null;
 
     return createPortal(
         <div
-            className={`floating-tooltip ${active ? "show" : ""}`}
+            className="floating-tooltip"
             style={{
                 position: "fixed",
                 left: 0,
                 top: 0,
-                transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
-                opacity: active ? 1 : 0,
-                transition: `opacity ${fadeDuration}ms ease-in-out`,
+                transform: `translate(${pos.x}px, ${pos.y}px)`,
+                opacity: visible ? 1 : 0,
+                transition: `opacity ${fadeDuration}ms ease-out`,
                 pointerEvents: "none",
                 zIndex: 9999,
+                willChange: "transform, opacity",
             }}
             role="tooltip"
         >
-            {renderText}
+            {content}
         </div>,
         document.body
     );

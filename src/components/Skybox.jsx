@@ -1,61 +1,50 @@
 import { useTexture } from "@react-three/drei";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { useRef, useLayoutEffect, useEffect } from "react";
+import { useMemo } from "react";
 
 const BASE_BRIGHTNESS = 1.75;
 const BASE_CONTRAST = 0.6;
+const SKY_GEOM = new THREE.SphereGeometry(1, 32, 32);
 
 export default function Skybox({ postEffectsEnabled = false }) {
-    const skyRef = useRef();
-    const materialRef = useRef();
-    const texture = useTexture("/textures/starmap.png");
     const { gl } = useThree();
-    const brightness = postEffectsEnabled ? BASE_BRIGHTNESS * 1.8 : BASE_BRIGHTNESS;
-    const contrast = postEffectsEnabled ? BASE_CONTRAST * 1.8 : BASE_CONTRAST;
-
-    useLayoutEffect(() => {
-        const tex = texture;
-        tex.anisotropy =
-            (gl.capabilities &&
-                gl.capabilities.getMaxAnisotropy &&
-                gl.capabilities.getMaxAnisotropy()) ||
-            16;
-    }, [texture, gl]);
-
-    useFrame((state) => {
-        if (skyRef.current) {
-            skyRef.current.position.copy(state.camera.position);
-        }
+    const texture = useTexture("/textures/starmap.png", (t) => {
+        t.anisotropy = Math.min(gl.capabilities.getMaxAnisotropy(), 4);
+        t.minFilter = THREE.LinearFilter;
+        t.magFilter = THREE.LinearFilter;
+        t.needsUpdate = true;
     });
 
-    useEffect(() => {
-        if (!materialRef.current) return;
-        materialRef.current.uniforms.uBrightness.value = brightness;
-        materialRef.current.uniforms.uContrast.value = contrast;
-        materialRef.current.uniformsNeedUpdate = true;
-    }, [brightness, contrast]);
+    const brightness = postEffectsEnabled
+        ? BASE_BRIGHTNESS * 1.8
+        : BASE_BRIGHTNESS;
+    const contrast = postEffectsEnabled ? BASE_CONTRAST * 1.8 : BASE_CONTRAST;
+
+    const uniforms = useMemo(
+        () => ({
+            uTexture: { value: texture },
+            uBrightness: { value: brightness },
+            uContrast: { value: contrast },
+        }),
+        [texture, brightness, contrast]
+    );
 
     return (
-        <mesh ref={skyRef} frustumCulled={false} renderOrder={-1}>
-            <sphereGeometry args={[500, 64, 64]} />
+        <mesh geometry={SKY_GEOM} frustumCulled={false} renderOrder={-10}>
             <shaderMaterial
-                key={postEffectsEnabled ? "fx-on" : "fx-off"}
-                ref={materialRef}
                 side={THREE.BackSide}
                 depthWrite={false}
                 depthTest={false}
                 toneMapped={false}
-                uniforms={{
-                    uTexture: { value: texture },
-                    uBrightness: { value: brightness },
-                    uContrast: { value: contrast },
-                }}
+                uniforms={uniforms}
                 vertexShader={`
                     varying vec2 vUv;
                     void main() {
                         vUv = uv;
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        mat4 viewVar = mat4(mat3(viewMatrix));
+                        gl_Position = projectionMatrix * viewVar * modelMatrix * vec4(position, 1.0);
+                        gl_Position.z = gl_Position.w; // Ensure it stays behind everything
                     }
                 `}
                 fragmentShader={`
@@ -64,13 +53,9 @@ export default function Skybox({ postEffectsEnabled = false }) {
                     uniform float uContrast;
                     varying vec2 vUv;
                     void main() {
-                        vec4 texColor = texture2D(uTexture, vUv);
-                        
-                        vec3 color = pow(texColor.rgb, vec3(uContrast));
-                        
-                        vec3 cleanColor = smoothstep(0.0, 1.0, color);
-                        
-                        gl_FragColor = vec4(cleanColor * uBrightness, 1.0);
+                        vec3 tex = texture2D(uTexture, vUv).rgb;
+                        vec3 color = pow(tex, vec3(uContrast)) * uBrightness;
+                        gl_FragColor = vec4(smoothstep(0.0, 1.0, color), 1.0);
                     }
                 `}
             />

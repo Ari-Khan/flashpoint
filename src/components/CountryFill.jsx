@@ -7,6 +7,9 @@ import { useCountriesGeo } from "../hooks/useCountriesGeo.js";
 import { getColorByIso } from "../utils/countryUtils.js";
 
 const GEOMETRY_CACHE = new Map();
+const MOD_1 = new TessellateModifier(2.0, 4);
+const MOD_2 = new TessellateModifier(0.8, 6);
+const MOD_3 = new TessellateModifier(0.3, 6);
 
 function buildGeometries(features, countryCode) {
     if (!features?.length || !countryCode) return [];
@@ -19,18 +22,15 @@ function buildGeometries(features, countryCode) {
         if (!geom) return;
 
         function buildMesh(rings) {
-            if (!rings?.length) return;
+            if (!rings?.length || rings[0].length < 3) return;
 
             const vertices2D = [];
             const holeIndices = [];
             const outerRing = rings[0];
 
-            if (outerRing.length < 3) return;
-
             let centerLon = 0;
-            outerRing.forEach(([lon]) => {
-                centerLon += lon;
-            });
+            for (let i = 0; i < outerRing.length; i++)
+                centerLon += outerRing[i][0];
             centerLon /= outerRing.length;
 
             rings.forEach((ring, index) => {
@@ -46,19 +46,14 @@ function buildGeometries(features, countryCode) {
             const rawIndices = earcut(vertices2D, holeIndices);
             if (!rawIndices.length) return;
 
-            const isHuge =
-                feature.properties?.iso_a3 === "RUS" ||
-                feature.properties?.ISO_A3 === "RUS";
-            const maxDist = isHuge ? 170 : 120;
             const cleanIndices = [];
             for (let i = 0; i < rawIndices.length; i += 3) {
                 const a = rawIndices[i],
                     b = rawIndices[i + 1],
                     c = rawIndices[i + 2];
                 if (
-                    Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > maxDist ||
-                    Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > maxDist ||
-                    Math.abs(vertices2D[c * 2] - vertices2D[a * 2]) > maxDist
+                    Math.abs(vertices2D[a * 2] - vertices2D[b * 2]) > 180 ||
+                    Math.abs(vertices2D[b * 2] - vertices2D[c * 2]) > 180
                 )
                     continue;
                 cleanIndices.push(a, b, c);
@@ -78,19 +73,19 @@ function buildGeometries(features, countryCode) {
             geometry.setIndex(cleanIndices);
 
             try {
-                geometry = new TessellateModifier(1.0, 5).modify(geometry);
-                geometry = new TessellateModifier(0.15, 8).modify(geometry);
+                geometry = MOD_1.modify(geometry);
+                geometry = MOD_2.modify(geometry);
+                geometry = MOD_3.modify(geometry);
             } catch {
-                geometry = new TessellateModifier(0.5, 4).modify(geometry);
+                // Ignore modification errors; fallback to original geometry
             }
 
             const posAttr = geometry.getAttribute("position");
             for (let i = 0; i < posAttr.count; i++) {
                 let lon = posAttr.getX(i) + centerLon;
-                const lat = posAttr.getY(i);
                 if (lon > 180) lon -= 360;
                 if (lon < -180) lon += 360;
-                const v = latLonToVec3(lat, lon, 1.002);
+                const v = latLonToVec3(posAttr.getY(i), lon, 1.003);
                 posAttr.setXYZ(i, v.x, v.y, v.z);
             }
 
@@ -98,11 +93,9 @@ function buildGeometries(features, countryCode) {
             internalGeometries.push(geometry);
         }
 
-        if (geom.type === "Polygon") {
-            buildMesh(geom.coordinates);
-        } else if (geom.type === "MultiPolygon") {
-            geom.coordinates.forEach((polygonRings) => buildMesh(polygonRings));
-        }
+        if (geom.type === "Polygon") buildMesh(geom.coordinates);
+        else if (geom.type === "MultiPolygon")
+            geom.coordinates.forEach(buildMesh);
     });
 
     GEOMETRY_CACHE.set(countryCode, internalGeometries);
@@ -116,210 +109,123 @@ export default function CountryFill({
 }) {
     const geo = useCountriesGeo();
     const materialRefs = useRef({});
-
-    const geoMap = useMemo(() => {
-        if (!geo?.features) return null;
-        const map = new Map();
-
-        geo.features.forEach((f) => {
-            const p = f.properties || {};
-            const keys = [p.adm0_a3, p.iso_a3_eh, p.gu_a3];
-
-            const seen = new Set();
-            keys.forEach((key) => {
-                if (key && typeof key === "string" && key !== "-99") {
-                    const normalized = key.toUpperCase();
-                    if (!seen.has(normalized)) {
-                        if (!map.has(normalized)) map.set(normalized, []);
-                        map.get(normalized).push(f);
-                        seen.add(normalized);
-                    }
-                }
-            });
-        });
-        return map;
-    }, [geo]);
+    const prevIsosRef = useRef(new Set());
+    const animsRef = useRef(new Map());
 
     const activeGroups = useMemo(() => {
-        if (!geoMap || !activeIsos.length) return [];
-
-        const uniqueIsos = Array.from(
-            new Set(activeIsos.map((i) => i.toUpperCase()))
-        );
-        const groups = [];
-
-        for (const iso of uniqueIsos) {
-            const matchingFeatures = geoMap.get(iso);
-            if (matchingFeatures) {
-                groups.push({
-                    iso,
-                    matchingFeatures,
-                    color: getColorByIso(iso, nations),
+        if (!geo?.features) return [];
+        const uniqueIsos = [...new Set(activeIsos.map((i) => i.toUpperCase()))];
+        return uniqueIsos
+            .map((iso) => {
+                const features = geo.features.filter((f) => {
+                    const p = f.properties || {};
+                    return [
+                        p.adm0_a3,
+                        p.iso_a3_eh,
+                        p.gu_a3,
+                        p.ISO_A3,
+                        p.iso_a3,
+                    ].includes(iso);
                 });
-            }
-        }
-        return groups;
-    }, [geoMap, activeIsos, nations]);
+                return { iso, features, color: getColorByIso(iso, nations) };
+            })
+            .filter((g) => g.features.length > 0);
+    }, [geo, activeIsos, nations]);
 
     const meshesByIso = useMemo(() => {
         const map = new Map();
-        activeGroups.forEach(({ iso, matchingFeatures }) => {
-            map.set(iso, buildGeometries(matchingFeatures, iso));
-        });
+        activeGroups.forEach((g) =>
+            map.set(g.iso, buildGeometries(g.features, g.iso))
+        );
         return map;
     }, [activeGroups]);
 
-    const prevIsosRef = useRef(new Set());
-    const animsRef = useRef(new Map());
-    const firstLaunchDoneRef = useRef(false);
-
     useEffect(() => {
-        const prev = prevIsosRef.current;
-        const currentIsos = new Set(activeGroups.map((g) => g.iso));
         const now = performance.now();
+        const currentIsos = new Set(activeGroups.map((g) => g.iso));
 
-        const entering = [];
-        for (const iso of currentIsos) {
-            if (!prev.has(iso)) entering.push(iso);
-        }
-
-        let firstBufferedIso = null;
-        if (
-            !firstLaunchDoneRef.current &&
-            prev.size === 0 &&
-            entering.length > 0
-        ) {
-            firstBufferedIso = entering[0];
-            firstLaunchDoneRef.current = true;
-        }
-
-        for (const iso of currentIsos) {
-            if (!prev.has(iso)) {
-                const geometries = meshesByIso.get(iso) || [];
-                const startTime = firstBufferedIso === iso ? now + 250 : now;
-                for (let i = 0; i < geometries.length; i++) {
+        activeGroups.forEach(({ iso }) => {
+            if (!prevIsosRef.current.has(iso)) {
+                const count = (meshesByIso.get(iso) || []).length;
+                for (let i = 0; i < count; i++) {
                     animsRef.current.set(`${iso}-${i}`, {
                         type: "in",
-                        start: startTime,
+                        start: now,
                         duration: 600,
                     });
                 }
             }
-        }
+        });
 
-        for (const iso of prev) {
+        prevIsosRef.current.forEach((iso) => {
             if (!currentIsos.has(iso)) {
-                const geometries = meshesByIso.get(iso) || [];
-                if (geometries.length) {
-                    for (let i = 0; i < geometries.length; i++) {
-                        animsRef.current.set(`${iso}-${i}`, {
+                Object.keys(materialRefs.current).forEach((key) => {
+                    if (key.startsWith(`${iso}-`)) {
+                        animsRef.current.set(key, {
                             type: "out",
                             start: now,
                             duration: 300,
                         });
                     }
-                } else {
-                    Object.keys(materialRefs.current).forEach((k) => {
-                        if (k.startsWith(`${iso}-`)) {
-                            animsRef.current.set(k, {
-                                type: "out",
-                                start: now,
-                                duration: 300,
-                            });
-                        }
-                    });
-                }
+                });
             }
-        }
-
+        });
         prevIsosRef.current = currentIsos;
     }, [activeGroups, meshesByIso]);
 
     useEffect(() => {
-        let rafId = 0;
-        let mounted = true;
-
+        let rafId;
         const tick = (time) => {
-            if (!mounted) return;
-
             animsRef.current.forEach((anim, key) => {
-                const m = materialRefs.current[key];
-                if (!m) return;
-
-                const elapsed = time - anim.start;
-                if (elapsed < 0) return;
-
-                const duration = anim.duration || 600;
-                const t = Math.max(0, Math.min(1, elapsed / duration));
+                const mat = materialRefs.current[key];
+                if (!mat) return;
+                const t = Math.max(
+                    0,
+                    Math.min(1, (time - anim.start) / anim.duration)
+                );
                 const eased = t * t * (3 - 2 * t);
-
-                const iso = key.split("-")[0];
-                const col = getColorByIso(iso, nations);
-                if (col) {
-                    const c = new THREE.Color();
-                    c.set(col);
-                    m.color.copy(c);
-                }
-
-                if (anim.type === "in") {
-                    m.opacity = Math.max(0, Math.min(opacity, opacity * eased));
-                } else {
-                    m.opacity = Math.max(
-                        0,
-                        Math.min(opacity, opacity * (1 - eased))
-                    );
-                }
-
+                mat.opacity =
+                    anim.type === "in"
+                        ? opacity * eased
+                        : opacity * (1 - eased);
                 if (t >= 1) {
-                    if (anim.type === "in") m.opacity = opacity;
-                    else m.opacity = 0;
+                    if (anim.type === "out") mat.opacity = 0;
                     animsRef.current.delete(key);
                 }
             });
-
             rafId = requestAnimationFrame(tick);
         };
-
         rafId = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(rafId);
+    }, [opacity]);
 
-        return () => {
-            mounted = false;
-            cancelAnimationFrame(rafId);
-        };
-    }, [opacity, nations, meshesByIso]);
-
-    if (!geo || !activeGroups.length) return null;
+    if (!geo) return null;
 
     return (
         <group>
-            {activeGroups.map(({ iso }) => {
-                const geometries = meshesByIso.get(iso) || [];
-                return (
-                    <group key={iso} visible={geometries.length > 0}>
-                        {geometries.map((geometry, i) => (
-                            <mesh
-                                key={`${iso}-${i}`}
-                                geometry={geometry}
-                                renderOrder={10}
-                            >
-                                <meshBasicMaterial
-                                    ref={(el) =>
-                                        (materialRefs.current[`${iso}-${i}`] =
-                                            el)
-                                    }
-                                    color={getColorByIso(iso, nations)}
-                                    transparent={true}
-                                    opacity={0}
-                                    side={THREE.DoubleSide}
-                                    depthWrite={false}
-                                    depthTest={true}
-                                    toneMapped={false}
-                                />
-                            </mesh>
-                        ))}
-                    </group>
-                );
-            })}
+            {activeGroups.map(({ iso, color }) => (
+                <group key={iso}>
+                    {(meshesByIso.get(iso) || []).map((geometry, i) => (
+                        <mesh
+                            key={`${iso}-${i}`}
+                            geometry={geometry}
+                            renderOrder={10}
+                        >
+                            <meshBasicMaterial
+                                ref={(el) =>
+                                    (materialRefs.current[`${iso}-${i}`] = el)
+                                }
+                                color={color}
+                                transparent
+                                opacity={0}
+                                side={THREE.DoubleSide}
+                                depthWrite={false}
+                                toneMapped={false}
+                            />
+                        </mesh>
+                    ))}
+                </group>
+            ))}
         </group>
     );
 }

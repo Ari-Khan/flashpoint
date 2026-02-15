@@ -2,18 +2,18 @@ import * as THREE from "three";
 import { latLonToVec3 } from "./latLonToVec3.js";
 
 export const TERMINAL_MULTIPLIER = 1.25;
-export const SPEEDS = { icbm: 15, slbm: 20, air: 30 };
+export const SPEEDS = { icbm: 12, slbm: 15, air: 25 };
 
-function getJitteredVec3(lat, lon, amount = 2, seed = 0) {
-    const nLat = Number(lat);
-    const nLon = Number(lon);
-    const nSeed = Number(seed);
+const _v1 = new THREE.Vector3();
+const _v2 = new THREE.Vector3();
+const _mid = new THREE.Vector3();
+const _axis = new THREE.Vector3();
 
-    const finalSeed = nLat * 133.7 + nLon * 42.3 + nSeed;
-    const jLat = nLat + Math.sin(finalSeed) * amount;
-    const jLon = nLon + Math.cos(finalSeed) * amount;
-
-    return latLonToVec3(jLat, jLon, 1.002);
+function getJitteredVec3(lat, lon, amount = 2, seed = 0, target) {
+    const finalSeed = lat * 133.7 + lon * 42.3 + seed;
+    const jLat = lat + Math.sin(finalSeed) * amount;
+    const jLon = lon + Math.cos(finalSeed) * amount;
+    return latLonToVec3(jLat, jLon, 1.002, target);
 }
 
 export function computeStartEndDistance({
@@ -27,11 +27,10 @@ export function computeStartEndDistance({
     const end = getJitteredVec3(
         Number(toLat),
         Number(toLon),
-        1.002,
+        2,
         Number(startTime)
     );
-    const distance = start.distanceTo(end);
-    return { start, end, distance };
+    return { start, end, distance: start.distanceTo(end) };
 }
 
 export function computeDuration(distance, weapon) {
@@ -45,80 +44,69 @@ export function buildCubicCurveAndGeometry({ start, end, startTime, seed }) {
     const d = start.distanceTo(end);
     const h = Math.max(0.1, -0.4 + d * 0.7) + variance;
 
-    let mid = new THREE.Vector3().addVectors(start, end).normalize();
+    _mid.addVectors(start, end).normalize();
     if (start.dot(end) < -0.9) {
-        const axis =
-            Math.abs(start.y) < 0.9
-                ? new THREE.Vector3(0, 1, 0)
-                : new THREE.Vector3(1, 0, 0);
-        mid = new THREE.Vector3().crossVectors(start, axis).normalize();
+        _axis.set(
+            Math.abs(start.y) < 0.9 ? 0 : 1,
+            Math.abs(start.y) < 0.9 ? 1 : 0,
+            0
+        );
+        _mid.crossVectors(start, _axis).normalize();
     }
 
-    const startDir = start.clone().normalize();
-    const endDir = end.clone().normalize();
-    const ctrl1 = new THREE.Vector3()
-        .lerpVectors(startDir, mid, 0.5)
+    const ctrl1 = _v1
+        .copy(start)
         .normalize()
-        .multiplyScalar(1.002 + h);
-    const ctrl2 = new THREE.Vector3()
-        .lerpVectors(endDir, mid, 0.5)
+        .lerp(_mid, 0.5)
         .normalize()
-        .multiplyScalar(1.002 + h);
+        .multiplyScalar(1.002 + h)
+        .clone();
+    const ctrl2 = _v2
+        .copy(end)
+        .normalize()
+        .lerp(_mid, 0.5)
+        .normalize()
+        .multiplyScalar(1.002 + h)
+        .clone();
 
     const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
-
     const approxLength =
         start.distanceTo(ctrl1) +
         ctrl1.distanceTo(ctrl2) +
         ctrl2.distanceTo(end);
-    const dynamicSegments = Math.min(
-        600,
-        Math.max(40, Math.ceil(approxLength * 150))
-    );
+    const segments = Math.min(600, Math.max(40, Math.ceil(approxLength * 150)));
 
-    const pts = cubicCurve.getPoints(dynamicSegments);
-
+    const pts = cubicCurve.getPoints(segments);
     const arcLengths = new Float32Array(pts.length);
     let totalLen = 0;
-    arcLengths[0] = 0;
+
     for (let i = 1; i < pts.length; i++) {
         totalLen += pts[i].distanceTo(pts[i - 1]);
         arcLengths[i] = totalLen;
     }
 
+    const invTotal = totalLen > 0 ? 1 / totalLen : 0;
     for (let i = 1; i < arcLengths.length; i++) {
-        arcLengths[i] =
-            totalLen > 0
-                ? arcLengths[i] / totalLen
-                : i / (arcLengths.length - 1);
+        arcLengths[i] *= invTotal;
     }
 
-    const geom = new THREE.BufferGeometry().setFromPoints(pts);
     return {
         curve: cubicCurve,
-        geometry: geom,
+        geometry: new THREE.BufferGeometry().setFromPoints(pts),
         arcLengths,
         pointsCount: pts.length,
-        segments: dynamicSegments,
+        segments,
     };
 }
 
-export function computeTrajectory({
-    fromLat,
-    fromLon,
-    toLat,
-    toLon,
-    startTime,
-    weapon,
-}) {
-    const { start, end, distance } = computeStartEndDistance({
-        fromLat,
-        fromLon,
-        toLat,
-        toLon,
-        startTime,
-    });
-    const duration = computeDuration(distance, weapon);
-    const impactTick = Number(startTime) + duration;
-    return { start, end, distance, duration, impactTick };
+export function computeTrajectory(params) {
+    const { start, end, distance } = computeStartEndDistance(params);
+    const duration = computeDuration(distance, params.weapon);
+    return {
+        start,
+        end,
+        distance,
+        duration,
+        impactTick: Number(params.startTime) + duration,
+    };
 }

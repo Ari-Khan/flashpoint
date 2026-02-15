@@ -1,4 +1,11 @@
-import { useMemo, useState, useRef, useEffect, useLayoutEffect, useCallback, Suspense } from "react";
+import {
+    useMemo,
+    useState,
+    useRef,
+    useEffect,
+    useCallback,
+    Suspense,
+} from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
@@ -35,26 +42,12 @@ const TEXTURES = [
     "night.avif",
 ];
 
-const CAM_CONFIG = {
-    position: [0, 1.2, 1.8],
-    fov: 60,
-    near: 0.01,
-    far: 1000,
-};
-
+const CAM_CONFIG = { position: [0, 1.2, 1.8], fov: 60, near: 0.01, far: 1000 };
 const AUTO_ROTATE_DELAY = 5000;
 const AUTO_ROTATE_TARGET = -0.5;
 const AUTO_ROTATE_ACCEL = 0.01;
 
-export default function App() {
-    const [events, setEvents] = useState(null);
-    const [tickStep, setTickStep] = useState(settings.tickStep);
-    const [isPaused, setIsPaused] = useState(false);
-    const [showGeo, setShowGeo] = useState(false);
-    const [uiHidden, setUiHidden] = useState(false);
-    const controlsRef = useRef();
-    const resetAnimRef = useRef(null);
-
+function useIdleRotation(controlsRef) {
     const idleRef = useRef({
         lastActivity: 0,
         accelerating: false,
@@ -62,11 +55,11 @@ export default function App() {
         speed: 0,
     });
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         idleRef.current.lastActivity = performance.now();
     }, []);
 
-    const resetIdleActivity = useCallback(() => {
+    const resetIdle = useCallback(() => {
         idleRef.current.lastActivity = performance.now();
         if (controlsRef.current) {
             controlsRef.current.autoRotate = false;
@@ -78,160 +71,254 @@ export default function App() {
         }
         idleRef.current.accelerating = false;
         idleRef.current.speed = 0;
-    }, []);
+    }, [controlsRef]);
 
     useEffect(() => {
-        const onActivity = () => resetIdleActivity();
-        window.addEventListener("keydown", onActivity);
-        window.addEventListener("mousedown", onActivity);
-        window.addEventListener("wheel", onActivity, { passive: true });
-        window.addEventListener("touchstart", onActivity, { passive: true });
-
-        return () => {
-            window.removeEventListener("keydown", onActivity);
-            window.removeEventListener("mousedown", onActivity);
-            window.removeEventListener("wheel", onActivity);
-            window.removeEventListener("touchstart", onActivity);
-        };
-    }, [resetIdleActivity]);
+        const events = ["keydown", "mousedown", "wheel", "touchstart"];
+        events.forEach((e) =>
+            window.addEventListener(e, resetIdle, { passive: true })
+        );
+        return () =>
+            events.forEach((e) => window.removeEventListener(e, resetIdle));
+    }, [resetIdle]);
 
     useEffect(() => {
         const controls = controlsRef.current;
         if (!controls) return;
-        const onStart = () => resetIdleActivity();
-        controls.addEventListener("start", onStart);
-        return () => {
-            controls.removeEventListener("start", onStart);
-        };
-    }, [resetIdleActivity]);
+        controls.addEventListener("start", resetIdle);
+        return () => controls.removeEventListener("start", resetIdle);
+    }, [resetIdle, controlsRef]);
 
     useEffect(() => {
         const check = () => {
             const controls = controlsRef.current;
             if (!controls) return;
 
-            const camPos = controls.object.position;
-            const defaultPos = new THREE.Vector3(...CAM_CONFIG.position);
-            const dist = camPos.distanceTo(defaultPos);
+            const dist = controls.object.position.distanceTo(
+                new THREE.Vector3(...CAM_CONFIG.position)
+            );
             const targetDist = controls.target.distanceTo(
                 new THREE.Vector3(0, 0, 0)
             );
-
             const isNearSpawn = dist < 0.15 && targetDist < 0.1;
 
             if (!isNearSpawn) {
-                if (idleRef.current.accelerating) {
-                    resetIdleActivity();
-                }
+                if (idleRef.current.accelerating) resetIdle();
                 return;
             }
 
-            const now = performance.now();
-            if (now - idleRef.current.lastActivity < AUTO_ROTATE_DELAY) return;
+            if (
+                performance.now() - idleRef.current.lastActivity <
+                AUTO_ROTATE_DELAY
+            )
+                return;
 
             if (!idleRef.current.accelerating) {
                 idleRef.current.accelerating = true;
                 idleRef.current.speed = 0;
                 controls.autoRotate = true;
-                controls.autoRotateSpeed = 0;
 
-                function step() {
+                const step = () => {
                     if (!idleRef.current.accelerating) return;
-                    if (AUTO_ROTATE_TARGET < 0) {
-                        idleRef.current.speed = Math.max(
-                            AUTO_ROTATE_TARGET,
-                            idleRef.current.speed - AUTO_ROTATE_ACCEL
-                        );
-                    } else {
-                        idleRef.current.speed = Math.min(
-                            AUTO_ROTATE_TARGET,
-                            idleRef.current.speed + AUTO_ROTATE_ACCEL
-                        );
-                    }
-                    if (controls)
-                        controls.autoRotateSpeed = idleRef.current.speed;
-                    idleRef.current.raf = requestAnimationFrame(step);
-                }
 
+                    const delta =
+                        idleRef.current.speed < AUTO_ROTATE_TARGET
+                            ? AUTO_ROTATE_ACCEL
+                            : -AUTO_ROTATE_ACCEL;
+
+                    if (
+                        Math.abs(idleRef.current.speed - AUTO_ROTATE_TARGET) <
+                        0.01
+                    ) {
+                        idleRef.current.speed = AUTO_ROTATE_TARGET;
+                    } else {
+                        idleRef.current.speed +=
+                            (AUTO_ROTATE_TARGET < 0 ? -1 : 1) * Math.abs(delta);
+                    }
+
+                    if (controlsRef.current)
+                        controlsRef.current.autoRotateSpeed =
+                            idleRef.current.speed;
+                    idleRef.current.raf = requestAnimationFrame(step);
+                };
                 idleRef.current.raf = requestAnimationFrame(step);
             }
         };
 
         const interval = setInterval(check, 500);
         return () => clearInterval(interval);
-    }, [resetIdleActivity]);
+    }, [resetIdle, controlsRef]);
+}
 
+function useCameraReset(controlsRef) {
+    const animRef = useRef(null);
+
+    const resetCamera = useCallback(() => {
+        const controls = controlsRef.current;
+        if (!controls) return;
+
+        if (window.__resetZoomVelocity) window.__resetZoomVelocity();
+        if (animRef.current) cancelAnimationFrame(animRef.current);
+
+        const startPos = controls.object.position.clone();
+        const startTarget = controls.target.clone();
+        const endPos = new THREE.Vector3(...CAM_CONFIG.position);
+        const endTarget = new THREE.Vector3(0, 0, 0);
+
+        const startTime = performance.now();
+        const duration = 800;
+
+        function tick(now) {
+            const elapsed = Math.min(1, (now - startTime) / duration);
+            const eased =
+                elapsed < 0.5
+                    ? 4 * elapsed * elapsed * elapsed
+                    : 1 - Math.pow(-2 * elapsed + 2, 3) / 2;
+
+            controls.object.position.lerpVectors(startPos, endPos, eased);
+            controls.target.lerpVectors(startTarget, endTarget, eased);
+            controls.update();
+
+            if (elapsed < 1) {
+                animRef.current = requestAnimationFrame(tick);
+            } else {
+                animRef.current = null;
+            }
+        }
+        animRef.current = requestAnimationFrame(tick);
+    }, [controlsRef]);
+
+    useEffect(
+        () => () => {
+            if (animRef.current) cancelAnimationFrame(animRef.current);
+        },
+        []
+    );
+
+    return resetCamera;
+}
+
+function useSimulationWorker(onEvents) {
     const workerRef = useRef(null);
     const [isRunning, setIsRunning] = useState(false);
+
+    useEffect(() => {
+        return () => {
+            if (workerRef.current) workerRef.current.terminate();
+        };
+    }, []);
+
+    const run = useCallback(
+        (actor, target) => {
+            setIsRunning(true);
+
+            if (!workerRef.current) {
+                workerRef.current = new Worker(
+                    new URL("../workers/simulatorWorker.js", import.meta.url),
+                    { type: "module" }
+                );
+
+                workerRef.current.onmessage = (e) => {
+                    if (!e.data?.error) {
+                        onEvents(e.data.events || []);
+                    } else {
+                        console.error("Simulation worker error:", e.data.error);
+                    }
+                    setIsRunning(false);
+                };
+
+                workerRef.current.onerror = (err) => {
+                    console.error("Worker failed:", err);
+                    setIsRunning(false);
+                };
+            }
+
+            workerRef.current.postMessage({ actor, target });
+        },
+        [onEvents]
+    );
+
+    return { run, isRunning };
+}
+
+export default function App() {
+    const [events, setEvents] = useState(null);
+    const [tickStep, setTickStep] = useState(settings.tickStep);
+    const [isPaused, setIsPaused] = useState(false);
+    const [showGeo, setShowGeo] = useState(false);
+    const [uiHidden, setUiHidden] = useState(false);
+
+    const [perfSettings, setPerfSettings] = useState(() => ({
+        antialias: settings.antialias,
+        pixelRatioLimit: settings.pixelRatioLimit,
+        powerPreference: settings.powerPreference,
+        preserveDrawingBuffer: settings.preserveDrawingBuffer,
+    }));
+    const [earthTexture, setEarthTexture] = useState(
+        settings.texture || TEXTURES[0]
+    );
+    const [soundEnabled, setSoundEnabled] = useState(
+        Boolean(settings.audioEnabled)
+    );
+    const [postEffectsEnabled, setPostEffectsEnabled] = useState(
+        settings.postEffectsEnabled ?? true
+    );
+
+    const controlsRef = useRef();
 
     useEffect(() => {
         const id = setTimeout(() => setShowGeo(true), 300);
         return () => clearTimeout(id);
     }, []);
 
+    useIdleRotation(controlsRef);
+    const resetCamera = useCameraReset(controlsRef);
+    const { run, isRunning } = useSimulationWorker(setEvents);
+
     const ticksPerSecond = 1;
     const timePerUpdate = 1000 * tickStep;
-    const simulationTicksPerUpdate = ticksPerSecond * tickStep;
-
-    const [performanceSettings, setPerformanceSettings] = useState(() => ({
-        antialias: settings.antialias,
-        pixelRatioLimit: settings.pixelRatioLimit,
-        powerPreference: settings.powerPreference,
-        preserveDrawingBuffer: settings.preserveDrawingBuffer,
-    }));
-
-    const [earthTexture, setEarthTexture] = useState(
-        settings.texture || TEXTURES[0]
-    );
-
-    const [soundEnabled, setSoundEnabled] = useState(Boolean(settings.audioEnabled));
-
-    const [postEffectsEnabled, setPostEffectsEnabled] = useState(
-        settings.postEffectsEnabled === undefined
-            ? true
-            : Boolean(settings.postEffectsEnabled)
-    );
+    const simTicksPerUpdate = ticksPerSecond * tickStep;
 
     const { visible, currentTick } = useEventTimeline(
         events,
         timePerUpdate,
-        simulationTicksPerUpdate,
+        simTicksPerUpdate,
         isPaused
     );
     const interpolatedTick = useSimulationClock(
         currentTick,
-        simulationTicksPerUpdate,
+        simTicksPerUpdate,
         timePerUpdate,
         isPaused
     );
 
-    const isContinuous = tickStep <= 0.0625;
-    const displayTick = isContinuous ? interpolatedTick : currentTick;
-
-    const postDataRef = useRef({ events: [], currentTime: 0 });
-    useEffect(() => {
-        postDataRef.current = { events: visible, currentTime: displayTick };
-    }, [visible, displayTick]);
+    const displayTick = tickStep <= 0.0625 ? interpolatedTick : currentTick;
 
     const affectedIsos = useMemo(() => {
+        if (!visible.length) return [];
         const isoSet = new Set();
         for (let i = 0; i < visible.length; i++) {
             const e = visible[i];
-            const ids = [e.from, e.to, e.attacker, e.target];
-            for (let j = 0; j < ids.length; j++) {
-                if (ids[j]) isoSet.add(ids[j].toUpperCase());
-            }
+            if (e.from) isoSet.add(e.from.toUpperCase());
+            if (e.to) isoSet.add(e.to.toUpperCase());
+            if (e.attacker) isoSet.add(e.attacker.toUpperCase());
+            if (e.target) isoSet.add(e.target.toUpperCase());
         }
         return Array.from(isoSet);
     }, [visible]);
 
     const visibleForLog = useMemo(() => {
+        if (uiHidden || !visible.length) return null;
+
         const nameFor = (code) =>
             typeof code === "string"
                 ? world.nations?.[code]?.name || code
                 : code;
 
-        return visible
+        // Show last 50 events for performance
+        const recent = visible.length > 50 ? visible.slice(-50) : visible;
+
+        return recent
             .slice()
             .reverse()
             .map((e) => {
@@ -240,123 +327,31 @@ export default function App() {
                     fromLon: _fromLon,
                     toLat: _toLat,
                     toLon: _toLon,
-                    ...logFriendly
+                    id: _id,
+                    intensity: _intensity,
+                    ...rest
                 } = e;
+                const logEntry = { ...rest };
 
-                if (e.type === "launch" && "id" in logFriendly) {
-                    delete logFriendly.id;
-                }
-
-                if (
-                    (e.type === "ally-join" || e.type === "faction-join") &&
-                    "intensity" in logFriendly
-                ) {
-                    delete logFriendly.intensity;
-                }
-
-                const codeFields = [
+                [
                     "from",
                     "to",
                     "attacker",
                     "target",
                     "country",
                     "reason",
-                ];
-                for (const f of codeFields) {
-                    if (logFriendly[f] && typeof logFriendly[f] === "string") {
-                        logFriendly[f] = nameFor(logFriendly[f]);
+                ].forEach((f) => {
+                    if (logEntry[f] && typeof logEntry[f] === "string") {
+                        logEntry[f] = nameFor(logEntry[f]);
                     }
-                }
+                });
 
-                return logFriendly;
+                return logEntry;
             });
-    }, [visible]);
+    }, [visible, uiHidden]);
 
-    function run(actor, target) {
-        setIsRunning(true);
-
-        if (!workerRef.current) {
-            workerRef.current = new Worker(
-                new URL("../workers/simulatorWorker.js", import.meta.url),
-                { type: "module" }
-            );
-
-            workerRef.current.onmessage = (e) => {
-                if (e.data?.error) {
-                    console.error("Simulation worker error:", e.data.error);
-                    setIsRunning(false);
-                    return;
-                }
-                setEvents(e.data.events || []);
-                setIsRunning(false);
-            };
-
-            workerRef.current.onerror = (err) => {
-                console.error("Worker failed:", err);
-                setIsRunning(false);
-            };
-        }
-
-        workerRef.current.postMessage({ actor, target });
-    }
-
-    function resetCamera() {
-        const controls = controlsRef.current;
-        if (!controls) return;
-        if (window.__resetZoomVelocity) window.__resetZoomVelocity();
-
-        if (resetAnimRef.current) {
-            cancelAnimationFrame(resetAnimRef.current);
-            resetAnimRef.current = null;
-        }
-
-        const startPos = controls.object.position.clone();
-        const startTarget = controls.target.clone();
-        const endPos = new THREE.Vector3(...CAM_CONFIG.position);
-        const endTarget = new THREE.Vector3(0, 0, 0);
-        const duration = 800;
-        const startTime = performance.now();
-
-        function easeInOutCubic(t) {
-            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        }
-
-        function tick(now) {
-            const elapsed = Math.min(1, (now - startTime) / duration);
-            const eased = easeInOutCubic(elapsed);
-
-            controls.object.position.lerpVectors(startPos, endPos, eased);
-            controls.target.lerpVectors(startTarget, endTarget, eased);
-            controls.update();
-
-            if (elapsed < 1) {
-                resetAnimRef.current = requestAnimationFrame(tick);
-            } else {
-                controls.object.position.set(...CAM_CONFIG.position);
-                controls.target.set(0, 0, 0);
-                controls.update();
-                resetAnimRef.current = null;
-            }
-        }
-
-        resetAnimRef.current = requestAnimationFrame(tick);
-    }
-
-    useEffect(() => {
-        return () => {
-            if (resetAnimRef.current)
-                cancelAnimationFrame(resetAnimRef.current);
-        };
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            if (workerRef.current) {
-                workerRef.current.terminate();
-                workerRef.current = null;
-            }
-        };
-    }, []);
+    const toggleUI = () => setUiHidden((p) => !p);
+    const togglePause = () => setIsPaused((p) => !p);
 
     return (
         <div className="app-container">
@@ -370,8 +365,8 @@ export default function App() {
                     <SettingsPanel
                         tickStep={tickStep}
                         onTickStepChange={setTickStep}
-                        performanceSettings={performanceSettings}
-                        onPerformanceChange={setPerformanceSettings}
+                        performanceSettings={perfSettings}
+                        onPerformanceChange={setPerfSettings}
                         texture={earthTexture}
                         onTextureChange={setEarthTexture}
                         soundEnabled={soundEnabled}
@@ -384,18 +379,12 @@ export default function App() {
 
             <div className="time-controls">
                 <div className="time-display">T+{Math.floor(displayTick)}</div>
-                <button
-                    className="hide-ui-button"
-                    onClick={() => setUiHidden((v) => !v)}
-                >
+                <button className="hide-ui-button" onClick={toggleUI}>
                     {uiHidden ? "Show UI" : "Hide UI"}
                 </button>
                 {!uiHidden && (
                     <>
-                        <button
-                            className="pause-button"
-                            onClick={() => setIsPaused(!isPaused)}
-                        >
+                        <button className="pause-button" onClick={togglePause}>
                             {isPaused ? "Resume" : "Pause"}
                         </button>
                         <button
@@ -417,14 +406,13 @@ export default function App() {
             )}
 
             <Canvas
-                key={`${performanceSettings.antialias}-${performanceSettings.pixelRatioLimit}`}
+                key={JSON.stringify(perfSettings)}
                 className="canvas-3d"
-                dpr={[1, performanceSettings.pixelRatioLimit]}
+                dpr={[1, perfSettings.pixelRatioLimit]}
                 gl={{
-                    antialias: performanceSettings.antialias,
-                    powerPreference: performanceSettings.powerPreference,
-                    preserveDrawingBuffer:
-                        performanceSettings.preserveDrawingBuffer,
+                    antialias: perfSettings.antialias,
+                    powerPreference: perfSettings.powerPreference,
+                    preserveDrawingBuffer: perfSettings.preserveDrawingBuffer,
                     logarithmicDepthBuffer: true,
                 }}
                 camera={CAM_CONFIG}
@@ -449,11 +437,10 @@ export default function App() {
                     />
 
                     <PostEffects
-                        dataRef={postDataRef}
-                        meanIntervalSeconds={20}
                         enabled={postEffectsEnabled}
-                        multisampling={performanceSettings.antialias ? 4 : 0}
+                        multisampling={perfSettings.antialias ? 4 : 0}
                     />
+
                     {showGeo && (
                         <>
                             <CountryBorders />

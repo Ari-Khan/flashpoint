@@ -7,40 +7,44 @@ export default function CountryBorders() {
     const geo = useCountriesGeo();
 
     const mergedGeometry = useMemo(() => {
-        if (!geo || !geo.features) return null;
+        if (!geo?.features) return null;
 
-        const points = [];
-        geo.features.forEach((feature) => {
-            const { coordinates, type } = feature.geometry || {};
-            if (!coordinates) return;
+        const rawPoints = [];
+        const features = geo.features;
 
-            const processPolygon = (polygon) => {
-                polygon.forEach((ring) => {
-                    for (let i = 0; i < ring.length; i++) {
-                        const [lon, lat] = ring[i];
-                        const vec = latLonToVec3(lat, lon, 1.002);
-                        points.push(vec);
+        for (let f = 0; f < features.length; f++) {
+            const { coordinates, type } = features[f].geometry || {};
+            if (!coordinates) continue;
 
-                        if (i > 0 && i < ring.length - 1) {
-                            points.push(vec);
-                        }
+            const polygons = type === "Polygon" ? [coordinates] : coordinates;
+
+            for (let p = 0; p < polygons.length; p++) {
+                const polygon = polygons[p];
+                for (let r = 0; r < polygon.length; r++) {
+                    const ring = polygon[r];
+                    for (let i = 0; i < ring.length - 1; i++) {
+                        const p1 = ring[i];
+                        const p2 = ring[i + 1];
+
+                        const v1 = latLonToVec3(p1[1], p1[0], 1.002);
+                        const v2 = latLonToVec3(p2[1], p2[0], 1.002);
+
+                        rawPoints.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
                     }
-                });
-            };
+                }
+            }
+        }
 
-            if (type === "Polygon") processPolygon(coordinates);
-            else if (type === "MultiPolygon")
-                coordinates.forEach(processPolygon);
-        });
-
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute(
+            "position",
+            new THREE.Float32BufferAttribute(rawPoints, 3)
+        );
         return geometry;
     }, [geo]);
 
     useEffect(() => {
-        return () => {
-            if (mergedGeometry) mergedGeometry.dispose();
-        };
+        return () => mergedGeometry?.dispose();
     }, [mergedGeometry]);
 
     if (!mergedGeometry) return null;
@@ -49,9 +53,10 @@ export default function CountryBorders() {
         <lineSegments geometry={mergedGeometry}>
             <lineBasicMaterial
                 color="#ffffff"
-                opacity={0.6}
+                opacity={0.3}
                 transparent
                 depthWrite={false}
+                blending={THREE.AdditiveBlending}
             />
         </lineSegments>
     );

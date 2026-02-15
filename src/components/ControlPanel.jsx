@@ -1,45 +1,45 @@
-import { useEffect, useState, useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 
 export default function ControlPanel({ nations, onRun, isRunning = false }) {
-    const allCodes = useMemo(() => Object.keys(nations), [nations]);
-
-    const aggressorCodes = useMemo(() => {
-        return allCodes.filter((code) => {
+    const { allCodes, aggressorCodes } = useMemo(() => {
+        const codes = Object.keys(nations);
+        const aggressors = codes.filter((code) => {
             const w = nations[code]?.weapons;
-            return (w?.icbm || 0) + (w?.slbm || 0) + (w?.airLaunch || 0) > 0;
+            return w && (w.icbm > 0 || w.slbm > 0 || w.airLaunch > 0);
         });
-    }, [allCodes, nations]);
+        return { allCodes: codes, aggressorCodes: aggressors };
+    }, [nations]);
 
     const [actor, setActor] = useState("");
     const [target, setTarget] = useState("");
 
     useEffect(() => {
-        if (aggressorCodes.length > 0 && !actor) {
+        if (aggressorCodes.length > 0 && !aggressorCodes.includes(actor)) {
             setActor(aggressorCodes[0]);
         }
     }, [aggressorCodes, actor]);
 
     useEffect(() => {
-        if (allCodes.length > 0 && !target) {
-            const defaultTarget = allCodes.find(
-                (c) => c !== (actor || aggressorCodes[0])
-            );
+        if (allCodes.length > 0 && (!target || target === actor)) {
+            const defaultTarget = allCodes.find((c) => c !== actor);
             setTarget(defaultTarget ?? allCodes[0]);
         }
-    }, [allCodes, actor, target, aggressorCodes]);
+    }, [allCodes, actor, target]);
 
     const error = useMemo(() => {
-        if (aggressorCodes.length === 0)
-            return "No aggressors available (no nations have nukes).";
-        if (!actor || !target) return "Select valid countries.";
-        if (actor === target) return "A country can't nuke itself.";
+        if (aggressorCodes.length === 0) return "No armed nations found.";
+        if (actor === target) return "Select different countries.";
         return null;
-    }, [actor, target, aggressorCodes]);
+    }, [actor, target, aggressorCodes.length]);
+
+    const handleRun = () => {
+        if (!error && !isRunning) onRun(actor, target);
+    };
 
     return (
         <div className={`control-panel ${isRunning ? "running-fade" : ""}`}>
-            <div>
-                <label>Aggressor </label>
+            <div className="input-group">
+                <label>Aggressor</label>
                 <select
                     value={actor}
                     onChange={(e) => setActor(e.target.value)}
@@ -52,8 +52,8 @@ export default function ControlPanel({ nations, onRun, isRunning = false }) {
                 </select>
             </div>
 
-            <div>
-                <label>Target </label>
+            <div className="input-group">
+                <label>Target</label>
                 <select
                     value={target}
                     onChange={(e) => setTarget(e.target.value)}
@@ -67,20 +67,12 @@ export default function ControlPanel({ nations, onRun, isRunning = false }) {
             </div>
 
             <button
-                onClick={() => {
-                    if (!error && !isRunning) onRun(actor, target);
-                }}
+                onClick={handleRun}
                 disabled={!!error || isRunning}
                 className={`${error ? "dull" : ""} ${isRunning ? "running" : ""}`}
                 title={error || (isRunning ? "Running…" : "Run Simulation")}
             >
-                {error ? (
-                    <span className="button-message">{error}</span>
-                ) : isRunning ? (
-                    "Running…"
-                ) : (
-                    "Run Simulation"
-                )}
+                {error || (isRunning ? "Running…" : "Run Simulation")}
             </button>
         </div>
     );

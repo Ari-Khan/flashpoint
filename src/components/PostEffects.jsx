@@ -1,15 +1,17 @@
 ﻿import { useEffect, useRef, memo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { EffectComposer, Noise, Scanline, Vignette, Glitch, DepthOfField } from "@react-three/postprocessing";
+import {
+    EffectComposer,
+    Noise,
+    Scanline,
+    Glitch,
+    DepthOfField,
+} from "@react-three/postprocessing";
 import { BlendFunction, GlitchMode } from "postprocessing";
 
-const GLITCH_CONFIG = {
-    ambient: { strength: [0.04, 0.2], mode: GlitchMode.CONSTANT_MILD, duration: 300 },
-    launch: { strength: [0.18, 0.6], mode: GlitchMode.CONSTANT_WILD, duration: 600 },
-};
-
 const STARTUP_GRACE = 7000;
-const BLUR_MEAN_SECONDS = 30;
+const GLITCH_MEAN_SECONDS = 60;
+const BLUR_MEAN_SECONDS = 60;
 const BLUR_DURATION_MS = 3000;
 const BLUR_RISE_PORTION = 0.03;
 const BLUR_SCALE = 15.0;
@@ -19,45 +21,38 @@ const sampleDelayMs = (meanSeconds) => {
     return -Math.log(u || 0.0001) * (Math.max(0, meanSeconds * 1000) / 3);
 };
 
-const PostEffects = memo(({ dataRef, meanIntervalSeconds = 30, enabled = true, multisampling = 0 }) => {
+const PostEffects = memo(({ enabled = true, multisampling = 0 }) => {
     const glitchRef = useRef();
     const blurRef = useRef();
-    
+
     const internal = useRef({
-        lastLaunch: -Infinity,
-        lastTrigger: 0,
-        spawnTime: Date.now(),
+        spawnTime: -1,
         blurStartTime: -1,
         glitchTimer: null,
-        ambientTimer: null,
-        blurTimer: null
+        blurTimer: null,
     });
-
-    const trigger = (type) => {
-        const now = Date.now();
-        const config = GLITCH_CONFIG[type];
-        
-        if (!glitchRef.current || now - internal.current.lastTrigger < meanIntervalSeconds * 1000) return;
-        if (now - internal.current.spawnTime < STARTUP_GRACE) return;
-
-        internal.current.lastTrigger = now;
-        glitchRef.current.mode = config.mode;
-        if (glitchRef.current.strength) glitchRef.current.strength.set(config.strength[0], config.strength[1]);
-
-        clearTimeout(internal.current.glitchTimer);
-        internal.current.glitchTimer = setTimeout(() => {
-            if (glitchRef.current) glitchRef.current.mode = GlitchMode.DISABLED;
-        }, config.duration);
-    };
 
     useEffect(() => {
         if (!enabled) return;
 
-        const scheduleAmbient = () => {
-            internal.current.ambientTimer = setTimeout(() => {
-                trigger("ambient");
-                scheduleAmbient();
-            }, sampleDelayMs(meanIntervalSeconds));
+        if (internal.current.spawnTime === -1) {
+            internal.current.spawnTime = Date.now();
+        }
+
+        const scheduleGlitch = () => {
+            internal.current.glitchTimer = setTimeout(() => {
+                if (
+                    Date.now() - internal.current.spawnTime > STARTUP_GRACE &&
+                    glitchRef.current
+                ) {
+                    glitchRef.current.mode = GlitchMode.CONSTANT_MILD;
+                    setTimeout(() => {
+                        if (glitchRef.current)
+                            glitchRef.current.mode = GlitchMode.DISABLED;
+                    }, 500);
+                }
+                scheduleGlitch();
+            }, sampleDelayMs(GLITCH_MEAN_SECONDS));
         };
 
         const scheduleBlur = () => {
@@ -67,15 +62,15 @@ const PostEffects = memo(({ dataRef, meanIntervalSeconds = 30, enabled = true, m
             }, sampleDelayMs(BLUR_MEAN_SECONDS));
         };
 
-        scheduleAmbient();
+        scheduleGlitch();
         scheduleBlur();
 
+        const currentInternal = internal.current;
         return () => {
-            clearTimeout(internal.current.glitchTimer);
-            clearTimeout(internal.current.ambientTimer);
-            clearTimeout(internal.current.blurTimer);
+            clearTimeout(currentInternal.glitchTimer);
+            clearTimeout(currentInternal.blurTimer);
         };
-    }, [enabled, meanIntervalSeconds]);
+    }, [enabled]);
 
     useFrame(() => {
         if (!enabled) return;
@@ -88,24 +83,12 @@ const PostEffects = memo(({ dataRef, meanIntervalSeconds = 30, enabled = true, m
                 blurRef.current.bokehScale = 0;
                 internal.current.blurStartTime = -1;
             } else {
-                const ramp = t < BLUR_RISE_PORTION 
-                    ? t / BLUR_RISE_PORTION 
-                    : 1 - (t - BLUR_RISE_PORTION) / (1 - BLUR_RISE_PORTION);
+                const ramp =
+                    t < BLUR_RISE_PORTION
+                        ? t / BLUR_RISE_PORTION
+                        : 1 - (t - BLUR_RISE_PORTION) / (1 - BLUR_RISE_PORTION);
                 blurRef.current.bokehScale = BLUR_SCALE * ramp;
             }
-        }
-
-        const data = dataRef?.current;
-        if (!data?.events?.length) return;
-
-        if (data.currentTime < internal.current.lastLaunch - 1) {
-            internal.current.lastLaunch = -Infinity;
-        }
-
-        const latest = data.events[data.events.length - 1];
-        if (latest?.type === "launch" && latest.t > internal.current.lastLaunch && latest.t <= Math.ceil(data.currentTime)) {
-            internal.current.lastLaunch = latest.t;
-            trigger("launch");
         }
     });
 
@@ -113,16 +96,25 @@ const PostEffects = memo(({ dataRef, meanIntervalSeconds = 30, enabled = true, m
 
     return (
         <EffectComposer multisampling={multisampling} disableNormalPass>
-            <Noise opacity={0.4} blendFunction={BlendFunction.NORMAL} premultiply />
-            <DepthOfField ref={blurRef} focusDistance={0} focusRange={1} bokehScale={0} focalLength={0.02} />
-            <Scanline density={1.2} opacity={0.015} />
-            <Vignette eskil={false} offset={0.15} darkness={0.35} />
+            <Noise
+                opacity={0.3}
+                blendFunction={BlendFunction.NORMAL}
+                premultiply
+            />
+            <DepthOfField
+                ref={blurRef}
+                focusDistance={0}
+                focusRange={1}
+                bokehScale={0}
+                focalLength={0.02}
+            />
+            <Scanline density={1.3} opacity={0.05} />
             <Glitch
                 ref={glitchRef}
                 mode={GlitchMode.DISABLED}
                 delay={[10, 60]}
-                duration={[0.1, 0.4]}
-                strength={[0.04, 0.2]}
+                duration={[0.5, 0.8]}
+                strength={[0.3, 0.6]}
                 ratio={0.28}
             />
         </EffectComposer>

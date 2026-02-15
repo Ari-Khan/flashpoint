@@ -2,75 +2,91 @@ import React, { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3.js";
 
+const DUMMY = new THREE.Object3D();
+const LOW_POLY_SPHERE = new THREE.IcosahedronGeometry(1, 1);
+
 export default function Cities({ nations = {} }) {
     const meshRef = useRef();
     const bloomRef = useRef();
 
     const spots = useMemo(() => {
         const out = [];
-        for (const N of Object.values(nations)) {
+        const nationEntries = Object.entries(nations);
+
+        for (let i = 0; i < nationEntries.length; i++) {
+            const [N] = nationEntries[i];
             if (!N) continue;
+
+            const baseColor = new THREE.Color(N.defaultColor ?? "#ffffff");
 
             if (N.lat !== undefined && N.lon !== undefined) {
                 out.push({
-                    pos: latLonToVec3(N.lat, N.lon, 1.002),
-                    color: new THREE.Color(N.defaultColor ?? "#ffffff"),
+                    pos: latLonToVec3(N.lat, N.lon, 1.001),
+                    color: baseColor,
                     size: N.size ?? 0.003,
                 });
             }
 
-            (N.majorCities || []).forEach((c) => {
-                if (c?.lat !== undefined && c?.lon !== undefined) {
-                    out.push({
-                        pos: latLonToVec3(c.lat, c.lon, 1.002),
-                        color: new THREE.Color(N.defaultColor ?? "#ffffff"),
-                        size: c.size ?? 0.002,
-                    });
+            const cities = N.majorCities;
+            if (cities) {
+                for (let j = 0; j < cities.length; j++) {
+                    const c = cities[j];
+                    if (c?.lat !== undefined && c?.lon !== undefined) {
+                        out.push({
+                            pos: latLonToVec3(c.lat, c.lon, 1.001),
+                            color: baseColor,
+                            size: c.size ?? 0.002,
+                        });
+                    }
                 }
-            });
+            }
         }
         return out;
     }, [nations]);
 
     useEffect(() => {
-        if (!meshRef.current || !bloomRef.current || spots.length === 0) return;
+        const mesh = meshRef.current;
+        const bloom = bloomRef.current;
+        if (!mesh || !bloom || spots.length === 0) return;
 
-        const dummy = new THREE.Object3D();
-        spots.forEach((s, i) => {
-            dummy.position.copy(s.pos);
-            dummy.scale.setScalar(s.size);
-            dummy.updateMatrix();
+        for (let i = 0; i < spots.length; i++) {
+            const s = spots[i];
 
-            meshRef.current.setMatrixAt(i, dummy.matrix);
-            meshRef.current.setColorAt(i, s.color);
+            DUMMY.position.copy(s.pos);
 
-            dummy.scale.setScalar(s.size * 2);
-            dummy.updateMatrix();
-            bloomRef.current.setMatrixAt(i, dummy.matrix);
-            bloomRef.current.setColorAt(i, s.color);
-        });
+            DUMMY.scale.setScalar(s.size);
+            DUMMY.updateMatrix();
+            mesh.setMatrixAt(i, DUMMY.matrix);
+            mesh.setColorAt(i, s.color);
 
-        meshRef.current.instanceMatrix.needsUpdate = true;
-        if (meshRef.current.instanceColor)
-            meshRef.current.instanceColor.needsUpdate = true;
+            DUMMY.scale.setScalar(s.size * 2.2);
+            DUMMY.updateMatrix();
+            bloom.setMatrixAt(i, DUMMY.matrix);
+            bloom.setColorAt(i, s.color);
+        }
 
-        bloomRef.current.instanceMatrix.needsUpdate = true;
-        if (bloomRef.current.instanceColor)
-            bloomRef.current.instanceColor.needsUpdate = true;
+        mesh.instanceMatrix.needsUpdate = true;
+        bloom.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+        if (bloom.instanceColor) bloom.instanceColor.needsUpdate = true;
     }, [spots]);
 
     return (
         <group>
-            <instancedMesh ref={meshRef} args={[null, null, spots.length]}>
-                <sphereGeometry args={[1, 8, 8]} />
-                <meshBasicMaterial transparent opacity={1} depthWrite={false} />
+            <instancedMesh
+                ref={meshRef}
+                args={[LOW_POLY_SPHERE, null, spots.length]}
+            >
+                <meshBasicMaterial transparent depthWrite={false} />
             </instancedMesh>
 
-            <instancedMesh ref={bloomRef} args={[null, null, spots.length]}>
-                <sphereGeometry args={[1, 8, 8]} />
+            <instancedMesh
+                ref={bloomRef}
+                args={[LOW_POLY_SPHERE, null, spots.length]}
+            >
                 <meshBasicMaterial
                     transparent
-                    opacity={0.25}
+                    opacity={0.3}
                     blending={THREE.AdditiveBlending}
                     depthWrite={false}
                 />

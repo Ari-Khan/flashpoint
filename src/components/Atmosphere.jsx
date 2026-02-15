@@ -3,27 +3,18 @@ import { useMemo } from "react";
 
 const vertexShader = `
   varying vec3 vNormal;
-  varying float vDistance;
   void main() {
     vNormal = normalize(normalMatrix * normal);
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    
-    vDistance = length(mvPosition.xyz);
-    
-    gl_Position = projectionMatrix * mvPosition;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
 
 const fragmentShader = `
   varying vec3 vNormal;
-  varying float vDistance;
   uniform vec3 color;
   void main() {
-    float viewDot = vNormal.z;
-    float intensity = pow(0.5 - viewDot, 5.0);
-    float distanceFactor = 15.0 / pow(vDistance, 1.5);
-    
-    gl_FragColor = vec4(color, intensity * distanceFactor);
+    float intensity = pow(0.7 - vNormal.z, 5.0);
+    gl_FragColor = vec4(color, intensity);
   }
 `;
 
@@ -37,7 +28,7 @@ export default function Atmosphere({ radius = 1 }) {
 
     return (
         <mesh scale={1.2}>
-            <sphereGeometry args={[radius, 64, 64]} />
+            <sphereGeometry args={[radius, 32, 32]} />
             <shaderMaterial
                 vertexShader={vertexShader}
                 fragmentShader={fragmentShader}

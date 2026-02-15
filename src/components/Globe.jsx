@@ -1,22 +1,22 @@
-import { useMemo } from "react";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
-export default function Globe({ textureName }) {
-    const texName = textureName || "specular.avif";
-    const earthTexture = useTexture(`/textures/${texName}`);
+const GEOM = new THREE.SphereGeometry(1, 64, 64);
 
-    const geometry = useMemo(() => new THREE.SphereGeometry(1, 48, 48), []);
+export default function Globe({ textureName = "specular.avif" }) {
+    const earthTexture = useTexture(`/textures/${textureName}`, (texture) => {
+        texture.anisotropy = 4;
+        texture.generateMipmaps = true;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+    });
 
     return (
-        <mesh geometry={geometry} renderOrder={1}>
+        <mesh geometry={GEOM} renderOrder={1}>
             <meshStandardMaterial
                 map={earthTexture}
-                roughness={0.7}
-                metalness={0.0}
-                emissive="#000000"
-                transparent={false}
-                depthWrite={true}
+                roughness={0.8}
+                metalness={0.1}
+                envMapIntensity={0.4}
             />
         </mesh>
     );

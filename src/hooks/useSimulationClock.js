@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export function useSimulationClock(
     currentTick,
@@ -8,30 +8,33 @@ export function useSimulationClock(
 ) {
     const [displayTick, setDisplayTick] = useState(currentTick);
     const lastTickTimeRef = useRef(0);
+    const frameRef = useRef();
+
+    useEffect(() => {
+        if (lastTickTimeRef.current === 0) {
+            lastTickTimeRef.current = performance.now();
+        }
+    }, []);
 
     useEffect(() => {
         lastTickTimeRef.current = performance.now();
-
         if (isPaused) setDisplayTick(currentTick);
     }, [currentTick, isPaused]);
 
     useEffect(() => {
-        if (isPaused) {
-            setDisplayTick(currentTick);
-            return;
-        }
+        if (isPaused) return;
 
-        let rafId;
         const update = () => {
             const elapsed = performance.now() - lastTickTimeRef.current;
             const progress = Math.min(1, elapsed / timePerStep);
+            const nextTick = currentTick + progress * tickStep;
 
-            setDisplayTick(currentTick + progress * tickStep);
-            rafId = requestAnimationFrame(update);
+            setDisplayTick(nextTick);
+            frameRef.current = requestAnimationFrame(update);
         };
 
-        rafId = requestAnimationFrame(update);
-        return () => cancelAnimationFrame(rafId);
+        frameRef.current = requestAnimationFrame(update);
+        return () => cancelAnimationFrame(frameRef.current);
     }, [currentTick, tickStep, timePerStep, isPaused]);
 
     return displayTick;

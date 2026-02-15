@@ -6,112 +6,89 @@ const _offset = new THREE.Vector3();
 
 export default function SmoothZoom({
     controlsRef,
-    sensitivity = 0.001,
-    decay = 0.9,
-    minDistance = 1.1,
-    maxDistance = 10,
-    enabled = true,
+    sensitivity,
+    decay,
+    minDistance,
+    maxDistance,
+    enabled,
 }) {
     const { gl, camera } = useThree();
-    const zoomVelocity = useRef(0);
-    const pinchActive = useRef(false);
-    const lastPinchDistance = useRef(0);
-
-    useEffect(() => {
-        window.__resetZoomVelocity = () => {
-            zoomVelocity.current = 0;
-        };
-        return () => {
-            delete window.__resetZoomVelocity;
-        };
-    }, []);
+    const zoomV = useRef(0);
+    const lastPinch = useRef(0);
 
     useEffect(() => {
         const el = gl.domElement;
-        if (!el) return;
+        if (!el || !enabled) return;
 
         const onWheel = (e) => {
-            if (!enabled || !controlsRef.current) return;
             e.preventDefault();
-            zoomVelocity.current += e.deltaY * sensitivity;
-            zoomVelocity.current = Math.max(
+            zoomV.current = THREE.MathUtils.clamp(
+                zoomV.current + e.deltaY * sensitivity,
                 -0.04,
-                Math.min(0.04, zoomVelocity.current)
+                0.04
             );
         };
 
-        const getDist = (t0, t1) =>
-            Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+        const onTouch = (e) => {
+            if (e.touches.length !== 2) return;
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
 
-        const onTouchStart = (e) => {
-            if (enabled && e.touches?.length === 2) {
-                pinchActive.current = true;
-                lastPinchDistance.current = getDist(e.touches[0], e.touches[1]);
-            }
-        };
-
-        const onTouchMove = (e) => {
-            if (enabled && pinchActive.current && e.touches?.length === 2) {
-                const dist = getDist(e.touches[0], e.touches[1]);
-                const delta = lastPinchDistance.current - dist;
-                zoomVelocity.current += delta * sensitivity * 2;
-                zoomVelocity.current = Math.max(
+            if (e.type === "touchstart") {
+                lastPinch.current = dist;
+            } else {
+                zoomV.current = THREE.MathUtils.clamp(
+                    zoomV.current +
+                        (lastPinch.current - dist) * sensitivity * 2,
                     -0.05,
-                    Math.min(0.05, zoomVelocity.current)
+                    0.05
                 );
-                lastPinchDistance.current = dist;
+                lastPinch.current = dist;
                 if (e.cancelable) e.preventDefault();
             }
         };
 
-        const endPinch = () => {
-            pinchActive.current = false;
-        };
-
         el.addEventListener("wheel", onWheel, { passive: false });
-        el.addEventListener("touchstart", onTouchStart, { passive: false });
-        el.addEventListener("touchmove", onTouchMove, { passive: false });
-        el.addEventListener("touchend", endPinch);
-        el.addEventListener("touchcancel", endPinch);
+        el.addEventListener("touchstart", onTouch, { passive: false });
+        el.addEventListener("touchmove", onTouch, { passive: false });
 
         return () => {
             el.removeEventListener("wheel", onWheel);
-            el.removeEventListener("touchstart", onTouchStart);
-            el.removeEventListener("touchmove", onTouchMove);
-            el.removeEventListener("touchend", endPinch);
-            el.removeEventListener("touchcancel", endPinch);
+            el.removeEventListener("touchstart", onTouch);
+            el.removeEventListener("touchmove", onTouch);
         };
-    }, [gl, sensitivity, enabled, controlsRef]);
+    }, [gl, sensitivity, enabled]);
 
     useFrame((_, delta) => {
         const controls = controlsRef.current;
-        if (!controls || !enabled || Math.abs(zoomVelocity.current) < 0.0001) {
-            if (zoomVelocity.current !== 0) zoomVelocity.current = 0;
-            return;
-        }
+        if (!controls || !enabled || Math.abs(zoomV.current) < 0.0001) return;
 
         const frameDelta = Math.min(delta * 60, 2);
-        const rawZoomFactor = 1 + zoomVelocity.current * frameDelta;
-        const zoomFactor = Math.max(0.5, Math.min(1.5, rawZoomFactor));
-
         _offset.copy(camera.position).sub(controls.target);
 
-        let dist = _offset.length();
-        if (dist <= 0) dist = minDistance;
-
-        let newDist = dist * zoomFactor;
-        newDist = Math.max(minDistance, Math.min(maxDistance, newDist));
+        const dist = _offset.length() || minDistance;
+        const zoomFactor = THREE.MathUtils.clamp(
+            1 + zoomV.current * frameDelta,
+            0.5,
+            1.5
+        );
+        const newDist = THREE.MathUtils.clamp(
+            dist * zoomFactor,
+            minDistance,
+            maxDistance
+        );
 
         _offset.setLength(newDist);
         camera.position.copy(controls.target).add(_offset);
+        controls.update();
 
         if (newDist === minDistance || newDist === maxDistance) {
-            zoomVelocity.current = 0;
+            zoomV.current = 0;
         } else {
-            zoomVelocity.current *= Math.pow(decay, frameDelta);
+            zoomV.current *= Math.pow(decay, frameDelta);
         }
-
-        controls.update();
     });
 
     return null;
