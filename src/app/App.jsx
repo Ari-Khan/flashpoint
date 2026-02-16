@@ -25,7 +25,6 @@ import Audio from "../components/Audio.jsx";
 import PostEffects from "../components/PostEffects.jsx";
 
 import { useEventTimeline } from "../hooks/useEventTimeline.js";
-import { useSimulationClock } from "../hooks/useSimulationClock.js";
 import { loadWorld } from "../utils/loadData.js";
 
 import "../index.css";
@@ -285,14 +284,8 @@ export default function App() {
         simTicksPerUpdate,
         isPaused
     );
-    const interpolatedTick = useSimulationClock(
-        currentTick,
-        simTicksPerUpdate,
-        timePerUpdate,
-        isPaused
-    );
 
-    const displayTick = tickStep <= 0.0625 ? interpolatedTick : currentTick;
+    const displayTick = currentTick;
 
     const affectedIsos = useMemo(() => {
         if (!visible.length) return [];
@@ -309,19 +302,25 @@ export default function App() {
 
     const logDisplay = useMemo(() => {
         if (uiHidden || !visible.length) return "SYSTEM READY";
-        // Only update log text every ~15 ticks to save CPU
-        if (Math.floor(displayTick) % 15 !== 0) return null;
         
         const recent = visible.slice(-50).reverse();
         return JSON.stringify(
-            recent.map(
-                ({ fromLat, fromLon, toLat, toLon, id, intensity, ...rest }) =>
-                    rest
-            ),
+            recent.map((e) => {
+                const {
+                    fromLat: _fl,
+                    fromLon: _flo,
+                    toLat: _tl,
+                    toLon: _tlo,
+                    id: _id,
+                    intensity: _in,
+                    ...rest
+                } = e;
+                return rest;
+            }),
             null,
             2
         );
-    }, [visible.length, uiHidden, Math.floor(displayTick / 15)]); // integer step dependency
+    }, [visible, uiHidden]);
 
     // Memoize the GL config to prevent Canvas re-initialization on every frame
     const glConfig = useMemo(() => ({
@@ -406,7 +405,6 @@ export default function App() {
                         events={visible}
                         nations={world.nations}
                         displayTime={displayTick}
-                        simTime={currentTick}
                     />
 
                     <PostEffects

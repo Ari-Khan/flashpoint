@@ -9,11 +9,14 @@ const _v2 = new THREE.Vector3();
 const _mid = new THREE.Vector3();
 const _axis = new THREE.Vector3();
 
-function getJitteredVec3(lat, lon, amount = 2, seed = 0, target) {
+const ALTITUDE = 1.002;
+const JITTER = 1.0;
+
+function getJitteredVec3(lat, lon, seed = 0, target) {
     const finalSeed = lat * 133.7 + lon * 42.3 + seed;
-    const jLat = lat + Math.sin(finalSeed) * amount;
-    const jLon = lon + Math.cos(finalSeed) * amount;
-    return latLonToVec3(jLat, jLon, 1.002, target);
+    const jLat = lat + Math.sin(finalSeed) * JITTER;
+    const jLon = lon + Math.cos(finalSeed) * JITTER;
+    return latLonToVec3(jLat, jLon, ALTITUDE, target);
 }
 
 export function computeStartEndDistance({
@@ -23,11 +26,10 @@ export function computeStartEndDistance({
     toLon,
     startTime,
 }) {
-    const start = latLonToVec3(fromLat, fromLon, 1.002);
+    const start = latLonToVec3(fromLat, fromLon, ALTITUDE);
     const end = getJitteredVec3(
         Number(toLat),
         Number(toLon),
-        2,
         Number(startTime)
     );
     return { start, end, distance: start.distanceTo(end) };
@@ -59,14 +61,14 @@ export function buildCubicCurveAndGeometry({ start, end, startTime, seed }) {
         .normalize()
         .lerp(_mid, 0.5)
         .normalize()
-        .multiplyScalar(1.002 + h)
+        .multiplyScalar(ALTITUDE + h)
         .clone();
     const ctrl2 = _v2
         .copy(end)
         .normalize()
         .lerp(_mid, 0.5)
         .normalize()
-        .multiplyScalar(1.002 + h)
+        .multiplyScalar(ALTITUDE + h)
         .clone();
 
     const cubicCurve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);

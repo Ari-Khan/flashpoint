@@ -5,24 +5,19 @@ import { useMemo } from "react";
 const GEOM = new THREE.SphereGeometry(1, 32, 32);
 
 export default function Skybox({ postEffectsEnabled = false }) {
-    const texture = useTexture("/textures/starmap.png");
+    const texture = useTexture("/textures/starmap.png", (t) => {
+        t.minFilter = THREE.LinearFilter;
+        t.generateMipmaps = false;
+    });
     
-    useMemo(() => {
-        texture.minFilter = THREE.LinearFilter;
-        texture.generateMipmaps = false;
-    }, [texture]);
-
     const brightness = postEffectsEnabled ? 3.15 : 1.75;
     const contrast = postEffectsEnabled ? 1.08 : 0.6;
 
     const uniforms = useMemo(() => ({
         uTexture: { value: texture },
-        uBrightness: { value: 0 },
-        uContrast: { value: 0 },
-    }), [texture]);
-
-    uniforms.uBrightness.value = brightness;
-    uniforms.uContrast.value = contrast;
+        uBrightness: { value: brightness },
+        uContrast: { value: contrast },
+    }), [texture, brightness, contrast]);
 
     return (
         <mesh geometry={GEOM} frustumCulled={false} renderOrder={-100}>

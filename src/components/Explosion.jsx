@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { computeTrajectory } from "../utils/trajectoryUtils.js";
 
 const FADE_WINDOW = 6;
-const SHARED_GEOM = new THREE.SphereGeometry(1, 12, 12);
+const SHARED_GEOM = new THREE.SphereGeometry(1, 16, 16);
 const DUMMY = new THREE.Object3D();
 const BASE_COLOR = new THREE.Color("#ffcc55");
 const TEMP_COLOR = new THREE.Color();
@@ -14,10 +14,8 @@ export default function ExplosionManager({
     events = [],
     nations,
     displayTime,
-    simTime,
 }) {
     const meshRef = useRef();
-    const displayTimeRef = useRef(displayTime);
 
     const mat = useMemo(
         () =>
@@ -62,8 +60,7 @@ export default function ExplosionManager({
         const mesh = meshRef.current;
         if (!mesh) return;
 
-        displayTimeRef.current += (displayTime - displayTimeRef.current) * 0.1;
-        const time = displayTimeRef.current;
+        const time = displayTime;
         let renderedCount = 0;
 
         for (let i = 0; i < processedEvents.length; i++) {

@@ -29,21 +29,34 @@ export function useEventTimeline(
     useEffect(() => {
         if (!events?.length || isPaused) return;
 
-        const interval = setInterval(() => {
+        let raf;
+        let lastTime = performance.now();
+
+        const update = () => {
             if (lastTickRef.current >= maxT) {
-                clearInterval(interval);
                 return;
             }
 
+            const now = performance.now();
+            const delta = now - lastTime;
+            lastTime = now;
+
+            const progress = (delta / timePerStep) * tickStep;
+
             setCurrentTick((prev) => {
-                const next = prev + tickStep;
+                const next = prev + progress;
                 const result = next >= maxT ? maxT : next;
                 lastTickRef.current = result;
                 return result;
             });
-        }, timePerStep);
 
-        return () => clearInterval(interval);
+            raf = requestAnimationFrame(update);
+        };
+
+        raf = requestAnimationFrame(update);
+        return () => {
+            if (raf) cancelAnimationFrame(raf);
+        };
     }, [events, isPaused, maxT, timePerStep, tickStep]);
 
     const visible = useMemo(() => {
