@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 
 export default function ControlPanel({ nations, onRun, isRunning = false }) {
     const { allCodes, aggressorCodes } = useMemo(() => {
@@ -10,25 +10,15 @@ export default function ControlPanel({ nations, onRun, isRunning = false }) {
         return { allCodes: codes, aggressorCodes: aggressors };
     }, [nations]);
 
-    const [actor, setActor] = useState("");
-    const [target, setTarget] = useState("");
-
-    useEffect(() => {
-        if (aggressorCodes.length > 0 && !aggressorCodes.includes(actor)) {
-            setActor(aggressorCodes[0]);
-        }
-    }, [aggressorCodes, actor]);
-
-    useEffect(() => {
-        if (allCodes.length > 0 && (!target || target === actor)) {
-            const defaultTarget = allCodes.find((c) => c !== actor);
-            setTarget(defaultTarget ?? allCodes[0]);
-        }
-    }, [allCodes, actor, target]);
+    const [actor, setActor] = useState(() => aggressorCodes[0] || "");
+    const [target, setTarget] = useState(
+        () => allCodes.find((c) => c !== (aggressorCodes[0] || "")) || ""
+    );
 
     const error = useMemo(() => {
         if (aggressorCodes.length === 0) return "No armed nations found.";
-        if (actor === target) return "Select different countries.";
+        if (!actor || !target || actor === target)
+            return "Select different countries.";
         return null;
     }, [actor, target, aggressorCodes.length]);
 

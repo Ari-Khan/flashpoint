@@ -307,48 +307,32 @@ export default function App() {
         return Array.from(isoSet);
     }, [visible]);
 
-    const visibleForLog = useMemo(() => {
-        if (uiHidden || !visible.length) return null;
+    const logDisplay = useMemo(() => {
+        if (uiHidden || !visible.length) return "SYSTEM READY";
+        // Only update log text every ~15 ticks to save CPU
+        if (Math.floor(displayTick) % 15 !== 0) return null;
+        
+        const recent = visible.slice(-50).reverse();
+        return JSON.stringify(
+            recent.map(
+                ({ fromLat, fromLon, toLat, toLon, id, intensity, ...rest }) =>
+                    rest
+            ),
+            null,
+            2
+        );
+    }, [visible.length, uiHidden, Math.floor(displayTick / 15)]); // integer step dependency
 
-        const nameFor = (code) =>
-            typeof code === "string"
-                ? world.nations?.[code]?.name || code
-                : code;
-
-        // Show last 50 events for performance
-        const recent = visible.length > 50 ? visible.slice(-50) : visible;
-
-        return recent
-            .slice()
-            .reverse()
-            .map((e) => {
-                const {
-                    fromLat: _fromLat,
-                    fromLon: _fromLon,
-                    toLat: _toLat,
-                    toLon: _toLon,
-                    id: _id,
-                    intensity: _intensity,
-                    ...rest
-                } = e;
-                const logEntry = { ...rest };
-
-                [
-                    "from",
-                    "to",
-                    "attacker",
-                    "target",
-                    "country",
-                    "reason",
-                ].forEach((f) => {
-                    if (logEntry[f] && typeof logEntry[f] === "string") {
-                        logEntry[f] = nameFor(logEntry[f]);
-                    }
-                });
-
-                return logEntry;
-            });
-    }, [visible, uiHidden]);
+    // Memoize the GL config to prevent Canvas re-initialization on every frame
+    const glConfig = useMemo(() => ({
+        antialias: perfSettings.antialias,
+        powerPreference: perfSettings.powerPreference,
+        preserveDrawingBuffer: perfSettings.preserveDrawingBuffer,
+        logarithmicDepthBuffer: false, // Performance fix: disabled log depth
+        alpha: false,
+        stencil: false,
+        depth: true
+    }), [perfSettings]);
 
     const toggleUI = () => setUiHidden((p) => !p);
     const togglePause = () => setIsPaused((p) => !p);
@@ -397,24 +381,13 @@ export default function App() {
                 )}
             </div>
 
-            {!uiHidden && (
-                <pre className="event-log">
-                    {visible.length
-                        ? JSON.stringify(visibleForLog, null, 2)
-                        : "SYSTEM READY"}
-                </pre>
-            )}
+            {!uiHidden && logDisplay && <pre className="event-log">{logDisplay}</pre>}
 
             <Canvas
                 key={JSON.stringify(perfSettings)}
                 className="canvas-3d"
                 dpr={[1, perfSettings.pixelRatioLimit]}
-                gl={{
-                    antialias: perfSettings.antialias,
-                    powerPreference: perfSettings.powerPreference,
-                    preserveDrawingBuffer: perfSettings.preserveDrawingBuffer,
-                    logarithmicDepthBuffer: true,
-                }}
+                gl={glConfig}
                 camera={CAM_CONFIG}
             >
                 <Skybox postEffectsEnabled={postEffectsEnabled} />

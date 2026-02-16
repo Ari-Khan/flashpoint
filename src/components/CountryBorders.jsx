@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { latLonToVec3 } from "../utils/latLonToVec3.js";
 import { useCountriesGeo } from "../hooks/useCountriesGeo.js";
 
+const ALTITUDE = 1.002;
+
 export default function CountryBorders() {
     const geo = useCountriesGeo();
 
@@ -13,9 +15,10 @@ export default function CountryBorders() {
         const features = geo.features;
 
         for (let f = 0; f < features.length; f++) {
-            const { coordinates, type } = features[f].geometry || {};
-            if (!coordinates) continue;
+            const geometry = features[f].geometry;
+            if (!geometry) continue;
 
+            const { coordinates, type } = geometry;
             const polygons = type === "Polygon" ? [coordinates] : coordinates;
 
             for (let p = 0; p < polygons.length; p++) {
@@ -26,8 +29,8 @@ export default function CountryBorders() {
                         const p1 = ring[i];
                         const p2 = ring[i + 1];
 
-                        const v1 = latLonToVec3(p1[1], p1[0], 1.002);
-                        const v2 = latLonToVec3(p2[1], p2[0], 1.002);
+                        const v1 = latLonToVec3(p1[1], p1[0], ALTITUDE);
+                        const v2 = latLonToVec3(p2[1], p2[0], ALTITUDE);
 
                         rawPoints.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
                     }
@@ -36,15 +39,20 @@ export default function CountryBorders() {
         }
 
         const geometry = new THREE.BufferGeometry();
+        const vertices = new Float32Array(rawPoints);
         geometry.setAttribute(
             "position",
-            new THREE.Float32BufferAttribute(rawPoints, 3)
+            new THREE.BufferAttribute(vertices, 3)
         );
         return geometry;
     }, [geo]);
 
     useEffect(() => {
-        return () => mergedGeometry?.dispose();
+        return () => {
+            if (mergedGeometry) {
+                mergedGeometry.dispose();
+            }
+        };
     }, [mergedGeometry]);
 
     if (!mergedGeometry) return null;

@@ -95,17 +95,13 @@ const ArcItem = ({
             coneRef.current.visible = false;
         }
 
-        if (simTime >= impactTick) {
-            const opacity = Math.max(
-                0,
-                1 - (simTime - impactTick) * (1 / FADE_BUFFER)
-            );
-            lineRef.current.material.opacity = opacity;
-            coneRef.current.material.opacity = opacity;
-        } else {
-            lineRef.current.material.opacity = 1;
-            coneRef.current.material.opacity = 1;
-        }
+        const opacity =
+            simTime >= impactTick
+                ? Math.max(0, 1 - (simTime - impactTick) * (1 / FADE_BUFFER))
+                : 1;
+
+        lineRef.current.material.opacity = opacity;
+        coneRef.current.material.opacity = opacity;
     });
 
     return (
@@ -131,45 +127,46 @@ const ArcItem = ({
 };
 
 export default function ArcManager({ events, nations, displayTime, simTime }) {
-    const processed = useMemo(() => {
+    const activeEvents = useMemo(() => {
         if (!events || !nations) return [];
-        return events
-            .filter(
-                (e) => e.type === "launch" && nations[e.from] && nations[e.to]
-            )
-            .map((e) => {
-                const from = nations[e.from];
-                const to = nations[e.to];
-                const fLat = e.fromLat ?? from.lat;
-                const fLon = e.fromLon ?? from.lon;
-                const tLat = e.toLat ?? to.lat;
-                const tLon = e.toLon ?? to.lon;
+        const result = [];
+        for (let i = 0; i < events.length; i++) {
+            const e = events[i];
+            if (e.type !== "launch") continue;
 
-                const { duration } = computeTrajectory({
-                    fromLat: fLat,
-                    fromLon: fLon,
-                    toLat: tLat,
-                    toLon: tLon,
-                    startTime: e.t,
-                    weapon: e.weapon,
-                });
+            const from = nations[e.from];
+            const to = nations[e.to];
+            if (!from || !to) continue;
 
-                return {
+            const fLat = e.fromLat ?? from.lat;
+            const fLon = e.fromLon ?? from.lon;
+            const tLat = e.toLat ?? to.lat;
+            const tLon = e.toLon ?? to.lon;
+
+            const traj = computeTrajectory({
+                fromLat: fLat,
+                fromLon: fLon,
+                toLat: tLat,
+                toLon: tLon,
+                startTime: e.t,
+                weapon: e.weapon,
+            });
+
+            const impactTick = e.t + traj.duration;
+
+            if (simTime >= e.t && simTime <= impactTick + FADE_BUFFER) {
+                result.push({
                     ...e,
                     fLat,
                     fLon,
                     tLat,
                     tLon,
-                    impactTick: e.t + duration,
-                };
-            });
-    }, [events, nations]);
-
-    const activeEvents = useMemo(() => {
-        return processed.filter(
-            (e) => simTime >= e.t && simTime <= e.impactTick + FADE_BUFFER
-        );
-    }, [processed, simTime]);
+                    impactTick,
+                });
+            }
+        }
+        return result;
+    }, [events, nations, simTime]);
 
     return (
         <group>

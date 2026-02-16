@@ -34,7 +34,6 @@ export default function AmbientAudio({ enabled = true }) {
 
         const handleInteraction = () => {
             if (!enabledRef.current) return;
-
             const now = performance.now();
             [
                 { el: space, key: "space" },
@@ -48,7 +47,6 @@ export default function AmbientAudio({ enabled = true }) {
                     })
                     .catch(() => {});
             });
-
             window.removeEventListener("pointerdown", handleInteraction);
             window.removeEventListener("keydown", handleInteraction);
         };
@@ -70,7 +68,6 @@ export default function AmbientAudio({ enabled = true }) {
         const space = spaceRef.current;
         const ground = groundRef.current;
         if (!space || !ground) return;
-
         if (enabled) {
             space.play().catch(() => {});
             ground.play().catch(() => {});
@@ -119,8 +116,11 @@ export default function AmbientAudio({ enabled = true }) {
             }
 
             current = Math.max(0, Math.min(1, current));
+
+            if (Math.abs(audio.volume - current) > 0.001) {
+                audio.volume = current;
+            }
             volumes.current[key] = current;
-            audio.volume = current;
         };
 
         updateVolume("space", space, targetSpace);

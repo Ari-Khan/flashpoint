@@ -14,7 +14,7 @@ export default function Cities({ nations = {} }) {
         const nationEntries = Object.entries(nations);
 
         for (let i = 0; i < nationEntries.length; i++) {
-            const [N] = nationEntries[i];
+            const [key, N] = nationEntries[i];
             if (!N) continue;
 
             const baseColor = new THREE.Color(N.defaultColor ?? "#ffffff");
