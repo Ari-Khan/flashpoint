@@ -61,11 +61,12 @@ export function simulateEscalation({
             continue;
         }
 
-        const { from, to, isBetrayal } = event;
+        const { from, to, reason, isBetrayal } = event;
 
         let strikeActive = true;
         let strikesInTick = 0;
         let lastVictim = to;
+        let isFirstSalvo = true;
 
         while (strikeActive && canLaunch(from, state)) {
             const count = computeSalvoCount({
@@ -74,13 +75,21 @@ export function simulateEscalation({
                 remaining: state.remaining[from],
             });
 
-            const decision = pickWeightedTarget({
-                attacker: from,
-                lastStriker: lastVictim,
-                world: worldClone,
-                state,
-            });
-            const thisTarget = decision?.code ?? lastVictim ?? to;
+            let thisTarget;
+            let decision = null;
+
+            if (isFirstSalvo && reason === "initial") {
+                thisTarget = to;
+            } else {
+                decision = pickWeightedTarget({
+                    attacker: from,
+                    lastStriker: lastVictim,
+                    world: worldClone,
+                    state,
+                });
+                thisTarget = decision?.code ?? lastVictim ?? to;
+            }
+            isFirstSalvo = false;
 
             const used = launchStrike({
                 from,

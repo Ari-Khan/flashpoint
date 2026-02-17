@@ -21,8 +21,13 @@ export function useEventTimeline(
         return { minT: min, maxT: max, sortedEvents: sorted };
     }, [events]);
 
-    useEffect(() => {
+    const [prevEvents, setPrevEvents] = useState(events);
+    if (events !== prevEvents) {
+        setPrevEvents(events);
         setCurrentTick(minT);
+    }
+
+    useEffect(() => {
         lastTickRef.current = minT;
     }, [events, minT]);
 

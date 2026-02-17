@@ -1,6 +1,6 @@
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { useMemo } from "react";
+import { useRef, useEffect } from "react";
 
 const GEOM = new THREE.SphereGeometry(1, 32, 32);
 
@@ -13,11 +13,17 @@ export default function Skybox({ postEffectsEnabled = false }) {
     const brightness = postEffectsEnabled ? 3.15 : 1.75;
     const contrast = postEffectsEnabled ? 1.08 : 0.6;
 
-    const uniforms = useMemo(() => ({
+    const uniformsRef = useRef({
         uTexture: { value: texture },
         uBrightness: { value: brightness },
         uContrast: { value: contrast },
-    }), [texture, brightness, contrast]);
+    });
+
+    useEffect(() => {
+        uniformsRef.current.uTexture.value = texture;
+        uniformsRef.current.uBrightness.value = brightness;
+        uniformsRef.current.uContrast.value = contrast;
+    }, [texture, brightness, contrast]);
 
     return (
         <mesh geometry={GEOM} frustumCulled={false} renderOrder={-100}>
@@ -25,7 +31,7 @@ export default function Skybox({ postEffectsEnabled = false }) {
                 side={THREE.BackSide}
                 depthWrite={false}
                 toneMapped={false}
-                uniforms={uniforms}
+                uniforms={uniformsRef.current}
                 vertexShader={`
                     varying vec2 vUv;
                     void main() {
