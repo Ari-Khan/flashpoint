@@ -9,7 +9,7 @@ export default function Skybox({ postEffectsEnabled = false }) {
         t.minFilter = THREE.LinearFilter;
         t.generateMipmaps = false;
     });
-    
+
     const brightness = postEffectsEnabled ? 3.15 : 1.75;
     const contrast = postEffectsEnabled ? 1.08 : 0.6;
 

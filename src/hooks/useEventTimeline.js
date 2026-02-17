@@ -3,32 +3,30 @@ import { useEffect, useMemo, useState, useRef } from "react";
 export function useEventTimeline(
     events,
     timePerStep = 1000,
-    tickStep = 1,
-    isPaused = false
+    simSpeed = 1,
+    isPaused = false,
+    tps = 16
 ) {
-    const [currentTick, setCurrentTick] = useState(0);
+    const [rawTick, setRawTick] = useState(0);
     const lastTickRef = useRef(0);
 
     const { minT, maxT, sortedEvents } = useMemo(() => {
-        if (!events || events.length === 0) {
-            return { minT: 0, maxT: 0, sortedEvents: [] };
-        }
-
+        if (!events?.length) return { minT: 0, maxT: 0, sortedEvents: [] };
         const sorted = [...events].sort((a, b) => a.t - b.t);
-        const min = sorted[0].t;
-        const max = sorted[sorted.length - 1].t;
-
-        return { minT: min, maxT: max, sortedEvents: sorted };
+        return {
+            minT: sorted[0].t,
+            maxT: sorted[sorted.length - 1].t,
+            sortedEvents: sorted,
+        };
     }, [events]);
 
-    const [prevEvents, setPrevEvents] = useState(events);
-    if (events !== prevEvents) {
-        setPrevEvents(events);
-        setCurrentTick(minT);
-    }
+    const currentTick = useMemo(() => {
+        if (!tps) return rawTick;
+        return Math.floor(rawTick / tps) * tps;
+    }, [rawTick, tps]);
 
     useEffect(() => {
-        lastTickRef.current = minT;
+        if (events) setRawTick(minT);
     }, [events, minT]);
 
     useEffect(() => {
@@ -38,17 +36,15 @@ export function useEventTimeline(
         let lastTime = performance.now();
 
         const update = () => {
-            if (lastTickRef.current >= maxT) {
-                return;
-            }
+            if (lastTickRef.current >= maxT) return;
 
             const now = performance.now();
             const delta = now - lastTime;
             lastTime = now;
 
-            const progress = (delta / timePerStep) * tickStep;
+            const progress = (delta / timePerStep) * simSpeed;
 
-            setCurrentTick((prev) => {
+            setRawTick((prev) => {
                 const next = prev + progress;
                 const result = next >= maxT ? maxT : next;
                 lastTickRef.current = result;
@@ -59,23 +55,17 @@ export function useEventTimeline(
         };
 
         raf = requestAnimationFrame(update);
-        return () => {
-            if (raf) cancelAnimationFrame(raf);
-        };
-    }, [events, isPaused, maxT, timePerStep, tickStep]);
+        return () => cancelAnimationFrame(raf);
+    }, [events, isPaused, maxT, timePerStep, simSpeed]);
 
     const visible = useMemo(() => {
         const results = [];
-        for (let i = 0; i < sortedEvents.length; i++) {
-            const e = sortedEvents[i];
-            if (e.t <= currentTick) {
-                results.push(e);
-            } else {
-                break;
-            }
+        for (const e of sortedEvents) {
+            if (e.t <= currentTick) results.push(e);
+            else break;
         }
         return results;
     }, [sortedEvents, currentTick]);
 
-    return { visible, currentTick, isFinished: currentTick >= maxT };
+    return { visible, currentTick, isFinished: rawTick >= maxT };
 }

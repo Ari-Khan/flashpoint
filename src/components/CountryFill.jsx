@@ -76,9 +76,7 @@ function buildGeometries(features, countryCode) {
                 geometry = MOD_1.modify(geometry);
                 geometry = MOD_2.modify(geometry);
                 geometry = MOD_3.modify(geometry);
-            } catch {
-                // Ignore modification errors; fallback to original geometry
-            }
+            } catch {}
 
             const posAttr = geometry.getAttribute("position");
             for (let i = 0; i < posAttr.count; i++) {

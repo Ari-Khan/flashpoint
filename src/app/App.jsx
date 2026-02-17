@@ -274,15 +274,12 @@ export default function App() {
     const resetCamera = useCameraReset(controlsRef);
     const { run, isRunning } = useSimulationWorker(setEvents);
 
-    const ticksPerSecond = 1;
-    const timePerUpdate = 1000 * tickStep;
-    const simTicksPerUpdate = ticksPerSecond * tickStep;
-
     const { visible, currentTick } = useEventTimeline(
         events,
-        timePerUpdate,
-        simTicksPerUpdate,
-        isPaused
+        1000,
+        1,
+        isPaused,
+        tickStep
     );
 
     const displayTick = currentTick;
@@ -302,7 +299,7 @@ export default function App() {
 
     const logDisplay = useMemo(() => {
         if (uiHidden || !visible.length) return "SYSTEM READY";
-        
+
         const recent = visible.slice(-50).reverse();
         return JSON.stringify(
             recent.map((e) => {
@@ -322,16 +319,18 @@ export default function App() {
         );
     }, [visible, uiHidden]);
 
-    // Memoize the GL config to prevent Canvas re-initialization on every frame
-    const glConfig = useMemo(() => ({
-        antialias: perfSettings.antialias,
-        powerPreference: perfSettings.powerPreference,
-        preserveDrawingBuffer: perfSettings.preserveDrawingBuffer,
-        logarithmicDepthBuffer: false, // Performance fix: disabled log depth
-        alpha: false,
-        stencil: false,
-        depth: true
-    }), [perfSettings]);
+    const glConfig = useMemo(
+        () => ({
+            antialias: perfSettings.antialias,
+            powerPreference: perfSettings.powerPreference,
+            preserveDrawingBuffer: perfSettings.preserveDrawingBuffer,
+            logarithmicDepthBuffer: false,
+            alpha: false,
+            stencil: false,
+            depth: true,
+        }),
+        [perfSettings]
+    );
 
     const toggleUI = () => setUiHidden((p) => !p);
     const togglePause = () => setIsPaused((p) => !p);
@@ -380,7 +379,9 @@ export default function App() {
                 )}
             </div>
 
-            {!uiHidden && logDisplay && <pre className="event-log">{logDisplay}</pre>}
+            {!uiHidden && logDisplay && (
+                <pre className="event-log">{logDisplay}</pre>
+            )}
 
             <Canvas
                 key={JSON.stringify(perfSettings)}
